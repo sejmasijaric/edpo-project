@@ -4,3 +4,7 @@ server:
 spring:
   application:
     name: factory-simulator
+
+factory:
+  simulation:
+    movement-delay: 4s

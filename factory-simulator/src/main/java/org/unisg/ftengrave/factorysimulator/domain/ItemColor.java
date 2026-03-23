@@ -1,4 +1,4 @@
-package org.unisg.ftengrave.factorysimulator.model;
+package org.unisg.ftengrave.factorysimulator.domain;
 
 public enum ItemColor {
     Red,

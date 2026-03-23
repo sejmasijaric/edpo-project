@@ -1,4 +1,4 @@
-package org.unisg.ftengrave.factorysimulator.model;
+package org.unisg.ftengrave.factorysimulator.domain;
 
 public record Sink(String id, int x, int y, Item item) {
 

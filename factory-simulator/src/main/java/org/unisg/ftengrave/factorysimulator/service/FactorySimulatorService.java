@@ -5,10 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import org.unisg.ftengrave.factorysimulator.model.Item;
-import org.unisg.ftengrave.factorysimulator.model.ItemColor;
-import org.unisg.ftengrave.factorysimulator.model.ManagedItem;
-import org.unisg.ftengrave.factorysimulator.model.Sink;
+import org.unisg.ftengrave.factorysimulator.domain.Item;
+import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
+import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
+import org.unisg.ftengrave.factorysimulator.domain.Sink;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -59,8 +59,20 @@ public class FactorySimulatorService {
 
   public synchronized void moveItem(String itemId, String targetSinkId) {
     String currentSinkId = findSinkContainingItem(itemId);
-    if (currentSinkId.equals(targetSinkId)) {
+    moveItemBetweenSinks(currentSinkId, targetSinkId, false);
+  }
+
+  public synchronized void moveItemBetweenSinks(
+      String sourceSinkId,
+      String targetSinkId,
+      boolean ignoreMissingItem) {
+    if (sourceSinkId.equals(targetSinkId)) {
       return;
+    }
+
+    Sink sourceSink = sinks.get(sourceSinkId);
+    if (sourceSink == null) {
+      throw new NoSuchElementException("Unknown source sink: " + sourceSinkId);
     }
 
     Sink targetSink = sinks.get(targetSinkId);
@@ -70,11 +82,16 @@ public class FactorySimulatorService {
     if (targetSink.item() != null) {
       throw new IllegalStateException("Target sink already contains an item");
     }
+    if (sourceSink.item() == null) {
+      if (ignoreMissingItem) {
+        return;
+      }
+      throw new NoSuchElementException("Source sink does not contain an item: " + sourceSinkId);
+    }
 
-    Sink sourceSink = sinks.get(currentSinkId);
     Item item = sourceSink.item();
 
-    sinks.put(currentSinkId, sourceSink.withItem(null));
+    sinks.put(sourceSinkId, sourceSink.withItem(null));
     sinks.put(targetSinkId, targetSink.withItem(item));
   }
 
