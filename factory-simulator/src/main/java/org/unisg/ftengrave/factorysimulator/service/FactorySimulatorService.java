@@ -66,8 +66,17 @@ public class FactorySimulatorService {
       String sourceSinkId,
       String targetSinkId,
       boolean ignoreMissingItem) {
+    if (!tryMoveItemBetweenSinks(sourceSinkId, targetSinkId, ignoreMissingItem)) {
+      throw new IllegalStateException("Target sink already contains an item");
+    }
+  }
+
+  public synchronized boolean tryMoveItemBetweenSinks(
+      String sourceSinkId,
+      String targetSinkId,
+      boolean ignoreMissingItem) {
     if (sourceSinkId.equals(targetSinkId)) {
-      return;
+      return true;
     }
 
     Sink sourceSink = sinks.get(sourceSinkId);
@@ -80,11 +89,11 @@ public class FactorySimulatorService {
       throw new NoSuchElementException("Unknown target sink: " + targetSinkId);
     }
     if (targetSink.item() != null) {
-      throw new IllegalStateException("Target sink already contains an item");
+      return false;
     }
     if (sourceSink.item() == null) {
       if (ignoreMissingItem) {
-        return;
+        return true;
       }
       throw new NoSuchElementException("Source sink does not contain an item: " + sourceSinkId);
     }
@@ -93,6 +102,7 @@ public class FactorySimulatorService {
 
     sinks.put(sourceSinkId, sourceSink.withItem(null));
     sinks.put(targetSinkId, targetSink.withItem(item));
+    return true;
   }
 
   public synchronized void deleteItem(String itemId) {

@@ -68,4 +68,22 @@ class WorkstationTransportControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Unsupported vacuum gripper machine: wt_2"));
   }
+
+  @Test
+  void succeedsWhenTheTargetSinkIsOccupied() throws Exception {
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "MM-initial");
+    factorySimulatorService.addItem("ITEM-1002", ItemColor.Blue, "VGR-oven");
+
+    mockMvc.perform(get("/wt/pick_up_and_transport")
+            .param("machine", "wt_1")
+            .param("start", "milling_machine")
+            .param("end", "oven"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[],
+              "link":"http://localhost/wt/pick_up_and_transport"
+            }
+            """));
+  }
 }

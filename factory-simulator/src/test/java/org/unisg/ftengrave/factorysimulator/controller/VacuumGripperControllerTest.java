@@ -73,6 +73,24 @@ class VacuumGripperControllerTest {
   }
 
   @Test
+  void succeedsWhenTheTargetSinkIsOccupied() throws Exception {
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SINK-I1");
+    factorySimulatorService.addItem("ITEM-1002", ItemColor.Blue, "SINK-I2");
+
+    mockMvc.perform(get("/vgr/pick_up_and_transport")
+            .param("machine", "vgr_1")
+            .param("start", "start")
+            .param("end", "end"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[],
+              "link":"http://localhost/vgr/pick_up_and_transport"
+            }
+            """));
+  }
+
+  @Test
   void rejectsUnknownMachines() throws Exception {
     mockMvc.perform(get("/vgr/pick_up_and_transport")
             .param("machine", "vgr_2")

@@ -80,6 +80,18 @@ class FactorySimulatorServiceTest {
   }
 
   @Test
+  void canLeaveTheItemInPlaceWhenTryingToMoveToAnOccupiedSink() {
+    service.addItem("ITEM-1001", ItemColor.Red, "VGR-Hold");
+    service.addItem("ITEM-1002", ItemColor.Blue, "SINK-I2");
+
+    boolean moved = service.tryMoveItemBetweenSinks("VGR-Hold", "SINK-I2", false);
+
+    assertEquals(false, moved);
+    assertEquals("ITEM-1001", sink("VGR-Hold").item().id());
+    assertEquals("ITEM-1002", sink("SINK-I2").item().id());
+  }
+
+  @Test
   void rejectsUnknownItems() {
     assertThrows(NoSuchElementException.class, () -> service.moveItem("ITEM-404", "SINK-S1"));
   }

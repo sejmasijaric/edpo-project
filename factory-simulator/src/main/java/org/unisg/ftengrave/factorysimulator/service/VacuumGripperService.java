@@ -48,7 +48,7 @@ public class VacuumGripperService {
 
       status.set(this.machine.status("Moving to drop-off"));
       waitBetweenMovements();
-      factorySimulatorService.moveItemBetweenSinks(this.machine.holdSink(), mappedEnd, true);
+      factorySimulatorService.tryMoveItemBetweenSinks(this.machine.holdSink(), mappedEnd, true);
     } finally {
       status.set(this.machine.idleStatus());
     }
