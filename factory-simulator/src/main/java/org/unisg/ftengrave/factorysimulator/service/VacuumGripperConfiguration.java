@@ -60,6 +60,22 @@ public class VacuumGripperConfiguration {
         410);
   }
 
+  @Bean("millingMachineService")
+  public OneWayPointToPointTransportService millingMachineService(
+      FactorySimulatorService factorySimulatorService,
+      FactorySimulationProperties properties) {
+    return new OneWayPointToPointTransportService(
+        factorySimulatorService,
+        properties,
+        "mm_1",
+        "initial",
+        "MM-initial",
+        java.util.List.of(),
+        "MM-ejection",
+        0,
+        0);
+  }
+
   private static Map<String, String> createSinkMapping(String... entries) {
     Map<String, String> mapping = new LinkedHashMap<>();
     for (int index = 0; index < entries.length; index += 2) {

@@ -30,3 +30,9 @@ The endpoint blocks until both modeled movement phases have finished. The delay 
 The simulator exposes `GET /sm/sort?machine=sm_1&start=initial&predefined_ejection_location=sink_1`.
 
 The sorter uses a reusable one-way point-to-point transport model. It prefers `SM-I` as input, can pull an item forward from `MM-Eject` when `SM-I` is empty, and maps `sink_1`, `sink_2`, and `sink_3` to `SINK-S1`, `SINK-S2`, and `SINK-S3`.
+
+## Milling Machine
+
+The simulator exposes `GET /mm/move_from_to?machine=mm_1&start=initial&end=ejection`.
+
+The milling machine is modeled as a simple one-way transport using the same reusable transport module, with `initial -> MM-initial` and `ejection -> MM-ejection`.
