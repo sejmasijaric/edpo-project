@@ -78,4 +78,34 @@ class SorterControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Unknown predefined ejection location: UNKNOWN-SINK"));
   }
+
+  @Test
+  void turnsTheBeltOnWhenMotorSpeedIsPositive() throws Exception {
+    mockMvc.perform(get("/sm/set_motor_speed")
+            .param("machine", "sm_1")
+            .param("motor", "1")
+            .param("speed", "400"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[{"sink":null}],
+              "link":"http://localhost/sm/set_motor_speed"
+            }
+            """));
+  }
+
+  @Test
+  void turnsTheBeltOffWhenMotorSpeedIsZeroOrLower() throws Exception {
+    mockMvc.perform(get("/sm/set_motor_speed")
+            .param("machine", "sm_1")
+            .param("motor", "1")
+            .param("speed", "-1"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[{"sink":null}],
+              "link":"http://localhost/sm/set_motor_speed"
+            }
+            """));
+  }
 }

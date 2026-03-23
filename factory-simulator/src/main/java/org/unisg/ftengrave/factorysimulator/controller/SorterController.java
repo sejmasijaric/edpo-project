@@ -49,6 +49,23 @@ public class SorterController {
     OneWayTransportExecution execution =
         sorterService.transport(machine, start, item -> targetSink);
 
+    return createResponse(request, execution);
+  }
+
+  @GetMapping("/set_motor_speed")
+  public OneWayTransportResponse setMotorSpeed(
+      HttpServletRequest request,
+      @RequestParam String machine,
+      @RequestParam int motor,
+      @RequestParam int speed) {
+    OneWayTransportExecution execution = sorterService.setMotorSpeed(machine, motor, speed);
+
+    return createResponse(request, execution);
+  }
+
+  private OneWayTransportResponse createResponse(
+      HttpServletRequest request,
+      OneWayTransportExecution execution) {
     return new OneWayTransportResponse(
         List.of(new SorterAttribute(null)),
         formatTimestamp(execution.endTime()),

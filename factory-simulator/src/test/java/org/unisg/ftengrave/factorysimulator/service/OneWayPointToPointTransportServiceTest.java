@@ -94,6 +94,20 @@ class OneWayPointToPointTransportServiceTest {
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SM-Hold").item().id());
   }
 
+  @Test
+  void setMotorSpeedControlsTheBeltStatus() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    service.setMotorSpeed("sm_1", 1, 400);
+    assertTrue(service.getStatus().performingAction());
+    assertEquals("Belt on", service.getStatus().phase());
+
+    service.setMotorSpeed("sm_1", 1, 0);
+    assertTrue(!service.getStatus().performingAction());
+    assertEquals("Belt off", service.getStatus().phase());
+  }
+
   private OneWayPointToPointTransportService sorterService(
       FactorySimulatorService factorySimulatorService,
       Duration movementDelay) {

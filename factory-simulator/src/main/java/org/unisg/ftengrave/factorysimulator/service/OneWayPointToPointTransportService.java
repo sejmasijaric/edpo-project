@@ -77,12 +77,29 @@ public class OneWayPointToPointTransportService {
     return status.get();
   }
 
-  private void validate(String machine, String start) {
-    if (!this.machine.name().equals(machine)) {
-      throw new IllegalArgumentException("Unsupported one way transport machine: " + machine);
+  public OneWayTransportExecution setMotorSpeed(String machine, int motor, int speed) {
+    validateMachine(machine);
+
+    LocalDateTime startTime = LocalDateTime.now();
+    if (speed > 0) {
+      status.set(this.machine.status("Belt on"));
+    } else {
+      status.set(this.machine.idleStatus());
     }
+    LocalDateTime endTime = LocalDateTime.now();
+    return new OneWayTransportExecution(startTime, endTime, Duration.between(startTime, endTime));
+  }
+
+  private void validate(String machine, String start) {
+    validateMachine(machine);
     if (!this.machine.acceptedStart().equals(start)) {
       throw new IllegalArgumentException("Unknown start for machine " + machine + ": " + start);
+    }
+  }
+
+  private void validateMachine(String machine) {
+    if (!this.machine.name().equals(machine)) {
+      throw new IllegalArgumentException("Unsupported one way transport machine: " + machine);
     }
   }
 
