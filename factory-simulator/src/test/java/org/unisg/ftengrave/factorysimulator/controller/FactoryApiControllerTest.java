@@ -10,7 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.unisg.ftengrave.factorysimulator.service.FactorySimulationProperties;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 
 class FactoryApiControllerTest {
 
@@ -18,8 +20,12 @@ class FactoryApiControllerTest {
 
   @BeforeEach
   void setUp() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    FactorySimulationProperties properties = new FactorySimulationProperties();
     mockMvc = MockMvcBuilders.standaloneSetup(
-        new FactoryApiController(new FactorySimulatorService())).build();
+        new FactoryApiController(
+            factorySimulatorService,
+            new VacuumGripperService(factorySimulatorService, properties))).build();
   }
 
   @Test
@@ -27,6 +33,21 @@ class FactoryApiControllerTest {
     mockMvc.perform(get("/api/items"))
         .andExpect(status().isOk())
         .andExpect(content().json("[]"));
+  }
+
+  @Test
+  void returnsVacuumGripperStatus() throws Exception {
+    mockMvc.perform(get("/api/vgr/status"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "machine":"vgr_1",
+              "moving":false,
+              "phase":"Idle",
+              "x":560,
+              "y":320
+            }
+            """));
   }
 
   @Test

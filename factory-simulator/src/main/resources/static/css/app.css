@@ -78,6 +78,40 @@ body {
   box-shadow: 0 calc(12px * var(--sink-scale)) calc(24px * var(--sink-scale)) rgba(15, 23, 42, 0.12);
 }
 
+.machine-indicator {
+  position: absolute;
+  width: calc(150px * var(--sink-scale));
+  min-height: calc(92px * var(--sink-scale));
+  padding: calc(12px * var(--sink-scale));
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  border-radius: calc(14px * var(--sink-scale));
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 calc(12px * var(--sink-scale)) calc(24px * var(--sink-scale)) rgba(15, 23, 42, 0.12);
+}
+
+.machine-indicator header {
+  font-size: calc(0.9rem * var(--sink-scale));
+  font-weight: 800;
+  margin-bottom: calc(10px * var(--sink-scale));
+}
+
+.machine-phase {
+  margin: 0;
+  font-size: calc(0.9rem * var(--sink-scale));
+  color: var(--muted);
+}
+
+.machine-indicator.is-moving {
+  border-color: #0f766e;
+  background: rgba(204, 251, 241, 0.94);
+}
+
+.machine-indicator.is-moving .machine-phase {
+  color: #115e59;
+  font-weight: 700;
+}
+
 .sink header {
   font-size: calc(0.9rem * var(--sink-scale));
   font-weight: 800;

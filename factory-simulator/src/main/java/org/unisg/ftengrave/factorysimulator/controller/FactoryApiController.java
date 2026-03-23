@@ -4,7 +4,9 @@ import java.util.List;
 import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
 import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
+import org.unisg.ftengrave.factorysimulator.domain.VacuumGripperStatus;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,9 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class FactoryApiController {
 
   private final FactorySimulatorService factorySimulatorService;
+  private final VacuumGripperService vacuumGripperService;
 
-  public FactoryApiController(FactorySimulatorService factorySimulatorService) {
+  public FactoryApiController(
+      FactorySimulatorService factorySimulatorService,
+      VacuumGripperService vacuumGripperService) {
     this.factorySimulatorService = factorySimulatorService;
+    this.vacuumGripperService = vacuumGripperService;
   }
 
   @GetMapping("/sinks")
@@ -34,6 +40,11 @@ public class FactoryApiController {
   @GetMapping("/items")
   public List<ManagedItem> getItems() {
     return factorySimulatorService.getItems();
+  }
+
+  @GetMapping("/vgr/status")
+  public VacuumGripperStatus getVacuumGripperStatus() {
+    return vacuumGripperService.getStatus();
   }
 
   @PostMapping("/items")

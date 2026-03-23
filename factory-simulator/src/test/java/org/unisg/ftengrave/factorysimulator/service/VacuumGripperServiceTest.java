@@ -26,10 +26,13 @@ class VacuumGripperServiceTest {
     CompletableFuture<Void> execution = CompletableFuture.runAsync(
         () -> service.pickUpAndTransport("vgr_1", "sink_2", "oven"));
 
+    Thread.sleep(20);
+    assertTrue(service.getStatus().moving());
     Thread.sleep(100);
     factorySimulatorService.deleteItem("ITEM-1001");
     execution.get(1, TimeUnit.SECONDS);
 
+    assertEquals("Idle", service.getStatus().phase());
     assertNull(sink(factorySimulatorService, "VGR-Hold").item());
     assertNull(sink(factorySimulatorService, "VGR-oven").item());
   }

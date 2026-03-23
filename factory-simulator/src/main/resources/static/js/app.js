@@ -28,6 +28,13 @@ function renderSinkCard(sink) {
   `;
 }
 
+function renderMachineIndicator(status) {
+  return `
+    <header>${status.machine}</header>
+    <p class="machine-phase">${status.phase}</p>
+  `;
+}
+
 function renderItemCard(item, sinks, selectedSinkId) {
   const options = sinks
       .map((sink) => {
@@ -107,6 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
     sinkElements.forEach((sinkElement) => sinkElement.remove());
   }
 
+  function syncMachineIndicator(machineStatus) {
+    let machineElement = factoryCanvas.querySelector(`[data-machine-id="${machineStatus.machine}"]`);
+    if (!machineElement) {
+      machineElement = document.createElement('article');
+      machineElement.className = 'machine-indicator';
+      machineElement.dataset.machineId = machineStatus.machine;
+      factoryCanvas.appendChild(machineElement);
+    }
+
+    machineElement.style.left = `${machineStatus.x}px`;
+    machineElement.style.top = `${machineStatus.y}px`;
+    machineElement.innerHTML = renderMachineIndicator(machineStatus);
+    machineElement.classList.toggle('is-moving', machineStatus.moving);
+  }
+
   async function loadState({message, successMessage, silent = false} = {}) {
     if (loadStateInProgress) {
       return;
@@ -121,9 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const previousAddItemSinkValue = addItemSink.value;
       const selectedTargets = collectSelectedTargets();
 
-      const [itemsResponse, sinksResponse] = await Promise.all([
+      const [itemsResponse, sinksResponse, vgrStatusResponse] = await Promise.all([
         fetch('/api/items'),
-        fetch('/api/sinks')
+        fetch('/api/sinks'),
+        fetch('/api/vgr/status')
       ]);
 
       if (!itemsResponse.ok) {
@@ -132,9 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!sinksResponse.ok) {
         throw new Error(await parseError(sinksResponse));
       }
+      if (!vgrStatusResponse.ok) {
+        throw new Error(await parseError(vgrStatusResponse));
+      }
 
       const items = await itemsResponse.json();
       const sinks = await sinksResponse.json();
+      const vgrStatus = await vgrStatusResponse.json();
 
       addItemSink.innerHTML = sinks
           .map((sink) => {
@@ -157,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
           : items.map((item) => renderItemCard(item, sinks, selectedTargets.get(item.id))).join('');
 
       syncSinkPositions(sinks);
+      syncMachineIndicator(vgrStatus);
 
       if (!silent) {
         status.textContent = successMessage

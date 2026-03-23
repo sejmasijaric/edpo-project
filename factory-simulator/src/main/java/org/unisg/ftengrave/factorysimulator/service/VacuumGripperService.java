@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import org.unisg.ftengrave.factorysimulator.domain.VacuumGripperStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,10 +14,13 @@ public class VacuumGripperService {
 
   private static final String VGR_1 = "vgr_1";
   private static final String HOLD_SINK = "VGR-Hold";
+  private static final VacuumGripperStatus IDLE_STATUS =
+      new VacuumGripperStatus(VGR_1, false, "Idle", 530, 360);
 
   private final FactorySimulatorService factorySimulatorService;
   private final Duration movementDelay;
   private final Map<String, VacuumGripperMachine> machines;
+  private final AtomicReference<VacuumGripperStatus> status = new AtomicReference<>(IDLE_STATUS);
 
   public VacuumGripperService(
       FactorySimulatorService factorySimulatorService,
@@ -46,14 +51,24 @@ public class VacuumGripperService {
     String mappedEnd = selectedMachine.mapSink(end);
     LocalDateTime startTime = LocalDateTime.now();
 
-    waitBetweenMovements();
-    factorySimulatorService.moveItemBetweenSinks(mappedStart, selectedMachine.holdSink(), true);
+    try {
+      status.set(selectedMachine.status("Moving to pickup"));
+      waitBetweenMovements();
+      factorySimulatorService.moveItemBetweenSinks(mappedStart, selectedMachine.holdSink(), true);
 
-    waitBetweenMovements();
-    factorySimulatorService.moveItemBetweenSinks(selectedMachine.holdSink(), mappedEnd, true);
+      status.set(selectedMachine.status("Moving to drop-off"));
+      waitBetweenMovements();
+      factorySimulatorService.moveItemBetweenSinks(selectedMachine.holdSink(), mappedEnd, true);
+    } finally {
+      status.set(selectedMachine.idleStatus());
+    }
 
     LocalDateTime endTime = LocalDateTime.now();
     return new VacuumGripperExecution(startTime, endTime, Duration.between(startTime, endTime));
+  }
+
+  public VacuumGripperStatus getStatus() {
+    return status.get();
   }
 
   private void waitBetweenMovements() {
@@ -85,6 +100,14 @@ public class VacuumGripperService {
             "Unknown sink for machine " + name + ": " + requestSink);
       }
       return factorySink;
+    }
+
+    private VacuumGripperStatus status(String phase) {
+      return new VacuumGripperStatus(name, true, phase, 530, 360);
+    }
+
+    private VacuumGripperStatus idleStatus() {
+      return new VacuumGripperStatus(name, false, "Idle", 530, 360);
     }
   }
 
