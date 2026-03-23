@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import org.camunda.bpm.demo.factorysimulator.model.Item;
 import org.camunda.bpm.demo.factorysimulator.model.ItemColor;
+import org.camunda.bpm.demo.factorysimulator.model.ManagedItem;
 import org.camunda.bpm.demo.factorysimulator.model.Sink;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,20 @@ public class FactorySimulatorService {
         .toList();
   }
 
+  public synchronized List<ManagedItem> getItems() {
+    return sinks.values().stream()
+        .filter(sink -> sink.item() != null)
+        .map(sink -> new ManagedItem(sink.item().id(), sink.item().color(), sink.id()))
+        .sorted(Comparator.comparing(ManagedItem::id))
+        .toList();
+  }
+
   public synchronized void moveItem(String itemId, String targetSinkId) {
+    String currentSinkId = findSinkContainingItem(itemId);
+    if (currentSinkId.equals(targetSinkId)) {
+      return;
+    }
+
     Sink targetSink = sinks.get(targetSinkId);
     if (targetSink == null) {
       throw new NoSuchElementException("Unknown target sink: " + targetSinkId);
@@ -34,12 +48,17 @@ public class FactorySimulatorService {
       throw new IllegalStateException("Target sink already contains an item");
     }
 
-    String currentSinkId = findSinkContainingItem(itemId);
     Sink sourceSink = sinks.get(currentSinkId);
     Item item = sourceSink.item();
 
     sinks.put(currentSinkId, sourceSink.withItem(null));
     sinks.put(targetSinkId, targetSink.withItem(item));
+  }
+
+  public synchronized void deleteItem(String itemId) {
+    String currentSinkId = findSinkContainingItem(itemId);
+    Sink sourceSink = sinks.get(currentSinkId);
+    sinks.put(currentSinkId, sourceSink.withItem(null));
   }
 
   private String findSinkContainingItem(String itemId) {

@@ -1,8 +1,10 @@
 package org.camunda.bpm.demo.factorysimulator.controller;
 
 import java.util.List;
+import org.camunda.bpm.demo.factorysimulator.model.ManagedItem;
 import org.camunda.bpm.demo.factorysimulator.model.Sink;
 import org.camunda.bpm.demo.factorysimulator.service.FactorySimulatorService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,10 +30,21 @@ public class FactoryApiController {
     return factorySimulatorService.getSinks();
   }
 
+  @GetMapping("/items")
+  public List<ManagedItem> getItems() {
+    return factorySimulatorService.getItems();
+  }
+
   @PostMapping("/items/{itemId}/move")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void moveItem(@PathVariable String itemId, @RequestParam String targetSinkId) {
     factorySimulatorService.moveItem(itemId, targetSinkId);
+  }
+
+  @DeleteMapping("/items/{itemId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteItem(@PathVariable String itemId) {
+    factorySimulatorService.deleteItem(itemId);
   }
 
   @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})

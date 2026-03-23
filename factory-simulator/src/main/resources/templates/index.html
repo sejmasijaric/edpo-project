@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Factory Simulator</title>
   <link rel="stylesheet" th:href="@{/css/app.css}">
+  <script defer th:src="@{/js/app.js}"></script>
 </head>
 <body>
 <main class="layout">
@@ -20,8 +21,10 @@
       <article
           class="sink"
           th:each="sink : ${sinks}"
+          th:attr="data-sink-id=${sink.id()}"
           th:style="'left:' + ${sink.x()} + 'px;top:' + ${sink.y()} + 'px;'">
         <header th:text="${sink.id()}">SINK-A1</header>
+        <div class="item-container">
         <div class="item" th:if="${sink.item() != null}">
           <span class="item-id" th:text="${sink.item().id()}">ITEM-1001</span>
           <span class="item-color">
@@ -32,13 +35,16 @@
         <div class="item item-empty" th:if="${sink.item() == null}">
           Empty
         </div>
+        </div>
       </article>
     </div>
   </section>
 
   <aside class="controls-panel">
-    <h2>Controls</h2>
-    <p>Placeholder for machine and user controls.</p>
+    <h2>Item Management</h2>
+    <p>Review each item, delete it, or move it directly to another sink.</p>
+    <div class="controls-status" id="controls-status">Loading current simulator state…</div>
+    <div class="item-list" id="item-list" aria-live="polite"></div>
   </aside>
 </main>
 </body>

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.NoSuchElementException;
+import org.camunda.bpm.demo.factorysimulator.model.ManagedItem;
 import org.camunda.bpm.demo.factorysimulator.model.Sink;
 import org.junit.jupiter.api.Test;
 
@@ -42,5 +43,30 @@ class FactorySimulatorServiceTest {
   @Test
   void rejectsUnknownItems() {
     assertThrows(NoSuchElementException.class, () -> service.moveItem("ITEM-404", "SINK-B1"));
+  }
+
+  @Test
+  void listsItemsWithTheirCurrentSink() {
+    assertEquals(
+        java.util.List.of(
+            new ManagedItem("ITEM-1001", org.camunda.bpm.demo.factorysimulator.model.ItemColor.Red, "SINK-A1"),
+            new ManagedItem("ITEM-1002", org.camunda.bpm.demo.factorysimulator.model.ItemColor.Red, "SINK-A2"),
+            new ManagedItem("ITEM-1003", org.camunda.bpm.demo.factorysimulator.model.ItemColor.White, "SINK-B2")),
+        service.getItems());
+  }
+
+  @Test
+  void deletesAnExistingItem() {
+    service.deleteItem("ITEM-1002");
+
+    Sink sourceSink = service.getSinks().stream()
+        .filter(sink -> sink.id().equals("SINK-A2"))
+        .findFirst()
+        .orElseThrow();
+
+    assertNull(sourceSink.item());
+    assertEquals(
+        java.util.List.of("ITEM-1001", "ITEM-1003"),
+        service.getItems().stream().map(ManagedItem::id).toList());
   }
 }
