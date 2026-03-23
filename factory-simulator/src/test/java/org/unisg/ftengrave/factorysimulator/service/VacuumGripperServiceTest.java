@@ -21,7 +21,20 @@ class VacuumGripperServiceTest {
     FactorySimulationProperties properties = new FactorySimulationProperties();
     properties.setMovementDelay(Duration.ofMillis(80));
 
-    VacuumGripperService service = new VacuumGripperService(factorySimulatorService, properties);
+    VacuumGripperService service = new VacuumGripperService(
+        factorySimulatorService,
+        properties,
+        "vgr_1",
+        "VGR-Hold",
+        530,
+        360,
+        java.util.Map.of(
+            "oven", "VGR-oven",
+            "start", "SINK-I1",
+            "end", "SINK-I2",
+            "sink_1", "SINK-S1",
+            "sink_2", "SINK-S2",
+            "sink_3", "SINK-S3"));
 
     CompletableFuture<Void> execution = CompletableFuture.runAsync(
         () -> service.pickUpAndTransport("vgr_1", "sink_2", "oven"));
@@ -45,7 +58,20 @@ class VacuumGripperServiceTest {
     FactorySimulationProperties properties = new FactorySimulationProperties();
     properties.setMovementDelay(Duration.ZERO);
 
-    VacuumGripperService service = new VacuumGripperService(factorySimulatorService, properties);
+    VacuumGripperService service = new VacuumGripperService(
+        factorySimulatorService,
+        properties,
+        "vgr_1",
+        "VGR-Hold",
+        530,
+        360,
+        java.util.Map.of(
+            "oven", "VGR-oven",
+            "start", "SINK-I1",
+            "end", "SINK-I2",
+            "sink_1", "SINK-S1",
+            "sink_2", "SINK-S2",
+            "sink_3", "SINK-S3"));
 
     VacuumGripperService.VacuumGripperExecution response =
         service.pickUpAndTransport("vgr_1", "start", "end");
@@ -53,6 +79,33 @@ class VacuumGripperServiceTest {
     assertTrue(!response.processTime().isNegative());
     assertNull(sink(factorySimulatorService, "VGR-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-I2").item().id());
+  }
+
+  @Test
+  void supportsTheWorkstationTransportMapping() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-2001", ItemColor.Blue, "MM-initial");
+
+    FactorySimulationProperties properties = new FactorySimulationProperties();
+    properties.setMovementDelay(Duration.ZERO);
+
+    VacuumGripperService service = new VacuumGripperService(
+        factorySimulatorService,
+        properties,
+        "wt_1",
+        "WT-Hold",
+        620,
+        120,
+        java.util.Map.of(
+            "oven", "VGR-oven",
+            "milling_machine", "MM-initial"));
+
+    VacuumGripperService.VacuumGripperExecution response =
+        service.pickUpAndTransport("wt_1", "milling_machine", "oven");
+
+    assertTrue(!response.processTime().isNegative());
+    assertNull(sink(factorySimulatorService, "WT-Hold").item());
+    assertEquals("ITEM-2001", sink(factorySimulatorService, "VGR-oven").item().id());
   }
 
   private Sink sink(FactorySimulatorService service, String sinkId) {

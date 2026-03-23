@@ -20,17 +20,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/vgr")
-public class VacuumGripperController {
+@RequestMapping("/wt")
+public class WorkstationTransportController {
 
   private static final DateTimeFormatter FACTORY_TIMESTAMP_FORMAT =
       DateTimeFormatter.ofPattern("dd-MMM-uuuu (HH:mm:ss.SSSSSS)", Locale.ENGLISH);
 
-  private final VacuumGripperService vacuumGripperService;
+  private final VacuumGripperService wtService;
 
-  public VacuumGripperController(
-      @Qualifier("vgrService") VacuumGripperService vacuumGripperService) {
-    this.vacuumGripperService = vacuumGripperService;
+  public WorkstationTransportController(@Qualifier("wtService") VacuumGripperService wtService) {
+    this.wtService = wtService;
   }
 
   @GetMapping("/pick_up_and_transport")
@@ -39,7 +38,7 @@ public class VacuumGripperController {
       @RequestParam String machine,
       @RequestParam String start,
       @RequestParam String end) {
-    VacuumGripperExecution execution = vacuumGripperService.pickUpAndTransport(machine, start, end);
+    VacuumGripperExecution execution = wtService.pickUpAndTransport(machine, start, end);
     return new VacuumGripperResponse(
         List.of(),
         formatTimestamp(execution.endTime()),

@@ -2,66 +2,55 @@ package org.unisg.ftengrave.factorysimulator.service;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
-import org.springframework.stereotype.Service;
-
-@Service
 public class VacuumGripperService {
-
-  private static final String VGR_1 = "vgr_1";
-  private static final String HOLD_SINK = "VGR-Hold";
 
   private final FactorySimulatorService factorySimulatorService;
   private final Duration movementDelay;
-  private final Map<String, VacuumGripperMachine> machines;
+  private final VacuumGripperMachine machine;
   private final AtomicReference<MachineStatus> status;
 
   public VacuumGripperService(
       FactorySimulatorService factorySimulatorService,
-      FactorySimulationProperties properties) {
+      FactorySimulationProperties properties,
+      String machineName,
+      String holdSink,
+      int statusCardX,
+      int statusCardY,
+      Map<String, String> requestToFactorySinkMapping) {
     this.factorySimulatorService = factorySimulatorService;
     this.movementDelay = properties.getMovementDelay();
-    this.machines = Map.of(
-        VGR_1,
-        new VacuumGripperMachine(
-            VGR_1,
-            HOLD_SINK,
-            530,
-            360,
-            createSinkMapping(
-                "oven", "VGR-oven",
-                "start", "SINK-I1",
-                "end", "SINK-I2",
-                "sink_1", "SINK-S1",
-                "sink_2", "SINK-S2",
-                "sink_3", "SINK-S3")));
-    this.status = new AtomicReference<>(this.machines.get(VGR_1).idleStatus());
+    this.machine = new VacuumGripperMachine(
+        machineName,
+        holdSink,
+        statusCardX,
+        statusCardY,
+        Map.copyOf(requestToFactorySinkMapping));
+    this.status = new AtomicReference<>(this.machine.idleStatus());
   }
 
   public VacuumGripperExecution pickUpAndTransport(String machine, String start, String end) {
-    VacuumGripperMachine selectedMachine = machines.get(machine);
-    if (selectedMachine == null) {
+    if (!this.machine.name().equals(machine)) {
       throw new IllegalArgumentException("Unsupported vacuum gripper machine: " + machine);
     }
 
-    String mappedStart = selectedMachine.mapSink(start);
-    String mappedEnd = selectedMachine.mapSink(end);
+    String mappedStart = this.machine.mapSink(start);
+    String mappedEnd = this.machine.mapSink(end);
     LocalDateTime startTime = LocalDateTime.now();
 
     try {
-      status.set(selectedMachine.status("Moving to pickup"));
+      status.set(this.machine.status("Moving to pickup"));
       waitBetweenMovements();
-      factorySimulatorService.moveItemBetweenSinks(mappedStart, selectedMachine.holdSink(), true);
+      factorySimulatorService.moveItemBetweenSinks(mappedStart, this.machine.holdSink(), true);
 
-      status.set(selectedMachine.status("Moving to drop-off"));
+      status.set(this.machine.status("Moving to drop-off"));
       waitBetweenMovements();
-      factorySimulatorService.moveItemBetweenSinks(selectedMachine.holdSink(), mappedEnd, true);
+      factorySimulatorService.moveItemBetweenSinks(this.machine.holdSink(), mappedEnd, true);
     } finally {
-      status.set(selectedMachine.idleStatus());
+      status.set(this.machine.idleStatus());
     }
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -79,14 +68,6 @@ public class VacuumGripperService {
       Thread.currentThread().interrupt();
       throw new IllegalStateException("Vacuum gripper motion was interrupted", exception);
     }
-  }
-
-  private static Map<String, String> createSinkMapping(String... entries) {
-    Map<String, String> mapping = new LinkedHashMap<>();
-    for (int index = 0; index < entries.length; index += 2) {
-      mapping.put(entries[index], entries[index + 1]);
-    }
-    return Map.copyOf(mapping);
   }
 
   private record VacuumGripperMachine(

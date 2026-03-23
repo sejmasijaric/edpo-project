@@ -18,8 +18,9 @@ mvn spring-boot:run
 
 The UI is available on `http://localhost:8081`.
 
-## Vacuum Gripper
+## Vacuum Grippers
 
 The simulator exposes `GET /vgr/pick_up_and_transport?machine=vgr_1&start=sink_2&end=oven`.
+The simulator also exposes `GET /wt/pick_up_and_transport?machine=wt_1&start=milling_machine&end=oven`.
 
 The endpoint blocks until both modeled movement phases have finished. The delay between phases is configured via `factory.simulation.movement-delay`.

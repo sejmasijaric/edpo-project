@@ -22,10 +22,35 @@ class FactoryApiControllerTest {
   void setUp() {
     FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
     FactorySimulationProperties properties = new FactorySimulationProperties();
+    VacuumGripperService vgrService = new VacuumGripperService(
+        factorySimulatorService,
+        properties,
+        "vgr_1",
+        "VGR-Hold",
+        530,
+        360,
+        java.util.Map.of(
+            "oven", "VGR-oven",
+            "start", "SINK-I1",
+            "end", "SINK-I2",
+            "sink_1", "SINK-S1",
+            "sink_2", "SINK-S2",
+            "sink_3", "SINK-S3"));
+    VacuumGripperService wtService = new VacuumGripperService(
+        factorySimulatorService,
+        properties,
+        "wt_1",
+        "WT-Hold",
+        620,
+        120,
+        java.util.Map.of(
+            "oven", "VGR-oven",
+            "milling_machine", "MM-initial"));
     mockMvc = MockMvcBuilders.standaloneSetup(
         new FactoryApiController(
             factorySimulatorService,
-            new VacuumGripperService(factorySimulatorService, properties))).build();
+            vgrService,
+            wtService)).build();
   }
 
   @Test
@@ -46,6 +71,21 @@ class FactoryApiControllerTest {
               "phase":"Idle",
               "x":530,
               "y":360
+            }
+            """));
+  }
+
+  @Test
+  void returnsWorkstationTransportStatus() throws Exception {
+    mockMvc.perform(get("/api/wt/status"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "machine":"wt_1",
+              "performingAction":false,
+              "phase":"Idle",
+              "x":620,
+              "y":120
             }
             """));
   }

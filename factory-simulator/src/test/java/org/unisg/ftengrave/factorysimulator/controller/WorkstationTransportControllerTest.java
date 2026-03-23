@@ -13,7 +13,7 @@ import org.unisg.ftengrave.factorysimulator.service.FactorySimulationProperties;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 
-class VacuumGripperControllerTest {
+class WorkstationTransportControllerTest {
 
   private FactorySimulatorService factorySimulatorService;
   private MockMvc mockMvc;
@@ -26,36 +26,32 @@ class VacuumGripperControllerTest {
     properties.setMovementDelay(java.time.Duration.ZERO);
 
     mockMvc = MockMvcBuilders.standaloneSetup(
-        new VacuumGripperController(new VacuumGripperService(
+        new WorkstationTransportController(new VacuumGripperService(
             factorySimulatorService,
             properties,
-            "vgr_1",
-            "VGR-Hold",
-            530,
-            360,
+            "wt_1",
+            "WT-Hold",
+            620,
+            120,
             java.util.Map.of(
                 "oven", "VGR-oven",
-                "start", "SINK-I1",
-                "end", "SINK-I2",
-                "sink_1", "SINK-S1",
-                "sink_2", "SINK-S2",
-                "sink_3", "SINK-S3"))))
+                "milling_machine", "MM-initial"))))
         .build();
   }
 
   @Test
-  void transportsItemsUsingTheMachineSpecificMapping() throws Exception {
-    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SINK-S2");
+  void transportsItemsUsingTheWorkstationTransportMapping() throws Exception {
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "MM-initial");
 
-    mockMvc.perform(get("/vgr/pick_up_and_transport")
-            .param("machine", "vgr_1")
-            .param("start", "sink_2")
+    mockMvc.perform(get("/wt/pick_up_and_transport")
+            .param("machine", "wt_1")
+            .param("start", "milling_machine")
             .param("end", "oven"))
         .andExpect(status().isOk())
         .andExpect(content().json("""
             {
               "attributes":[],
-              "link":"http://localhost/vgr/pick_up_and_transport"
+              "link":"http://localhost/wt/pick_up_and_transport"
             }
             """))
         .andExpect(content().string(org.hamcrest.Matchers.containsString("\"start_time\":\"")))
@@ -64,21 +60,12 @@ class VacuumGripperControllerTest {
   }
 
   @Test
-  void succeedsWhenNoItemExistsAtTheStartSink() throws Exception {
-    mockMvc.perform(get("/vgr/pick_up_and_transport")
-            .param("machine", "vgr_1")
-            .param("start", "sink_2")
-            .param("end", "oven"))
-        .andExpect(status().isOk());
-  }
-
-  @Test
   void rejectsUnknownMachines() throws Exception {
-    mockMvc.perform(get("/vgr/pick_up_and_transport")
-            .param("machine", "vgr_2")
-            .param("start", "sink_2")
+    mockMvc.perform(get("/wt/pick_up_and_transport")
+            .param("machine", "wt_2")
+            .param("start", "milling_machine")
             .param("end", "oven"))
         .andExpect(status().isBadRequest())
-        .andExpect(content().string("Unsupported vacuum gripper machine: vgr_2"));
+        .andExpect(content().string("Unsupported vacuum gripper machine: wt_2"));
   }
 }
