@@ -76,6 +76,15 @@ public class VacuumGripperConfiguration {
         0);
   }
 
+  @Bean("ovenService")
+  public OvenService ovenService(FactorySimulationProperties properties) {
+    return new OvenService(
+        properties,
+        "ov_1",
+        500,
+        100);
+  }
+
   private static Map<String, String> createSinkMapping(String... entries) {
     Map<String, String> mapping = new LinkedHashMap<>();
     for (int index = 0; index < entries.length; index += 2) {

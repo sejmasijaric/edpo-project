@@ -7,6 +7,7 @@ import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.unisg.ftengrave.factorysimulator.service.OneWayPointToPointTransportService;
+import org.unisg.ftengrave.factorysimulator.service.OvenService;
 import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,16 +29,19 @@ public class FactoryApiController {
   private final VacuumGripperService vgrService;
   private final VacuumGripperService wtService;
   private final OneWayPointToPointTransportService sorterService;
+  private final OvenService ovenService;
 
   public FactoryApiController(
       FactorySimulatorService factorySimulatorService,
       @Qualifier("vgrService") VacuumGripperService vgrService,
       @Qualifier("wtService") VacuumGripperService wtService,
-      @Qualifier("sorterService") OneWayPointToPointTransportService sorterService) {
+      @Qualifier("sorterService") OneWayPointToPointTransportService sorterService,
+      @Qualifier("ovenService") OvenService ovenService) {
     this.factorySimulatorService = factorySimulatorService;
     this.vgrService = vgrService;
     this.wtService = wtService;
     this.sorterService = sorterService;
+    this.ovenService = ovenService;
   }
 
   @GetMapping("/sinks")
@@ -63,6 +67,11 @@ public class FactoryApiController {
   @GetMapping("/sm/status")
   public MachineStatus getSorterStatus() {
     return sorterService.getStatus();
+  }
+
+  @GetMapping("/ov/status")
+  public MachineStatus getOvenStatus() {
+    return ovenService.getStatus();
   }
 
   @PostMapping("/items")

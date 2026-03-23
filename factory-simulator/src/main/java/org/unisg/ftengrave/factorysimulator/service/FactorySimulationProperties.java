@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class FactorySimulationProperties {
 
   private Duration movementDelay = Duration.ofSeconds(4);
+  private Duration ovenBurnDuration = Duration.ofSeconds(5);
 
   public Duration getMovementDelay() {
     return movementDelay;
@@ -16,5 +17,13 @@ public class FactorySimulationProperties {
 
   public void setMovementDelay(Duration movementDelay) {
     this.movementDelay = movementDelay;
+  }
+
+  public Duration getOvenBurnDuration() {
+    return ovenBurnDuration;
+  }
+
+  public void setOvenBurnDuration(Duration ovenBurnDuration) {
+    this.ovenBurnDuration = ovenBurnDuration;
   }
 }

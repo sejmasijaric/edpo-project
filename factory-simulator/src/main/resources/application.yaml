@@ -8,3 +8,4 @@ spring:
 factory:
   simulation:
     movement-delay: 4s
+    oven-burn-duration: 5s

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulationProperties;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.unisg.ftengrave.factorysimulator.service.OneWayPointToPointTransportService;
+import org.unisg.ftengrave.factorysimulator.service.OvenService;
 import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 
 class FactoryApiControllerTest {
@@ -57,12 +58,18 @@ class FactoryApiControllerTest {
         "SM-Hold",
         880,
         410);
+    OvenService ovenService = new OvenService(
+        properties,
+        "ov_1",
+        500,
+        100);
     mockMvc = MockMvcBuilders.standaloneSetup(
         new FactoryApiController(
             factorySimulatorService,
             vgrService,
             wtService,
-            sorterService)).build();
+            sorterService,
+            ovenService)).build();
   }
 
   @Test
@@ -113,6 +120,21 @@ class FactoryApiControllerTest {
               "phase":"Belt off",
               "x":880,
               "y":410
+            }
+            """));
+  }
+
+  @Test
+  void returnsOvenStatus() throws Exception {
+    mockMvc.perform(get("/api/ov/status"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "machine":"ov_1",
+              "performingAction":false,
+              "phase":"Idle",
+              "x":500,
+              "y":100
             }
             """));
   }

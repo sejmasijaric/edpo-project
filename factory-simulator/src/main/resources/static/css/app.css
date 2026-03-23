@@ -71,6 +71,7 @@ body {
 
 .sink {
   position: absolute;
+  z-index: 1;
   width: calc(150px * var(--sink-scale));
   min-height: calc(92px * var(--sink-scale));
   padding: calc(12px * var(--sink-scale));
@@ -83,6 +84,7 @@ body {
 
 .machine-indicator {
   position: absolute;
+  z-index: 2;
   width: calc(150px * var(--sink-scale));
   min-height: calc(92px * var(--sink-scale));
   padding: calc(12px * var(--sink-scale));
