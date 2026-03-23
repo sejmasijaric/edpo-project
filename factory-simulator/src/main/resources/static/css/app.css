@@ -8,6 +8,9 @@
   --line: #cbd5e1;
   --sink-background: rgba(255, 255, 255, 0.9);
   --control-background: #d1d5db;
+  --machine-inactive-background: rgba(255, 183, 183, 0.96);
+  --machine-inactive-border: #dc2626;
+  --machine-inactive-text: #991b1b;
   --sink-scale: 0.7;
 }
 
@@ -83,11 +86,12 @@ body {
   width: calc(150px * var(--sink-scale));
   min-height: calc(92px * var(--sink-scale));
   padding: calc(12px * var(--sink-scale));
-  border: 1px solid rgba(15, 23, 42, 0.18);
+  border: 1px solid var(--machine-inactive-border);
   border-radius: calc(14px * var(--sink-scale));
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--machine-inactive-background);
   backdrop-filter: blur(4px);
   box-shadow: 0 calc(12px * var(--sink-scale)) calc(24px * var(--sink-scale)) rgba(15, 23, 42, 0.12);
+  color: var(--machine-inactive-text);
 }
 
 .machine-indicator:not([data-positioned="true"]) {
@@ -103,12 +107,13 @@ body {
 .machine-phase {
   margin: 0;
   font-size: calc(0.9rem * var(--sink-scale));
-  color: var(--muted);
+  color: var(--machine-inactive-text);
 }
 
 .machine-indicator.is-moving {
   border-color: #0f766e;
   background: rgba(204, 251, 241, 0.94);
+  color: #115e59;
 }
 
 .machine-indicator.is-moving .machine-phase {
