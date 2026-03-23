@@ -42,10 +42,10 @@ class FactoryApiControllerTest {
         .andExpect(content().json("""
             {
               "machine":"vgr_1",
-              "moving":false,
+              "performingAction":false,
               "phase":"Idle",
-              "x":560,
-              "y":320
+              "x":530,
+              "y":360
             }
             """));
   }

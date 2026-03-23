@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import org.unisg.ftengrave.factorysimulator.domain.VacuumGripperStatus;
+import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,13 +14,11 @@ public class VacuumGripperService {
 
   private static final String VGR_1 = "vgr_1";
   private static final String HOLD_SINK = "VGR-Hold";
-  private static final VacuumGripperStatus IDLE_STATUS =
-      new VacuumGripperStatus(VGR_1, false, "Idle", 530, 360);
 
   private final FactorySimulatorService factorySimulatorService;
   private final Duration movementDelay;
   private final Map<String, VacuumGripperMachine> machines;
-  private final AtomicReference<VacuumGripperStatus> status = new AtomicReference<>(IDLE_STATUS);
+  private final AtomicReference<MachineStatus> status;
 
   public VacuumGripperService(
       FactorySimulatorService factorySimulatorService,
@@ -32,6 +30,8 @@ public class VacuumGripperService {
         new VacuumGripperMachine(
             VGR_1,
             HOLD_SINK,
+            530,
+            360,
             createSinkMapping(
                 "oven", "VGR-oven",
                 "start", "SINK-I1",
@@ -39,6 +39,7 @@ public class VacuumGripperService {
                 "sink_1", "SINK-S1",
                 "sink_2", "SINK-S2",
                 "sink_3", "SINK-S3")));
+    this.status = new AtomicReference<>(this.machines.get(VGR_1).idleStatus());
   }
 
   public VacuumGripperExecution pickUpAndTransport(String machine, String start, String end) {
@@ -67,7 +68,7 @@ public class VacuumGripperService {
     return new VacuumGripperExecution(startTime, endTime, Duration.between(startTime, endTime));
   }
 
-  public VacuumGripperStatus getStatus() {
+  public MachineStatus getStatus() {
     return status.get();
   }
 
@@ -91,6 +92,8 @@ public class VacuumGripperService {
   private record VacuumGripperMachine(
       String name,
       String holdSink,
+      int statusCardX,
+      int statusCardY,
       Map<String, String> requestToFactorySinkMapping) {
 
     private String mapSink(String requestSink) {
@@ -102,12 +105,12 @@ public class VacuumGripperService {
       return factorySink;
     }
 
-    private VacuumGripperStatus status(String phase) {
-      return new VacuumGripperStatus(name, true, phase, 530, 360);
+    private MachineStatus status(String phase) {
+      return new MachineStatus(name, true, phase, statusCardX, statusCardY);
     }
 
-    private VacuumGripperStatus idleStatus() {
-      return new VacuumGripperStatus(name, false, "Idle", 530, 360);
+    private MachineStatus idleStatus() {
+      return new MachineStatus(name, false, "Idle", statusCardX, statusCardY);
     }
   }
 

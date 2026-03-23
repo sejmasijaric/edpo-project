@@ -125,8 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     machineElement.style.left = `${machineStatus.x}px`;
     machineElement.style.top = `${machineStatus.y}px`;
+    machineElement.dataset.positioned = 'true';
     machineElement.innerHTML = renderMachineIndicator(machineStatus);
-    machineElement.classList.toggle('is-moving', machineStatus.moving);
+    machineElement.classList.toggle('is-moving', machineStatus.performingAction);
   }
 
   async function loadState({message, successMessage, silent = false} = {}) {

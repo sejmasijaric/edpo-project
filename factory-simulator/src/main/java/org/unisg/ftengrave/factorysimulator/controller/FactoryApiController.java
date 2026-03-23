@@ -2,9 +2,9 @@ package org.unisg.ftengrave.factorysimulator.controller;
 
 import java.util.List;
 import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
+import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
 import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
-import org.unisg.ftengrave.factorysimulator.domain.VacuumGripperStatus;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,7 +43,7 @@ public class FactoryApiController {
   }
 
   @GetMapping("/vgr/status")
-  public VacuumGripperStatus getVacuumGripperStatus() {
+  public MachineStatus getVacuumGripperStatus() {
     return vacuumGripperService.getStatus();
   }
 

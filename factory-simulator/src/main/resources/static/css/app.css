@@ -90,6 +90,10 @@ body {
   box-shadow: 0 calc(12px * var(--sink-scale)) calc(24px * var(--sink-scale)) rgba(15, 23, 42, 0.12);
 }
 
+.machine-indicator:not([data-positioned="true"]) {
+  visibility: hidden;
+}
+
 .machine-indicator header {
   font-size: calc(0.9rem * var(--sink-scale));
   font-weight: 800;

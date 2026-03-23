@@ -27,7 +27,7 @@ class VacuumGripperServiceTest {
         () -> service.pickUpAndTransport("vgr_1", "sink_2", "oven"));
 
     Thread.sleep(20);
-    assertTrue(service.getStatus().moving());
+    assertTrue(service.getStatus().performingAction());
     Thread.sleep(100);
     factorySimulatorService.deleteItem("ITEM-1001");
     execution.get(1, TimeUnit.SECONDS);
