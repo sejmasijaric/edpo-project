@@ -93,11 +93,22 @@ public class FactorySimulatorService {
   }
 
   private void initializeSinks() {
-    sinks.put("SINK-A1", new Sink("SINK-A1", 120, 110, new Item("ITEM-1001", ItemColor.Red)));
-    sinks.put("SINK-A2", new Sink("SINK-A2", 330, 110, new Item("ITEM-1002", ItemColor.Red)));
-    sinks.put("SINK-B1", new Sink("SINK-B1", 180, 300, null));
-    sinks.put("SINK-B2", new Sink("SINK-B2", 470, 250, new Item("ITEM-1003", ItemColor.White)));
-    sinks.put("SINK-C1", new Sink("SINK-C1", 620, 420, null));
-    sinks.put("SINK-C2", new Sink("SINK-C2", 800, 180, null));
+    sinks.put("SINK-I1", new Sink("SINK-I1", 530, 550, null));
+    sinks.put("SINK-I2", new Sink("SINK-I2", 670, 550, null));
+
+    sinks.put("VGR-Hold", new Sink("VGR-Hold", 530, 420, null));
+
+    sinks.put("VGR-oven", new Sink("VGR-oven", 500, 180, null));
+
+    sinks.put("WT-Hold", new Sink("WT-Hold", 620, 180, null));
+
+    sinks.put("MM-initial", new Sink("MM-Init", 740, 180, null));
+    sinks.put("MM-ejection", new Sink("MM-Eject", 860, 120, null));
+
+    sinks.put("SM-I", new Sink("SM-I", 850, 330, null));
+
+    sinks.put("SINK-S1", new Sink("SINK-S1", 780, 400, null));
+    sinks.put("SINK-S2", new Sink("SINK-S2", 780, 470, null));
+    sinks.put("SINK-S3", new Sink("SINK-S3", 780, 540, null));
   }
 }

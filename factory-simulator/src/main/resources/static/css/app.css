@@ -8,6 +8,7 @@
   --line: #cbd5e1;
   --sink-background: rgba(255, 255, 255, 0.9);
   --control-background: #d1d5db;
+  --sink-scale: 0.7;
 }
 
 * {
@@ -67,30 +68,30 @@ body {
 
 .sink {
   position: absolute;
-  width: 150px;
-  min-height: 92px;
-  padding: 12px;
+  width: calc(150px * var(--sink-scale));
+  min-height: calc(92px * var(--sink-scale));
+  padding: calc(12px * var(--sink-scale));
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: calc(14px * var(--sink-scale));
   background: var(--sink-background);
   backdrop-filter: blur(4px);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 calc(12px * var(--sink-scale)) calc(24px * var(--sink-scale)) rgba(15, 23, 42, 0.12);
 }
 
 .sink header {
-  font-size: 0.9rem;
+  font-size: calc(0.9rem * var(--sink-scale));
   font-weight: 800;
-  margin-bottom: 10px;
+  margin-bottom: calc(10px * var(--sink-scale));
 }
 
 .item {
   display: grid;
-  gap: 8px;
-  font-size: 0.9rem;
+  gap: calc(8px * var(--sink-scale));
+  font-size: calc(0.9rem * var(--sink-scale));
 }
 
 .item-container {
-  min-height: 48px;
+  min-height: calc(48px * var(--sink-scale));
 }
 
 .item-id {
@@ -100,12 +101,12 @@ body {
 .item-color {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--sink-scale));
 }
 
 .color-chip {
-  width: 18px;
-  height: 18px;
+  width: calc(18px * var(--sink-scale));
+  height: calc(18px * var(--sink-scale));
   border-radius: 999px;
   border: 1px solid rgba(15, 23, 42, 0.15);
 }
