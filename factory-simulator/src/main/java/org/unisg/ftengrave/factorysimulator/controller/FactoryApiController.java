@@ -1,9 +1,9 @@
-package org.camunda.bpm.demo.factorysimulator.controller;
+package org.unisg.ftengrave.factorysimulator.controller;
 
 import java.util.List;
-import org.camunda.bpm.demo.factorysimulator.model.ManagedItem;
-import org.camunda.bpm.demo.factorysimulator.model.Sink;
-import org.camunda.bpm.demo.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.model.ManagedItem;
+import org.unisg.ftengrave.factorysimulator.model.Sink;
+import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;

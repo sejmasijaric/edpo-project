@@ -1,14 +1,14 @@
-package org.camunda.bpm.demo.factorysimulator.service;
+package org.unisg.ftengrave.factorysimulator.service;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import org.camunda.bpm.demo.factorysimulator.model.Item;
-import org.camunda.bpm.demo.factorysimulator.model.ItemColor;
-import org.camunda.bpm.demo.factorysimulator.model.ManagedItem;
-import org.camunda.bpm.demo.factorysimulator.model.Sink;
+import org.unisg.ftengrave.factorysimulator.model.Item;
+import org.unisg.ftengrave.factorysimulator.model.ItemColor;
+import org.unisg.ftengrave.factorysimulator.model.ManagedItem;
+import org.unisg.ftengrave.factorysimulator.model.Sink;
 import org.springframework.stereotype.Service;
 
 @Service

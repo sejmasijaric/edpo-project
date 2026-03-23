@@ -1,4 +1,4 @@
-package org.camunda.bpm.demo.factorysimulator.model;
+package org.unisg.ftengrave.factorysimulator.model;
 
 public enum ItemColor {
     Red,

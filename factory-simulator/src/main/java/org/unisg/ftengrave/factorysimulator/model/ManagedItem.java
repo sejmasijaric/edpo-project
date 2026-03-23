@@ -1,4 +1,4 @@
-package org.camunda.bpm.demo.factorysimulator.model;
+package org.unisg.ftengrave.factorysimulator.model;
 
 public record ManagedItem(String id, ItemColor color, String sinkId) {
 }

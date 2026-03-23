@@ -1,4 +1,4 @@
-package org.camunda.bpm.demo.factorysimulator.controller;
+package org.unisg.ftengrave.factorysimulator.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.camunda.bpm.demo.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;

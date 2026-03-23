@@ -1,4 +1,4 @@
-package org.camunda.bpm.demo.factorysimulator.service;
+package org.unisg.ftengrave.factorysimulator.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.NoSuchElementException;
-import org.camunda.bpm.demo.factorysimulator.model.ManagedItem;
-import org.camunda.bpm.demo.factorysimulator.model.Sink;
+import org.unisg.ftengrave.factorysimulator.model.ManagedItem;
+import org.unisg.ftengrave.factorysimulator.model.Sink;
 import org.junit.jupiter.api.Test;
+import org.unisg.ftengrave.factorysimulator.model.ItemColor;
 
 class FactorySimulatorServiceTest {
 
@@ -49,9 +50,9 @@ class FactorySimulatorServiceTest {
   void listsItemsWithTheirCurrentSink() {
     assertEquals(
         java.util.List.of(
-            new ManagedItem("ITEM-1001", org.camunda.bpm.demo.factorysimulator.model.ItemColor.Red, "SINK-A1"),
-            new ManagedItem("ITEM-1002", org.camunda.bpm.demo.factorysimulator.model.ItemColor.Red, "SINK-A2"),
-            new ManagedItem("ITEM-1003", org.camunda.bpm.demo.factorysimulator.model.ItemColor.White, "SINK-B2")),
+            new ManagedItem("ITEM-1001", ItemColor.Red, "SINK-A1"),
+            new ManagedItem("ITEM-1002", ItemColor.Red, "SINK-A2"),
+            new ManagedItem("ITEM-1003", ItemColor.White, "SINK-B2")),
         service.getItems());
   }
 

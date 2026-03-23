@@ -1,6 +1,6 @@
-package org.camunda.bpm.demo.factorysimulator.controller;
+package org.unisg.ftengrave.factorysimulator.controller;
 
-import org.camunda.bpm.demo.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

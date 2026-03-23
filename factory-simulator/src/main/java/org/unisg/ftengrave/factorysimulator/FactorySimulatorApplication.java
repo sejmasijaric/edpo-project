@@ -1,4 +1,4 @@
-package org.camunda.bpm.demo.factorysimulator;
+package org.unisg.ftengrave.factorysimulator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
