@@ -123,8 +123,8 @@ class FactoryApiControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().json("""
             [
-              {"id":"MM-Eject","x":860,"y":120,"item":null},
-              {"id":"MM-Init","x":740,"y":180,"item":null},
+              {"id":"MM-ejection","x":860,"y":120,"item":null},
+              {"id":"MM-initial","x":740,"y":180,"item":null},
               {"id":"SINK-I1","x":530,"y":550,"item":null},
               {"id":"SINK-I2","x":670,"y":550,"item":null},
               {"id":"SINK-S1","x":780,"y":400,"item":null},

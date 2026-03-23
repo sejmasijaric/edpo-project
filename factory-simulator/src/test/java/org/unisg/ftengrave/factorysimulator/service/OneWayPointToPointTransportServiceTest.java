@@ -39,7 +39,7 @@ class OneWayPointToPointTransportServiceTest {
 
     service.transport("sm_1", "initial", item -> "SINK-S2");
 
-    assertNull(sink(factorySimulatorService, "MM-Eject").item());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
     assertNull(sink(factorySimulatorService, "SM-I").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-S2").item().id());
   }
@@ -56,7 +56,7 @@ class OneWayPointToPointTransportServiceTest {
 
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-S3").item().id());
     assertEquals("ITEM-1002", sink(factorySimulatorService, "SM-I").item().id());
-    assertNull(sink(factorySimulatorService, "MM-Eject").item());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
   }
 
   @Test
