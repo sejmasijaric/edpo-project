@@ -67,6 +67,26 @@ class FactoryApiControllerTest {
   }
 
   @Test
+  void addsItems() throws Exception {
+    mockMvc.perform(post("/api/items")
+            .param("itemId", "ITEM-2001")
+            .param("color", "Blue")
+            .param("sinkId", "SINK-B1"))
+        .andExpect(status().isCreated());
+
+    mockMvc.perform(get("/api/items"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            [
+              {"id":"ITEM-1001","color":"Red","sinkId":"SINK-A1"},
+              {"id":"ITEM-1002","color":"Red","sinkId":"SINK-A2"},
+              {"id":"ITEM-1003","color":"White","sinkId":"SINK-B2"},
+              {"id":"ITEM-2001","color":"Blue","sinkId":"SINK-B1"}
+            ]
+            """));
+  }
+
+  @Test
   void movesItems() throws Exception {
     mockMvc.perform(post("/api/items/ITEM-1001/move").param("targetSinkId", "SINK-B1"))
         .andExpect(status().isNoContent());
@@ -92,6 +112,16 @@ class FactoryApiControllerTest {
   @Test
   void mapsIllegalMovesToBadRequest() throws Exception {
     mockMvc.perform(post("/api/items/ITEM-1001/move").param("targetSinkId", "SINK-A2"))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("Target sink already contains an item"));
+  }
+
+  @Test
+  void mapsIllegalAddsToBadRequest() throws Exception {
+    mockMvc.perform(post("/api/items")
+            .param("itemId", "ITEM-2001")
+            .param("color", "Blue")
+            .param("sinkId", "SINK-A1"))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Target sink already contains an item"));
   }

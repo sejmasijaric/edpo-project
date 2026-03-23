@@ -125,6 +125,51 @@ body {
   font-size: 0.95rem;
 }
 
+.add-item-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.add-item-form h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.add-item-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.add-item-form input,
+.add-item-form select,
+.add-item-form button,
+.item-card-actions button,
+.move-control select {
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.add-item-form button,
+.item-card-actions button {
+  cursor: pointer;
+  background: #fff;
+}
+
+.add-item-form button:disabled,
+.item-card-actions button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
 .item-list {
   display: grid;
   gap: 12px;
@@ -160,24 +205,6 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   align-items: end;
-}
-
-.item-card-actions button,
-.move-control select {
-  border: 1px solid rgba(15, 23, 42, 0.16);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font: inherit;
-}
-
-.item-card-actions button {
-  cursor: pointer;
-  background: #fff;
-}
-
-.item-card-actions button:disabled {
-  cursor: progress;
-  opacity: 0.7;
 }
 
 .danger-button {

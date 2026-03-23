@@ -34,6 +34,29 @@ public class FactorySimulatorService {
         .toList();
   }
 
+  public synchronized void addItem(String itemId, ItemColor color, String sinkId) {
+    if (itemId == null || itemId.isBlank()) {
+      throw new IllegalArgumentException("Item ID must not be blank");
+    }
+    if (color == null) {
+      throw new IllegalArgumentException("Item color is required");
+    }
+
+    Sink sink = sinks.get(sinkId);
+    if (sink == null) {
+      throw new NoSuchElementException("Unknown target sink: " + sinkId);
+    }
+    if (sink.item() != null) {
+      throw new IllegalStateException("Target sink already contains an item");
+    }
+    if (sinks.values().stream().anyMatch(existingSink ->
+        existingSink.item() != null && existingSink.item().id().equals(itemId))) {
+      throw new IllegalStateException("Item already exists: " + itemId);
+    }
+
+    sinks.put(sinkId, sink.withItem(new Item(itemId, color)));
+  }
+
   public synchronized void moveItem(String itemId, String targetSinkId) {
     String currentSinkId = findSinkContainingItem(itemId);
     if (currentSinkId.equals(targetSinkId)) {

@@ -54,8 +54,10 @@ function renderItemCard(item, sinks) {
 document.addEventListener('DOMContentLoaded', () => {
   const itemList = document.getElementById('item-list');
   const status = document.getElementById('controls-status');
+  const addItemForm = document.getElementById('add-item-form');
+  const addItemSink = document.getElementById('add-item-sink');
 
-  if (!itemList || !status) {
+  if (!itemList || !status || !addItemForm || !addItemSink) {
     return;
   }
 
@@ -78,6 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const items = await itemsResponse.json();
     const sinks = await sinksResponse.json();
+    addItemSink.innerHTML = sinks
+        .map((sink) => {
+          const disabled = sink.item ? ' disabled' : '';
+          return `<option value="${sink.id}"${disabled}>${sink.id}${sink.item ? ' (occupied)' : ''}</option>`;
+        })
+        .join('');
+
+    const firstAvailableSink = sinks.find((sink) => !sink.item);
+    addItemSink.value = firstAvailableSink ? firstAvailableSink.id : '';
+    addItemForm.querySelector('button[type="submit"]').disabled = !firstAvailableSink;
 
     itemList.innerHTML = items.length === 0
         ? '<p class="empty-state">No items are currently in the simulator.</p>'
@@ -92,6 +104,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     status.textContent = `Loaded ${items.length} item${items.length === 1 ? '' : 's'}.`;
   }
+
+  addItemForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const submitButton = addItemForm.querySelector('button[type="submit"]');
+    const formData = new FormData(addItemForm);
+
+    try {
+      submitButton.disabled = true;
+      status.textContent = `Adding ${formData.get('itemId')}…`;
+
+      const response = await fetch(`/api/items?${new URLSearchParams({
+        itemId: formData.get('itemId'),
+        color: formData.get('color'),
+        sinkId: formData.get('sinkId')
+      })}`, {
+        method: 'POST'
+      });
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      addItemForm.reset();
+      await loadState('Refreshing simulator state…');
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
 
   itemList.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');

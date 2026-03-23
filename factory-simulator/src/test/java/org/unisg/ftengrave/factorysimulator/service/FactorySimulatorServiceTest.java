@@ -70,4 +70,34 @@ class FactorySimulatorServiceTest {
         java.util.List.of("ITEM-1001", "ITEM-1003"),
         service.getItems().stream().map(ManagedItem::id).toList());
   }
+
+  @Test
+  void addsAnItemToAnEmptySink() {
+    service.addItem("ITEM-2001", ItemColor.Blue, "SINK-B1");
+
+    Sink targetSink = service.getSinks().stream()
+        .filter(sink -> sink.id().equals("SINK-B1"))
+        .findFirst()
+        .orElseThrow();
+
+    assertNotNull(targetSink.item());
+    assertEquals("ITEM-2001", targetSink.item().id());
+    assertEquals(ItemColor.Blue, targetSink.item().color());
+  }
+
+  @Test
+  void rejectsAddingAnItemToAnOccupiedSink() {
+    IllegalStateException exception = assertThrows(IllegalStateException.class,
+        () -> service.addItem("ITEM-2001", ItemColor.Blue, "SINK-A1"));
+
+    assertEquals("Target sink already contains an item", exception.getMessage());
+  }
+
+  @Test
+  void rejectsAddingDuplicateItems() {
+    IllegalStateException exception = assertThrows(IllegalStateException.class,
+        () -> service.addItem("ITEM-1001", ItemColor.Blue, "SINK-B1"));
+
+    assertEquals("Item already exists: ITEM-1001", exception.getMessage());
+  }
 }

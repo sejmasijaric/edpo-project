@@ -1,6 +1,7 @@
 package org.unisg.ftengrave.factorysimulator.controller;
 
 import java.util.List;
+import org.unisg.ftengrave.factorysimulator.model.ItemColor;
 import org.unisg.ftengrave.factorysimulator.model.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.model.Sink;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
@@ -33,6 +34,15 @@ public class FactoryApiController {
   @GetMapping("/items")
   public List<ManagedItem> getItems() {
     return factorySimulatorService.getItems();
+  }
+
+  @PostMapping("/items")
+  @ResponseStatus(HttpStatus.CREATED)
+  public void addItem(
+      @RequestParam String itemId,
+      @RequestParam ItemColor color,
+      @RequestParam String sinkId) {
+    factorySimulatorService.addItem(itemId, color, sinkId);
   }
 
   @PostMapping("/items/{itemId}/move")

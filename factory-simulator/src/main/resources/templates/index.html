@@ -43,6 +43,26 @@
   <aside class="controls-panel">
     <h2>Item Management</h2>
     <p>Review each item, delete it, or move it directly to another sink.</p>
+    <form class="add-item-form" id="add-item-form">
+      <h3>Add Item</h3>
+      <label>
+        <span>ID</span>
+        <input id="add-item-id" name="itemId" type="text" placeholder="ITEM-2001" required>
+      </label>
+      <label>
+        <span>Color</span>
+        <select id="add-item-color" name="color" required>
+          <option value="Red">Red</option>
+          <option value="White">White</option>
+          <option value="Blue">Blue</option>
+        </select>
+      </label>
+      <label>
+        <span>Initial sink</span>
+        <select id="add-item-sink" name="sinkId" required></select>
+      </label>
+      <button type="submit">Add Item</button>
+    </form>
     <div class="controls-status" id="controls-status">Loading current simulator state…</div>
     <div class="item-list" id="item-list" aria-live="polite"></div>
   </aside>
