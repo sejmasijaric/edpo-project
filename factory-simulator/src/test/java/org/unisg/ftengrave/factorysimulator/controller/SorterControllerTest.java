@@ -33,7 +33,9 @@ class SorterControllerTest {
             "initial",
             "SM-I",
             java.util.List.of("MM-ejection"),
-            "SM-Hold")))
+            "SM-Hold",
+            880,
+            410)))
         .build();
   }
 

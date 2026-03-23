@@ -6,6 +6,7 @@ import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
 import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.service.OneWayPointToPointTransportService;
 import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,14 +27,17 @@ public class FactoryApiController {
   private final FactorySimulatorService factorySimulatorService;
   private final VacuumGripperService vgrService;
   private final VacuumGripperService wtService;
+  private final OneWayPointToPointTransportService sorterService;
 
   public FactoryApiController(
       FactorySimulatorService factorySimulatorService,
       @Qualifier("vgrService") VacuumGripperService vgrService,
-      @Qualifier("wtService") VacuumGripperService wtService) {
+      @Qualifier("wtService") VacuumGripperService wtService,
+      @Qualifier("sorterService") OneWayPointToPointTransportService sorterService) {
     this.factorySimulatorService = factorySimulatorService;
     this.vgrService = vgrService;
     this.wtService = wtService;
+    this.sorterService = sorterService;
   }
 
   @GetMapping("/sinks")
@@ -54,6 +58,11 @@ public class FactoryApiController {
   @GetMapping("/wt/status")
   public MachineStatus getWorkstationTransportStatus() {
     return wtService.getStatus();
+  }
+
+  @GetMapping("/sm/status")
+  public MachineStatus getSorterStatus() {
+    return sorterService.getStatus();
   }
 
   @PostMapping("/items")

@@ -144,11 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const previousAddItemSinkValue = addItemSink.value;
       const selectedTargets = collectSelectedTargets();
 
-      const [itemsResponse, sinksResponse, vgrStatusResponse, wtStatusResponse] = await Promise.all([
+      const [itemsResponse, sinksResponse, vgrStatusResponse, wtStatusResponse, smStatusResponse] = await Promise.all([
         fetch('/api/items'),
         fetch('/api/sinks'),
         fetch('/api/vgr/status'),
-        fetch('/api/wt/status')
+        fetch('/api/wt/status'),
+        fetch('/api/sm/status')
       ]);
 
       if (!itemsResponse.ok) {
@@ -163,11 +164,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!wtStatusResponse.ok) {
         throw new Error(await parseError(wtStatusResponse));
       }
+      if (!smStatusResponse.ok) {
+        throw new Error(await parseError(smStatusResponse));
+      }
 
       const items = await itemsResponse.json();
       const sinks = await sinksResponse.json();
       const vgrStatus = await vgrStatusResponse.json();
       const wtStatus = await wtStatusResponse.json();
+      const smStatus = await smStatusResponse.json();
 
       addItemSink.innerHTML = sinks
           .map((sink) => {
@@ -192,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       syncSinkPositions(sinks);
       syncMachineIndicator(vgrStatus);
       syncMachineIndicator(wtStatus);
+      syncMachineIndicator(smStatus);
 
       if (!silent) {
         status.textContent = successMessage

@@ -55,7 +55,9 @@ public class VacuumGripperConfiguration {
         "initial",
         "SM-I",
         java.util.List.of("MM-ejection"),
-        "SM-Hold");
+        "SM-Hold",
+        880,
+        410);
   }
 
   private static Map<String, String> createSinkMapping(String... entries) {

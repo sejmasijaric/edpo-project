@@ -24,6 +24,7 @@ class OneWayPointToPointTransportServiceTest {
         service.transport("sm_1", "initial", item -> "SINK-S1");
 
     assertTrue(!response.processTime().isNegative());
+    assertEquals("Belt off", service.getStatus().phase());
     assertNull(sink(factorySimulatorService, "SM-I").item());
     assertNull(sink(factorySimulatorService, "SM-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-S1").item().id());
@@ -68,11 +69,29 @@ class OneWayPointToPointTransportServiceTest {
 
     Thread.sleep(120);
     assertTrue(!execution.isDone());
+    assertTrue(service.getStatus().performingAction());
+    assertEquals("Belt on", service.getStatus().phase());
 
     factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "MM-ejection");
 
     execution.get(1, TimeUnit.SECONDS);
+    assertEquals("Belt off", service.getStatus().phase());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-S1").item().id());
+  }
+
+  @Test
+  void keepsTheBeltOnWhenTheItemRemainsInHold() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SM-I");
+    factorySimulatorService.addItem("ITEM-1002", ItemColor.Blue, "SINK-S1");
+
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    service.transport("sm_1", "initial", item -> "SINK-S1");
+
+    assertTrue(service.getStatus().performingAction());
+    assertEquals("Belt on", service.getStatus().phase());
+    assertEquals("ITEM-1001", sink(factorySimulatorService, "SM-Hold").item().id());
   }
 
   private OneWayPointToPointTransportService sorterService(
@@ -87,7 +106,9 @@ class OneWayPointToPointTransportServiceTest {
         "initial",
         "SM-I",
         java.util.List.of("MM-ejection"),
-        "SM-Hold");
+        "SM-Hold",
+        880,
+        410);
   }
 
   private Sink sink(FactorySimulatorService service, String sinkId) {

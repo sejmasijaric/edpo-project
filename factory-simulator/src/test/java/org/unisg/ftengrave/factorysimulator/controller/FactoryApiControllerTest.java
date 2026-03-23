@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulationProperties;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
+import org.unisg.ftengrave.factorysimulator.service.OneWayPointToPointTransportService;
 import org.unisg.ftengrave.factorysimulator.service.VacuumGripperService;
 
 class FactoryApiControllerTest {
@@ -46,11 +47,22 @@ class FactoryApiControllerTest {
         java.util.Map.of(
             "oven", "VGR-oven",
             "milling_machine", "MM-initial"));
+    OneWayPointToPointTransportService sorterService = new OneWayPointToPointTransportService(
+        factorySimulatorService,
+        properties,
+        "sm_1",
+        "initial",
+        "SM-I",
+        java.util.List.of("MM-ejection"),
+        "SM-Hold",
+        880,
+        410);
     mockMvc = MockMvcBuilders.standaloneSetup(
         new FactoryApiController(
             factorySimulatorService,
             vgrService,
-            wtService)).build();
+            wtService,
+            sorterService)).build();
   }
 
   @Test
@@ -91,6 +103,21 @@ class FactoryApiControllerTest {
   }
 
   @Test
+  void returnsSorterStatus() throws Exception {
+    mockMvc.perform(get("/api/sm/status"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "machine":"sm_1",
+              "performingAction":false,
+              "phase":"Belt off",
+              "x":880,
+              "y":410
+            }
+            """));
+  }
+
+  @Test
   void returnsSinks() throws Exception {
     mockMvc.perform(get("/api/sinks"))
         .andExpect(status().isOk())
@@ -104,7 +131,7 @@ class FactoryApiControllerTest {
               {"id":"SINK-S2","x":780,"y":470,"item":null},
               {"id":"SINK-S3","x":780,"y":540,"item":null},
               {"id":"SM-I","x":850,"y":330,"item":null},
-              {"id":"SM-Hold","x":815,"y":300,"item":null},
+              {"id":"SM-Hold","x":880,"y":470,"item":null},
               {"id":"VGR-Hold","x":530,"y":420,"item":null},
               {"id":"VGR-oven","x":500,"y":180,"item":null},
               {"id":"WT-Hold","x":620,"y":180,"item":null}
