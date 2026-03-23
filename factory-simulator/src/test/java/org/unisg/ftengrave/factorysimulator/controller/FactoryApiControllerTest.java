@@ -104,6 +104,7 @@ class FactoryApiControllerTest {
               {"id":"SINK-S2","x":780,"y":470,"item":null},
               {"id":"SINK-S3","x":780,"y":540,"item":null},
               {"id":"SM-I","x":850,"y":330,"item":null},
+              {"id":"SM-Hold","x":815,"y":300,"item":null},
               {"id":"VGR-Hold","x":530,"y":420,"item":null},
               {"id":"VGR-oven","x":500,"y":180,"item":null},
               {"id":"WT-Hold","x":620,"y":180,"item":null}

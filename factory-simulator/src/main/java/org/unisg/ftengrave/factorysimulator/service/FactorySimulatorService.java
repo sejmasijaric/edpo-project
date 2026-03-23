@@ -26,6 +26,14 @@ public class FactorySimulatorService {
         .toList();
   }
 
+  public synchronized Sink getSink(String sinkId) {
+    Sink sink = sinks.get(sinkId);
+    if (sink == null) {
+      throw new NoSuchElementException("Unknown sink: " + sinkId);
+    }
+    return sink;
+  }
+
   public synchronized List<ManagedItem> getItems() {
     return sinks.values().stream()
         .filter(sink -> sink.item() != null)
@@ -129,10 +137,11 @@ public class FactorySimulatorService {
 
     sinks.put("WT-Hold", new Sink("WT-Hold", 620, 180, null));
 
-    sinks.put("MM-initial", new Sink("MM-Init", 740, 180, null));
-    sinks.put("MM-ejection", new Sink("MM-Eject", 860, 120, null));
+    sinks.put("MM-initial", new Sink("MM-initial", 740, 180, null));
+    sinks.put("MM-ejection", new Sink("MM-ejection", 860, 120, null));
 
     sinks.put("SM-I", new Sink("SM-I", 850, 330, null));
+    sinks.put("SM-Hold", new Sink("SM-Hold", 880, 470, null));
 
     sinks.put("SINK-S1", new Sink("SINK-S1", 780, 400, null));
     sinks.put("SINK-S2", new Sink("SINK-S2", 780, 470, null));
