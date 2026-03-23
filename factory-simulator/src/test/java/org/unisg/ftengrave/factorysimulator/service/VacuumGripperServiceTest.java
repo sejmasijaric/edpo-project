@@ -1,6 +1,7 @@
 package org.unisg.ftengrave.factorysimulator.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.Duration;
@@ -43,11 +44,10 @@ class VacuumGripperServiceTest {
 
     VacuumGripperService service = new VacuumGripperService(factorySimulatorService, properties);
 
-    VacuumGripperService.VacuumGripperResponse response =
+    VacuumGripperService.VacuumGripperExecution response =
         service.pickUpAndTransport("vgr_1", "start", "end");
 
-    assertEquals("SINK-I1", response.mappedStart());
-    assertEquals("SINK-I2", response.mappedEnd());
+    assertTrue(!response.processTime().isNegative());
     assertNull(sink(factorySimulatorService, "VGR-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-I2").item().id());
   }

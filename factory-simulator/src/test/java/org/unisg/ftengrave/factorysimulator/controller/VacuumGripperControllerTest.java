@@ -41,14 +41,13 @@ class VacuumGripperControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().json("""
             {
-              "machine":"vgr_1",
-              "start":"sink_2",
-              "end":"oven",
-              "mappedStart":"SINK-S2",
-              "mappedEnd":"VGR-oven",
-              "status":"completed"
+              "attributes":[],
+              "link":"http://localhost/vgr/pick_up_and_transport"
             }
-            """));
+            """))
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("\"start_time\":\"")))
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("\"end_time\":\"")))
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("\"process_time\":\"0:00:00.")));
   }
 
   @Test

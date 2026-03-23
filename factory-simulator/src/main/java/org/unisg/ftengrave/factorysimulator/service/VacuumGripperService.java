@@ -1,7 +1,9 @@
 package org.unisg.ftengrave.factorysimulator.service;
 
+import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +36,7 @@ public class VacuumGripperService {
                 "sink_3", "SINK-S3")));
   }
 
-  public VacuumGripperResponse pickUpAndTransport(String machine, String start, String end) {
+  public VacuumGripperExecution pickUpAndTransport(String machine, String start, String end) {
     VacuumGripperMachine selectedMachine = machines.get(machine);
     if (selectedMachine == null) {
       throw new IllegalArgumentException("Unsupported vacuum gripper machine: " + machine);
@@ -42,6 +44,7 @@ public class VacuumGripperService {
 
     String mappedStart = selectedMachine.mapSink(start);
     String mappedEnd = selectedMachine.mapSink(end);
+    LocalDateTime startTime = LocalDateTime.now();
 
     waitBetweenMovements();
     factorySimulatorService.moveItemBetweenSinks(mappedStart, selectedMachine.holdSink(), true);
@@ -49,7 +52,8 @@ public class VacuumGripperService {
     waitBetweenMovements();
     factorySimulatorService.moveItemBetweenSinks(selectedMachine.holdSink(), mappedEnd, true);
 
-    return new VacuumGripperResponse(machine, start, end, mappedStart, mappedEnd, "completed");
+    LocalDateTime endTime = LocalDateTime.now();
+    return new VacuumGripperExecution(startTime, endTime, Duration.between(startTime, endTime));
   }
 
   private void waitBetweenMovements() {
@@ -84,12 +88,17 @@ public class VacuumGripperService {
     }
   }
 
+  public record VacuumGripperExecution(
+      LocalDateTime startTime,
+      LocalDateTime endTime,
+      Duration processTime) {
+  }
+
   public record VacuumGripperResponse(
-      String machine,
-      String start,
-      String end,
-      String mappedStart,
-      String mappedEnd,
-      String status) {
+      List<String> attributes,
+      String end_time,
+      String link,
+      String process_time,
+      String start_time) {
   }
 }
