@@ -3,6 +3,8 @@ async function parseError(response) {
   return message || `Request failed with status ${response.status}`;
 }
 
+const LIVE_UPDATE_INTERVAL_MS = 1000;
+
 function renderSinkItem(item) {
   if (!item) {
     return '<div class="item item-empty">Empty</div>';
@@ -19,10 +21,17 @@ function renderSinkItem(item) {
   `;
 }
 
-function renderItemCard(item, sinks) {
+function renderSinkCard(sink) {
+  return `
+    <header>${sink.id}</header>
+    <div class="item-container">${renderSinkItem(sink.item)}</div>
+  `;
+}
+
+function renderItemCard(item, sinks, selectedSinkId) {
   const options = sinks
       .map((sink) => {
-        const selected = sink.id === item.sinkId ? ' selected' : '';
+        const selected = sink.id === (selectedSinkId ?? item.sinkId) ? ' selected' : '';
         return `<option value="${sink.id}"${selected}>${sink.id}</option>`;
       })
       .join('');
@@ -56,53 +65,106 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('controls-status');
   const addItemForm = document.getElementById('add-item-form');
   const addItemSink = document.getElementById('add-item-sink');
+  const factoryCanvas = document.querySelector('.factory-canvas');
+  let loadStateInProgress = false;
 
-  if (!itemList || !status || !addItemForm || !addItemSink) {
+  if (!itemList || !status || !addItemForm || !addItemSink || !factoryCanvas) {
     return;
   }
 
-  async function loadState(message) {
+  function collectSelectedTargets() {
+    return new Map(
+        Array.from(itemList.querySelectorAll('[data-item-id]')).map((itemCard) => [
+          itemCard.dataset.itemId,
+          itemCard.querySelector('[data-role="target-sink"]')?.value
+        ])
+    );
+  }
+
+  function syncSinkPositions(sinks) {
+    const sinkElements = new Map(
+        Array.from(factoryCanvas.querySelectorAll('.sink')).map((sinkElement) => [
+          sinkElement.dataset.sinkId,
+          sinkElement
+        ])
+    );
+
+    sinks.forEach((sink) => {
+      let sinkElement = sinkElements.get(sink.id);
+      if (!sinkElement) {
+        sinkElement = document.createElement('article');
+        sinkElement.className = 'sink';
+        sinkElement.dataset.sinkId = sink.id;
+        factoryCanvas.appendChild(sinkElement);
+      }
+
+      sinkElement.style.left = `${sink.x}px`;
+      sinkElement.style.top = `${sink.y}px`;
+      sinkElement.innerHTML = renderSinkCard(sink);
+      sinkElements.delete(sink.id);
+    });
+
+    sinkElements.forEach((sinkElement) => sinkElement.remove());
+  }
+
+  async function loadState({message, successMessage, silent = false} = {}) {
+    if (loadStateInProgress) {
+      return;
+    }
+    loadStateInProgress = true;
+
     if (message) {
       status.textContent = message;
     }
 
-    const [itemsResponse, sinksResponse] = await Promise.all([
-      fetch('/api/items'),
-      fetch('/api/sinks')
-    ]);
+    try {
+      const previousAddItemSinkValue = addItemSink.value;
+      const selectedTargets = collectSelectedTargets();
 
-    if (!itemsResponse.ok) {
-      throw new Error(await parseError(itemsResponse));
-    }
-    if (!sinksResponse.ok) {
-      throw new Error(await parseError(sinksResponse));
-    }
+      const [itemsResponse, sinksResponse] = await Promise.all([
+        fetch('/api/items'),
+        fetch('/api/sinks')
+      ]);
 
-    const items = await itemsResponse.json();
-    const sinks = await sinksResponse.json();
-    addItemSink.innerHTML = sinks
-        .map((sink) => {
-          const disabled = sink.item ? ' disabled' : '';
-          return `<option value="${sink.id}"${disabled}>${sink.id}${sink.item ? ' (occupied)' : ''}</option>`;
-        })
-        .join('');
-
-    const firstAvailableSink = sinks.find((sink) => !sink.item);
-    addItemSink.value = firstAvailableSink ? firstAvailableSink.id : '';
-    addItemForm.querySelector('button[type="submit"]').disabled = !firstAvailableSink;
-
-    itemList.innerHTML = items.length === 0
-        ? '<p class="empty-state">No items are currently in the simulator.</p>'
-        : items.map((item) => renderItemCard(item, sinks)).join('');
-
-    sinks.forEach((sink) => {
-      const sinkElement = document.querySelector(`[data-sink-id="${sink.id}"] .item-container`);
-      if (sinkElement) {
-        sinkElement.innerHTML = renderSinkItem(sink.item);
+      if (!itemsResponse.ok) {
+        throw new Error(await parseError(itemsResponse));
       }
-    });
+      if (!sinksResponse.ok) {
+        throw new Error(await parseError(sinksResponse));
+      }
 
-    status.textContent = `Loaded ${items.length} item${items.length === 1 ? '' : 's'}.`;
+      const items = await itemsResponse.json();
+      const sinks = await sinksResponse.json();
+
+      addItemSink.innerHTML = sinks
+          .map((sink) => {
+            const disabled = sink.item ? ' disabled' : '';
+            return `<option value="${sink.id}"${disabled}>${sink.id}${sink.item ? ' (occupied)' : ''}</option>`;
+          })
+          .join('');
+
+      const firstAvailableSink = sinks.find((sink) => !sink.item);
+      const selectedAddSinkStillAvailable = sinks.some((sink) =>
+        sink.id === previousAddItemSinkValue && !sink.item
+      );
+      addItemSink.value = selectedAddSinkStillAvailable
+          ? previousAddItemSinkValue
+          : (firstAvailableSink ? firstAvailableSink.id : '');
+      addItemForm.querySelector('button[type="submit"]').disabled = !firstAvailableSink;
+
+      itemList.innerHTML = items.length === 0
+          ? '<p class="empty-state">No items are currently in the simulator.</p>'
+          : items.map((item) => renderItemCard(item, sinks, selectedTargets.get(item.id))).join('');
+
+      syncSinkPositions(sinks);
+
+      if (!silent) {
+        status.textContent = successMessage
+            ?? `Loaded ${items.length} item${items.length === 1 ? '' : 's'}. Live updates enabled.`;
+      }
+    } finally {
+      loadStateInProgress = false;
+    }
   }
 
   addItemForm.addEventListener('submit', async (event) => {
@@ -127,7 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       addItemForm.reset();
-      await loadState('Refreshing simulator state…');
+      await loadState({
+        message: 'Refreshing simulator state…',
+        successMessage: 'Item added. Live view updated.'
+      });
     } catch (error) {
       status.textContent = error.message;
     } finally {
@@ -166,7 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      await loadState(`Refreshing simulator state…`);
+      await loadState({
+        message: 'Refreshing simulator state…',
+        successMessage: `${button.dataset.action === 'delete' ? 'Item deleted' : 'Item moved'}. Live view updated.`
+      });
     } catch (error) {
       status.textContent = error.message;
     } finally {
@@ -174,7 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  loadState('Loading current simulator state…').catch((error) => {
+  loadState({message: 'Loading current simulator state…'}).catch((error) => {
     status.textContent = error.message;
   });
+
+  window.setInterval(() => {
+    loadState({silent: true}).catch((error) => {
+      status.textContent = error.message;
+    });
+  }, LIVE_UPDATE_INTERVAL_MS);
 });
