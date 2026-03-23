@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Simulator</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="layout">
+  <section class="factory-section">
+    <div class="section-header">
+      <h1>Factory Simulator</h1>
+      <p>Sink positions are rendered on top of the factory layout image.</p>
+    </div>
+
+    <div class="factory-canvas" th:style="'width:' + ${factoryWidth} + 'px;height:' + ${factoryHeight} + 'px;'">
+      <img class="factory-layout-image" th:src="@{/assets/FT_Factory.png}" alt="Factory layout">
+
+      <article
+          class="sink"
+          th:each="sink : ${sinks}"
+          th:style="'left:' + ${sink.x()} + 'px;top:' + ${sink.y()} + 'px;'">
+        <header th:text="${sink.id()}">SINK-A1</header>
+        <div class="item" th:if="${sink.item() != null}">
+          <span class="item-id" th:text="${sink.item().id()}">ITEM-1001</span>
+          <span class="item-color">
+            <span class="color-chip" th:style="'background:' + ${sink.item().color()}"></span>
+            <span th:text="${sink.item().color()}">#ffffff</span>
+          </span>
+        </div>
+        <div class="item item-empty" th:if="${sink.item() == null}">
+          Empty
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <aside class="controls-panel">
+    <h2>Controls</h2>
+    <p>Placeholder for machine and user controls.</p>
+  </aside>
+</main>
+</body>
+</html>
