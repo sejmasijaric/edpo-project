@@ -29,5 +29,17 @@ services:
     volumes:
       - demo-service-data:/app/data
 
+  qc-service:
+    build:
+      context: ../qc-service
+      dockerfile: Dockerfile
+    ports:
+      - "8100:8100"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
+    volumes:
+      - qc-service-data:/app/data
+
 volumes:
   demo-service-data:
+  qc-service-data:
