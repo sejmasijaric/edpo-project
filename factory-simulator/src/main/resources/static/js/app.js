@@ -74,18 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const addItemSink = document.getElementById('add-item-sink');
   const factoryCanvas = document.querySelector('.factory-canvas');
   let loadStateInProgress = false;
+  const selectedTargets = new Map();
 
   if (!itemList || !status || !addItemForm || !addItemSink || !factoryCanvas) {
     return;
   }
 
-  function collectSelectedTargets() {
-    return new Map(
-        Array.from(itemList.querySelectorAll('[data-item-id]')).map((itemCard) => [
-          itemCard.dataset.itemId,
-          itemCard.querySelector('[data-role="target-sink"]')?.value
-        ])
-    );
+  function isEditingTargetSink() {
+    return document.activeElement?.matches('[data-role="target-sink"]') ?? false;
   }
 
   function syncSinkPositions(sinks) {
@@ -142,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const previousAddItemSinkValue = addItemSink.value;
-      const selectedTargets = collectSelectedTargets();
 
       const [itemsResponse, sinksResponse, vgrStatusResponse, wtStatusResponse, smStatusResponse, ovStatusResponse] = await Promise.all([
         fetch('/api/items'),
@@ -196,9 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
           : (firstAvailableSink ? firstAvailableSink.id : '');
       addItemForm.querySelector('button[type="submit"]').disabled = !firstAvailableSink;
 
-      itemList.innerHTML = items.length === 0
-          ? '<p class="empty-state">No items are currently in the simulator.</p>'
-          : items.map((item) => renderItemCard(item, sinks, selectedTargets.get(item.id))).join('');
+      const currentItemIds = new Set(items.map((item) => item.id));
+      Array.from(selectedTargets.keys()).forEach((itemId) => {
+        if (!currentItemIds.has(itemId)) {
+          selectedTargets.delete(itemId);
+        }
+      });
+
+      if (!isEditingTargetSink()) {
+        itemList.innerHTML = items.length === 0
+            ? '<p class="empty-state">No items are currently in the simulator.</p>'
+            : items.map((item) => renderItemCard(item, sinks, selectedTargets.get(item.id))).join('');
+      }
 
       syncSinkPositions(sinks);
       syncMachineIndicator(vgrStatus);
@@ -269,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!response.ok) {
           throw new Error(await parseError(response));
         }
+        selectedTargets.delete(itemId);
       } else {
         const targetSink = itemCard.querySelector('[data-role="target-sink"]').value;
         const response = await fetch(`/api/items/${itemId}/move?targetSinkId=${encodeURIComponent(targetSink)}`, {
@@ -277,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!response.ok) {
           throw new Error(await parseError(response));
         }
+        selectedTargets.set(itemId, targetSink);
       }
 
       await loadState({
@@ -292,6 +298,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadState({message: 'Loading current simulator state…'}).catch((error) => {
     status.textContent = error.message;
+  });
+
+  itemList.addEventListener('change', (event) => {
+    const targetSinkSelector = event.target.closest('[data-role="target-sink"]');
+    if (!targetSinkSelector) {
+      return;
+    }
+
+    const itemCard = targetSinkSelector.closest('[data-item-id]');
+    const itemId = itemCard?.dataset.itemId;
+    if (!itemId) {
+      return;
+    }
+
+    selectedTargets.set(itemId, targetSinkSelector.value);
+  });
+
+  itemList.addEventListener('focusout', (event) => {
+    if (!event.target.closest('[data-role="target-sink"]')) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      if (!isEditingTargetSink()) {
+        loadState({silent: true}).catch((error) => {
+          status.textContent = error.message;
+        });
+      }
+    }, 0);
   });
 
   window.setInterval(() => {
