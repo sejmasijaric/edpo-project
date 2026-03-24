@@ -1,0 +1,11 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: factory-simulator
+
+factory:
+  simulation:
+    movement-delay: 4s
+    oven-burn-duration: 5s
