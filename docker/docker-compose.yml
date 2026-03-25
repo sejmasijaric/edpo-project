@@ -31,10 +31,22 @@ services:
     volumes:
       - demo-service-data:/app/data
 
+  kafka-rest:
+    image: confluentinc/cp-kafka-rest:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      KAFKA_REST_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_REST_LISTENERS: http://0.0.0.0:8082
+
   frontend-service:
     build:
       context: ../frontend-service
       dockerfile: Dockerfile
+    depends_on:
+      - kafka-rest
     ports:
       - "3000:80"
 

@@ -8,9 +8,12 @@ import type { Order } from "@/types/order"
 
 function Wrapper() {
   const [orders, setOrders] = useState<Order[]>([])
+  const submitOrder = async (order: Order) => {
+    setOrders((prev) => [order, ...prev])
+  }
   return (
     <ThemeProvider>
-      <CustomerPage orders={orders} setOrders={setOrders} />
+      <CustomerPage orders={orders} submitOrder={submitOrder} />
       <Toaster />
     </ThemeProvider>
   )
@@ -65,38 +68,29 @@ describe("CustomerPage", () => {
 
   it("submits order successfully with color only", async () => {
     const user = userEvent.setup()
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     await user.click(screen.getByLabelText("Red"))
     await user.click(screen.getByRole("button", { name: /submit order/i }))
 
-    expect(consoleSpy).toHaveBeenCalledWith("Order submitted:", { color: "red" })
     expect(await screen.findByText("Order submitted successfully!")).toBeInTheDocument()
-
-    consoleSpy.mockRestore()
   })
 
   it("submits order with color and engraved text", async () => {
     const user = userEvent.setup()
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     await user.click(screen.getByLabelText("Blue"))
     await user.type(screen.getByLabelText(/engraved text/i), "My Tag")
     await user.click(screen.getByRole("button", { name: /submit order/i }))
 
-    expect(consoleSpy).toHaveBeenCalledWith("Order submitted:", {
-      color: "blue",
-      engravedText: "My Tag",
-    })
-
-    consoleSpy.mockRestore()
+    expect(await screen.findByText("Order submitted successfully!")).toBeInTheDocument()
+    expect(screen.getByText("Blue Air Tag")).toBeInTheDocument()
+    expect(screen.getByText(/My Tag/)).toBeInTheDocument()
   })
 
   it("resets form after successful submission", async () => {
     const user = userEvent.setup()
-    vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     await user.click(screen.getByLabelText("Red"))
@@ -105,8 +99,6 @@ describe("CustomerPage", () => {
 
     expect(screen.getByLabelText(/engraved text/i)).toHaveValue("")
     expect(screen.getByText("0/20")).toBeInTheDocument()
-
-    vi.restoreAllMocks()
   })
 })
 
@@ -120,7 +112,6 @@ describe("Order History", () => {
 
   it("displays order in history after submission", async () => {
     const user = userEvent.setup()
-    vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     await user.click(screen.getByLabelText("Red"))
@@ -129,13 +120,10 @@ describe("Order History", () => {
     expect(screen.getByText("Red Air Tag")).toBeInTheDocument()
     expect(screen.getByText("To Do")).toBeInTheDocument()
     expect(screen.queryByText(/no orders yet/i)).not.toBeInTheDocument()
-
-    vi.restoreAllMocks()
   })
 
   it("displays engraved text in order history", async () => {
     const user = userEvent.setup()
-    vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     await user.click(screen.getByLabelText("Blue"))
@@ -144,13 +132,10 @@ describe("Order History", () => {
 
     expect(screen.getByText("Blue Air Tag")).toBeInTheDocument()
     expect(screen.getByText(/Hello/)).toBeInTheDocument()
-
-    vi.restoreAllMocks()
   })
 
   it("shows multiple orders with newest first", async () => {
     const user = userEvent.setup()
-    vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     // Submit first order
@@ -165,13 +150,10 @@ describe("Order History", () => {
     expect(items).toHaveLength(2)
     expect(items[0]).toHaveTextContent("Blue Air Tag")
     expect(items[1]).toHaveTextContent("Red Air Tag")
-
-    vi.restoreAllMocks()
   })
 
   it("shows order count in header", async () => {
     const user = userEvent.setup()
-    vi.spyOn(console, "log").mockImplementation(() => {})
     renderCustomerPage()
 
     await user.click(screen.getByLabelText("Red"))
@@ -184,7 +166,5 @@ describe("Order History", () => {
     await user.click(screen.getByRole("button", { name: /submit order/i }))
 
     expect(within(heading).getByText("(2)")).toBeInTheDocument()
-
-    vi.restoreAllMocks()
   })
 })

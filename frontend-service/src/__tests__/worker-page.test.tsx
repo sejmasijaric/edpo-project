@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { WorkerPage } from "@/components/worker-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-import type { Order } from "@/types/order"
+import type { Order, OrderStatus } from "@/types/order"
 
 function makeOrder(overrides: Partial<Order> = {}): Order {
   return {
@@ -18,9 +18,16 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
 
 function WorkerWrapper({ initialOrders = [] }: { initialOrders?: Order[] }) {
   const [orders, setOrders] = useState<Order[]>(initialOrders)
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order,
+      ),
+    )
+  }
   return (
     <ThemeProvider>
-      <WorkerPage orders={orders} setOrders={setOrders} />
+      <WorkerPage orders={orders} updateOrderStatus={updateOrderStatus} />
       <Toaster />
     </ThemeProvider>
   )
