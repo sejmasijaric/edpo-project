@@ -33,7 +33,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: /worker/i }))
 
-    expect(screen.getByText("Worker Dashboard")).toBeInTheDocument()
+    expect(screen.getByText("Production Queue")).toBeInTheDocument()
     expect(screen.queryByText("Order Laser Engraved Air Tag")).not.toBeInTheDocument()
   })
 
@@ -45,12 +45,31 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: /customer/i }))
 
     expect(screen.getByText("Order Laser Engraved Air Tag")).toBeInTheDocument()
-    expect(screen.queryByText("Worker Dashboard")).not.toBeInTheDocument()
+    expect(screen.queryByText("Production Queue")).not.toBeInTheDocument()
   })
 
   it("renders theme toggle button", () => {
     renderApp()
 
     expect(screen.getByRole("button", { name: /toggle theme/i })).toBeInTheDocument()
+  })
+
+  it("shares orders between customer and worker pages", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "log").mockImplementation(() => {})
+    renderApp()
+
+    // Submit order on customer page
+    await user.click(screen.getByLabelText("Red"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    // Navigate to worker page
+    await user.click(screen.getByRole("button", { name: /worker/i }))
+
+    // Verify order appears in production queue
+    expect(screen.getByText("Red Air Tag")).toBeInTheDocument()
+    expect(screen.getByText("To Do")).toBeInTheDocument()
+
+    vi.restoreAllMocks()
   })
 })

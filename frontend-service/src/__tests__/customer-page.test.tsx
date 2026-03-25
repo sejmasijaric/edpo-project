@@ -1,16 +1,23 @@
+import { useState } from "react"
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CustomerPage } from "@/components/customer-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import type { Order } from "@/types/order"
 
-function renderCustomerPage() {
-  return render(
+function Wrapper() {
+  const [orders, setOrders] = useState<Order[]>([])
+  return (
     <ThemeProvider>
-      <CustomerPage />
+      <CustomerPage orders={orders} setOrders={setOrders} />
       <Toaster />
     </ThemeProvider>
   )
+}
+
+function renderCustomerPage() {
+  return render(<Wrapper />)
 }
 
 describe("CustomerPage", () => {
