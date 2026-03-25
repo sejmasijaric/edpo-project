@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CustomerPage } from "@/components/customer-page"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -98,6 +98,85 @@ describe("CustomerPage", () => {
 
     expect(screen.getByLabelText(/engraved text/i)).toHaveValue("")
     expect(screen.getByText("0/20")).toBeInTheDocument()
+
+    vi.restoreAllMocks()
+  })
+})
+
+describe("Order History", () => {
+  it("shows empty state when no orders submitted", () => {
+    renderCustomerPage()
+
+    expect(screen.getByText("Order History")).toBeInTheDocument()
+    expect(screen.getByText(/no orders yet/i)).toBeInTheDocument()
+  })
+
+  it("displays order in history after submission", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "log").mockImplementation(() => {})
+    renderCustomerPage()
+
+    await user.click(screen.getByLabelText("Red"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    expect(screen.getByText("Red Air Tag")).toBeInTheDocument()
+    expect(screen.getByText("To Do")).toBeInTheDocument()
+    expect(screen.queryByText(/no orders yet/i)).not.toBeInTheDocument()
+
+    vi.restoreAllMocks()
+  })
+
+  it("displays engraved text in order history", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "log").mockImplementation(() => {})
+    renderCustomerPage()
+
+    await user.click(screen.getByLabelText("Blue"))
+    await user.type(screen.getByLabelText(/engraved text/i), "Hello")
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    expect(screen.getByText("Blue Air Tag")).toBeInTheDocument()
+    expect(screen.getByText(/Hello/)).toBeInTheDocument()
+
+    vi.restoreAllMocks()
+  })
+
+  it("shows multiple orders with newest first", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "log").mockImplementation(() => {})
+    renderCustomerPage()
+
+    // Submit first order
+    await user.click(screen.getByLabelText("Red"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    // Submit second order
+    await user.click(screen.getByLabelText("Blue"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    const items = screen.getAllByText(/^\w+ Air Tag$/)
+    expect(items).toHaveLength(2)
+    expect(items[0]).toHaveTextContent("Blue Air Tag")
+    expect(items[1]).toHaveTextContent("Red Air Tag")
+
+    vi.restoreAllMocks()
+  })
+
+  it("shows order count in header", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "log").mockImplementation(() => {})
+    renderCustomerPage()
+
+    await user.click(screen.getByLabelText("Red"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    const heading = screen.getByText("Order History").closest("div")!
+    expect(within(heading).getByText("(1)")).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText("Blue"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    expect(within(heading).getByText("(2)")).toBeInTheDocument()
 
     vi.restoreAllMocks()
   })
