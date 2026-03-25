@@ -1,3 +1,5 @@
+name: air-tag-factory
+
 services:
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -28,6 +30,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - demo-service-data:/app/data
+
+  frontend-service:
+    build:
+      context: ../frontend-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
 
 volumes:
   demo-service-data:
