@@ -1,3 +1,5 @@
+name: air-tag-factory
+
 services:
   kafka:
     image: confluentinc/cp-kafka:latest
