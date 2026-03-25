@@ -17,6 +17,7 @@ The project follows an event driven architecture following a predefined set of l
 ## Documentation
 - Keep README files, diagrams, or inline comments up to date when behavior changes.
 - Explore the [`docs/`](docs/) and [`adr/`](adr/) folder for additional domain background such as ubiquitous language. Keep these resources updated when requirements evolve.
+- [`docker/PORTS.md`](docker/PORTS.md) contains the port mapping of the entire project. Please refer to it when specifying new ports and update it as new ports mappings are added. 
 
 ## Architecture Decision Records (ADRs)
 - ADRs live in the [`adr/`](adr/) directory. Add a new ADR whenever a significant
