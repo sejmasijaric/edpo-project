@@ -29,5 +29,12 @@ services:
     volumes:
       - demo-service-data:/app/data
 
+  frontend-service:
+    build:
+      context: ../frontend-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+
 volumes:
   demo-service-data:
