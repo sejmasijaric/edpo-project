@@ -8,6 +8,14 @@ kafka:
   bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:9092}
   group-id: ${KAFKA_GROUP_ID:sorter-integration-setrvice}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.sorterintegrationsetrvice}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
 
 sorter:
-  base-url: ${SORTER_BASE_URL:http://localhost:8081}
+  protocol: ${SORTER_PROTOCOL:http}
+  host: ${SORTER_HOST:localhost}
+  port: ${SORTER_PORT:8081}
+  sort-path: /sm/sort
+  machine: sm_1
+  start: initial

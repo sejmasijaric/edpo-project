@@ -48,6 +48,9 @@ services:
       - kafka
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      SORTER_HOST: 192.168.0.21
+      SORTER_PORT: 5000
 
 volumes:
   demo-service-data:
