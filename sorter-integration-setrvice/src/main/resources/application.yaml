@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: sorter-integration-setrvice
+  main:
+    web-application-type: none
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:9092}
+  group-id: ${KAFKA_GROUP_ID:sorter-integration-setrvice}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.sorterintegrationsetrvice}
+
+sorter:
+  base-url: ${SORTER_BASE_URL:http://localhost:8081}

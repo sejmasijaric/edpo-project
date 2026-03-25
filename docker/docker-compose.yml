@@ -40,6 +40,15 @@ services:
     volumes:
       - qc-service-data:/app/data
 
+  sorter-integration-setrvice:
+    build:
+      context: ../sorter-integration-setrvice
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+
 volumes:
   demo-service-data:
   qc-service-data:
