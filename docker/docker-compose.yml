@@ -36,6 +36,8 @@ services:
     ports:
       - "8100:8100"
     environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - qc-service-data:/app/data
