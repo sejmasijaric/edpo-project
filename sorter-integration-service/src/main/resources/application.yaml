@@ -8,9 +8,20 @@ kafka:
   bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:9092}
   group-id: ${KAFKA_GROUP_ID:sorter-integration-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.sorterintegrationservice}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
+
+mqtt:
+  bridge:
+    enabled: ${MQTT_BRIDGE_ENABLED:true}
+  broker:
+    url: ${MQTT_BROKER_URL:tcp://192.168.0.21:1883}
+  topic: FTFactory/SM_1
+  client-id: ${MQTT_CLIENT_ID:sorter-integration-setrvice}
+  username: ${MQTT_USERNAME:ftsim}
+  password: ${MQTT_PASSWORD:unisg}
 
 sorter:
   protocol: ${SORTER_PROTOCOL:http}

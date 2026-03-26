@@ -15,7 +15,7 @@ class SortingMachineServiceTest {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
-    sortingMachineService.handle(new SortingMachineEventDto("sort-to-reject"));
+    sortingMachineService.handle(new SortingMachineEventDto("sort_to_reject"));
 
     assertEquals("sink_1", sorterHttpService.lastSinkIdentifier);
   }
@@ -28,6 +28,12 @@ class SortingMachineServiceTest {
     sortingMachineService.handle(new SortingMachineEventDto("request-color-detection"));
 
     assertEquals(1, sorterHttpService.detectColorCalls);
+  void handleIgnoresDetectedColorEvents() {
+    RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
+    SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
+
+    sortingMachineService.handle(new SortingMachineEventDto("detected-color-red"));
+
     assertNull(sorterHttpService.lastSinkIdentifier);
   }
 
