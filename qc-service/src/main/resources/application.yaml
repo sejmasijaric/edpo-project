@@ -29,3 +29,12 @@ camunda.bpm:
   generic-properties:
     properties:
       historyTimeToLive: P1D
+
+mqtt:
+  broker:
+    url: tcp://192.168.0.21:1883
+  topic: FTFactory/SM_1
+
+kafka:
+  topic: sorting-machine
+  bootstrap-address: localhost:29092
