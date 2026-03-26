@@ -7,6 +7,19 @@ spring:
   datasource:
     url: jdbc:h2:file:./data/camunda-h2-database
 
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:9092}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
+  topic:
+    sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
+
+integration:
+  sorter:
+    event-types:
+      rejection: ${SORTER_EVENT_TYPE_REJECTION:sort-to-reject}
+      retry: ${SORTER_EVENT_TYPE_RETRY:sort-to-retry}
+      shipping: ${SORTER_EVENT_TYPE_SHIPPING:sort-to-shipping}
+
 camunda.bpm:
   admin-user:
     id: demo
