@@ -20,6 +20,11 @@ public class SortingMachineService {
 
   public void handle(SortingMachineEventDto sortingMachineEventDto) {
     String eventType = sortingMachineEventDto.getEventType();
+    if ("request-color-detection".equals(eventType)) {
+      sorterHttpService.detectColor();
+      return;
+    }
+
     String sinkIdentifier = EVENT_TO_SINK.get(eventType);
 
     if (sinkIdentifier == null) {

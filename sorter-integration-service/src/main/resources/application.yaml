@@ -16,6 +16,7 @@ sorter:
   protocol: ${SORTER_PROTOCOL:http}
   host: ${SORTER_HOST:localhost}
   port: ${SORTER_PORT:8081}
+  detect-color-path: /sm/detect_color
   sort-path: /sm/sort
   machine: sm_1
   start: initial

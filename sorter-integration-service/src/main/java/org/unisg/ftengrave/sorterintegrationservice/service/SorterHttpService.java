@@ -13,6 +13,7 @@ public class SorterHttpService {
   private final String protocol;
   private final String host;
   private final int port;
+  private final String detectColorPath;
   private final String sortPath;
   private final String machine;
   private final String start;
@@ -22,6 +23,7 @@ public class SorterHttpService {
       @Value("${sorter.protocol}") String protocol,
       @Value("${sorter.host}") String host,
       @Value("${sorter.port}") int port,
+      @Value("${sorter.detect-color-path}") String detectColorPath,
       @Value("${sorter.sort-path}") String sortPath,
       @Value("${sorter.machine}") String machine,
       @Value("${sorter.start}") String start) {
@@ -29,9 +31,23 @@ public class SorterHttpService {
     this.protocol = protocol;
     this.host = host;
     this.port = port;
+    this.detectColorPath = detectColorPath;
     this.sortPath = sortPath;
     this.machine = machine;
     this.start = start;
+  }
+
+  public void detectColor() {
+    String uri = UriComponentsBuilder.newInstance()
+        .scheme(protocol)
+        .host(host)
+        .port(port)
+        .path(detectColorPath)
+        .queryParam("machine", machine)
+        .build()
+        .toUriString();
+
+    restTemplate.exchange(uri, HttpMethod.GET, null, String.class);
   }
 
   public void sortToSink(String sinkIdentifier) {

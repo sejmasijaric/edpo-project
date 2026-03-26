@@ -110,7 +110,7 @@
       <bpmn:outgoing>Flow_09xv5l2</bpmn:outgoing>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_0efthlv" errorRef="Error_1gz0n9o" />
     </bpmn:boundaryEvent>
-    <bpmn:sendTask id="Activity_1wtp2k8" name="Sorting Machine Request Color Detection" camunda:delegateExpression="${DetectColorAdapter}">
+    <bpmn:sendTask id="Activity_1wtp2k8" name="Sorting Machine Request Color Detection" camunda:delegateExpression="${RequestColorDetectionAdapter}">
       <bpmn:incoming>Flow_0haitj1</bpmn:incoming>
       <bpmn:outgoing>Flow_0bfxafc</bpmn:outgoing>
     </bpmn:sendTask>

@@ -21,6 +21,17 @@ class SortingMachineServiceTest {
   }
 
   @Test
+  void handleRoutesColorDetectionRequestToDetectColorCall() {
+    RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
+    SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
+
+    sortingMachineService.handle(new SortingMachineEventDto("request-color-detection"));
+
+    assertEquals(1, sorterHttpService.detectColorCalls);
+    assertNull(sorterHttpService.lastSinkIdentifier);
+  }
+
+  @Test
   void handleRejectsUnknownEventType() {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
@@ -34,9 +45,15 @@ class SortingMachineServiceTest {
   private static final class RecordingSorterHttpService extends SorterHttpService {
 
     private String lastSinkIdentifier;
+    private int detectColorCalls;
 
     private RecordingSorterHttpService() {
-      super(new RestTemplate(), "http", "localhost", 8081, "/sm/sort", "sm_1", "initial");
+      super(new RestTemplate(), "http", "localhost", 8081, "/sm/detect_color", "/sm/sort", "sm_1", "initial");
+    }
+
+    @Override
+    public void detectColor() {
+      detectColorCalls++;
     }
 
     @Override
