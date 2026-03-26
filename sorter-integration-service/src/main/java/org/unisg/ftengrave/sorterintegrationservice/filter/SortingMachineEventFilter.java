@@ -1,11 +1,11 @@
-package org.unisg.ftengrave.sorterintegrationsetrvice.filter;
+package org.unisg.ftengrave.sorterintegrationservice.filter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
-import org.unisg.ftengrave.sorterintegrationsetrvice.dto.SortingMachineEventDto;
-import org.unisg.ftengrave.sorterintegrationsetrvice.dto.SortingMachineEventTransformationDto;
+import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventTransformationDto;
 import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 
 @Service

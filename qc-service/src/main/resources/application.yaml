@@ -8,7 +8,7 @@ spring:
     url: jdbc:h2:file:./data/camunda-h2-database
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:9092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
   topic:
     sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
@@ -34,7 +34,3 @@ mqtt:
   broker:
     url: tcp://192.168.0.21:1883
   topic: FTFactory/SM_1
-
-kafka:
-  topic: sorting-machine
-  bootstrap-address: localhost:29092

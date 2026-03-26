@@ -1,4 +1,4 @@
-package org.unisg.ftengrave.sorterintegrationsetrvice.dto;
+package org.unisg.ftengrave.sorterintegrationservice.dto;
 
 public class SortingMachineEventTransformationDto {
 
