@@ -25,6 +25,9 @@ public class KafkaConsumerConfig {
   @Value("${kafka.trusted-packages}")
   private String trustedPackages;
 
+  @Value("${spring.kafka.listener.auto-startup:true}")
+  private boolean autoStartup;
+
   @Bean
   public ConsumerFactory<String, SortingMachineEventDto> consumerFactory() {
     Map<String, Object> props = new HashMap<>();
@@ -45,6 +48,7 @@ public class KafkaConsumerConfig {
     ConcurrentKafkaListenerContainerFactory<String, SortingMachineEventDto> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory());
+    factory.setAutoStartup(autoStartup);
     return factory;
   }
 }
