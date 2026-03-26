@@ -16,8 +16,6 @@ public class SortToShippingAdapter implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-        // TODO: Implement
-        System.out.println("ShippingSink");
         sortToShippingPublisher.publish();
     }
 }

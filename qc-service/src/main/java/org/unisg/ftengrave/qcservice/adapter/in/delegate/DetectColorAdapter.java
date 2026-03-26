@@ -16,7 +16,7 @@ public class DetectColorAdapter implements JavaDelegate {
         // TODO: Implement
         System.out.println("DetectingColor");
 
-        Boolean failed = false;
+        Boolean failed = true;
         if (failed) {
             //delegateExecution.setVariable("colorCheckMessage", "No color could be detected");
             throw new BpmnError("COLOR_DETECTION_FAILED", "No color detected");

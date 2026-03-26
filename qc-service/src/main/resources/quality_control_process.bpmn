@@ -94,7 +94,7 @@
       <bpmn:outgoing>Flow_0haitj1</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0haitj1" sourceRef="Gateway_1i7gin2" targetRef="Activity_1wtp2k8" />
-    <bpmn:boundaryEvent id="Event_0u1thl4" attachedToRef="Activity_1wtp2k8">
+    <bpmn:boundaryEvent id="Event_0u1thl4" name="Timeout" attachedToRef="Activity_1wtp2k8">
       <bpmn:outgoing>Flow_0wwlqry</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_0yg1zle">
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT20S</bpmn:timeDuration>
@@ -188,6 +188,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1m7l4wz_di" bpmnElement="Event_0u1thl4">
         <dc:Bounds x="552" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="590" y="313" width="40" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0guv598_di" bpmnElement="Event_17dlz0w">
         <dc:Bounds x="552" y="202" width="36" height="36" />
