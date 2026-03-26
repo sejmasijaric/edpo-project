@@ -42,9 +42,9 @@ services:
     volumes:
       - qc-service-data:/app/data
 
-  sorter-integration-setrvice:
+  sorter-integration-service:
     build:
-      context: ../sorter-integration-setrvice
+      context: ../sorter-integration-service
       dockerfile: Dockerfile
     depends_on:
       - kafka
