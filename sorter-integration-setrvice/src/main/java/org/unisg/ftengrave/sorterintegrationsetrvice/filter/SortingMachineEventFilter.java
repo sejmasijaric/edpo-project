@@ -68,7 +68,7 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
   }
 
   private Optional<String> mapDetectedColorEvent(SortingMachineEventTransformationDto dto) {
-    if (dto.getI3LightBarrier() != 0) {
+    if (!(dto.getI2ColorSensor() <= 1700)) {
       return Optional.empty();
     }
 
@@ -90,13 +90,13 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
 
   private Optional<String> mapEventType(SortingMachineEventTransformationDto dto) {
     if (dto.getI6LightBarrier() == 0) {
-      return Optional.of("sort_to_reject");
+      return Optional.of("sort-to-reject");
     }
     if (dto.getI7LightBarrier() == 0) {
-      return Optional.of("sort_to_shipping");
+      return Optional.of("sort-to-shipping");
     }
     if (dto.getI8LightBarrier() == 0) {
-      return Optional.of("sort_to_retry");
+      return Optional.of("sort-to-retry");
     }
     return Optional.empty();
   }
