@@ -1,22 +1,22 @@
-package org.example.mqttkafkabridge.mqtt;
+package org.unisg.mqttkafkabridge.mqtt;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.nio.charset.StandardCharsets;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.example.mqttkafkabridge.kafka.KafkaEventPublisher;
+import java.util.Optional;
+import org.eclipse.paho.client.mqttv3.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
+import org.unisg.mqttkafkabridge.kafka.KafkaEventPublisher;
 
 @Component
+@ConditionalOnProperty(name = "mqtt.bridge.enabled", havingValue = "true", matchIfMissing = true)
 public class MqttSubscriber implements MqttCallback {
 
   private final KafkaEventPublisher kafkaEventPublisher;
+  private final MqttEventFilter<?> mqttEventFilter;
 
   @Value("${mqtt.broker.url}")
   private String brokerUrl;
@@ -27,10 +27,17 @@ public class MqttSubscriber implements MqttCallback {
   @Value("${mqtt.client-id:mqtt-kafka-bridge}")
   private String clientId;
 
+  @Value("${mqtt.username:}")
+  private String username;
+
+  @Value("${mqtt.password:}")
+  private String password;
+
   private MqttClient mqttClient;
 
-  public MqttSubscriber(KafkaEventPublisher kafkaEventPublisher) {
+  public MqttSubscriber(KafkaEventPublisher kafkaEventPublisher, MqttEventFilter<?> mqttEventFilter) {
     this.kafkaEventPublisher = kafkaEventPublisher;
+    this.mqttEventFilter = mqttEventFilter;
   }
 
   @PostConstruct
@@ -41,6 +48,12 @@ public class MqttSubscriber implements MqttCallback {
     MqttConnectOptions options = new MqttConnectOptions();
     options.setAutomaticReconnect(true);
     options.setCleanSession(true);
+    if (!username.isBlank()) {
+      options.setUserName(username);
+    }
+    if (!password.isBlank()) {
+      options.setPassword(password.toCharArray());
+    }
 
     mqttClient.connect(options);
     mqttClient.subscribe(topic);
@@ -62,9 +75,9 @@ public class MqttSubscriber implements MqttCallback {
 
   @Override
   public void messageArrived(String topic, MqttMessage message) {
-    // TODO: add filtering/transforming of events before publishing to kafka
-    // TODO: use choreography here, not orchestration
-    kafkaEventPublisher.publish(new String(message.getPayload(), StandardCharsets.UTF_8));
+    String rawPayload = new String(message.getPayload(), StandardCharsets.UTF_8);
+    Optional<?> filteredEvent = mqttEventFilter.filter(topic, rawPayload);
+    filteredEvent.ifPresent(kafkaEventPublisher::publish);
   }
 
   @Override

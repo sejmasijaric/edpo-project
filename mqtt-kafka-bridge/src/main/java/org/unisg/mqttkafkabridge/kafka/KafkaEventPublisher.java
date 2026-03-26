@@ -1,5 +1,7 @@
-package org.example.mqttkafkabridge.kafka;
+package org.unisg.mqttkafkabridge.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,13 +17,17 @@ public class KafkaEventPublisher {
 
   private final DefaultKafkaProducerFactory<String, String> producerFactory;
   private final KafkaTemplate<String, String> kafkaTemplate;
+  private final ObjectMapper objectMapper;
 
-  @Value("${kafka.topic}")
+  @Value("${kafka.topic.sorting-machine}")
   private String topic;
 
-  public KafkaEventPublisher() {
+  public KafkaEventPublisher(ObjectMapper objectMapper,
+                             @Value("${kafka.bootstrap-servers}") String bootstrapServers) {
+    this.objectMapper = objectMapper;
+
     Map<String, Object> configuration = new HashMap<>();
-    configuration.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
+    configuration.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     configuration.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     configuration.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
@@ -29,8 +35,12 @@ public class KafkaEventPublisher {
     kafkaTemplate = new KafkaTemplate<>(producerFactory);
   }
 
-  public void publish(String payload) {
-    kafkaTemplate.send(topic, payload);
+  public void publish(Object payload) {
+    try {
+      kafkaTemplate.send(topic, objectMapper.writeValueAsString(payload));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Failed to serialize Kafka payload", e);
+    }
   }
 
   @PreDestroy
