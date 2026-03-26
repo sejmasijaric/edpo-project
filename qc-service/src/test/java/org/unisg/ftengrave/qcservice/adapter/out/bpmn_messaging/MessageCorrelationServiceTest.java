@@ -10,7 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
+import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.ColorDetectedMessageProcessDto;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.MessageProcessDto;
+import org.unisg.ftengrave.qcservice.domain.ItemColor;
 
 import java.util.Map;
 
@@ -73,5 +75,26 @@ class MessageCorrelationServiceTest {
         assertThat(result).isSameAs(messageCorrelationResult);
         verify(messageCorrelationBuilder).setVariables(Map.of("itemIdentifier", "item-99", "qualityStatus", "PASSED"));
         verify(messageCorrelationBuilder).processInstanceBusinessKey("item-99");
+    }
+
+    @Test
+    void correlatesColorDetectedMessageIncludingColorVariable() {
+        CamundaMessageDto messageDto = CamundaMessageDto.builder()
+                .dto(ColorDetectedMessageProcessDto.builder()
+                        .itemIdentifier("item-77")
+                        .color(ItemColor.BLUE)
+                        .build())
+                .build();
+
+        when(runtimeService.createMessageCorrelation("ColorDetectedMessage")).thenReturn(messageCorrelationBuilder);
+        when(messageCorrelationBuilder.setVariables(Map.of("itemIdentifier", "item-77", "color", "BLUE"))).thenReturn(messageCorrelationBuilder);
+        when(messageCorrelationBuilder.processInstanceBusinessKey("item-77")).thenReturn(messageCorrelationBuilder);
+        when(messageCorrelationBuilder.correlateWithResult()).thenReturn(messageCorrelationResult);
+
+        MessageCorrelationResult result = messageCorrelationService.correlateMessage(messageDto, "ColorDetectedMessage");
+
+        assertThat(result).isSameAs(messageCorrelationResult);
+        verify(messageCorrelationBuilder).setVariables(Map.of("itemIdentifier", "item-77", "color", "BLUE"));
+        verify(messageCorrelationBuilder).processInstanceBusinessKey("item-77");
     }
 }
