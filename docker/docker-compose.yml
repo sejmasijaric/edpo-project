@@ -44,8 +44,8 @@ services:
 
   sorter-integration-service:
     build:
-      context: ../sorter-integration-service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: sorter-integration-service/Dockerfile
     depends_on:
       - kafka
     environment:
