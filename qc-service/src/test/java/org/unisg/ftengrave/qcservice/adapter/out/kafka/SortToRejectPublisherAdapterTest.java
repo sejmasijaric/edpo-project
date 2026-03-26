@@ -19,8 +19,10 @@ class SortToRejectPublisherAdapterTest {
 
     @Test
     void publishSendsSortToRejectEventToSortingMachineTopic() {
+        SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
+        sorterIntegrationProperties.getEventTypes().put("rejection", "sort-to-reject");
         SortToRejectPublisherAdapter adapter =
-                new SortToRejectPublisherAdapter(kafkaOperations, "sorting-machine");
+                new SortToRejectPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
 
         adapter.publish();
 

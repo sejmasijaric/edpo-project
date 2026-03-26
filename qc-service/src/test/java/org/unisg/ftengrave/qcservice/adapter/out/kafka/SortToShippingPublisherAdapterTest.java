@@ -19,8 +19,10 @@ class SortToShippingPublisherAdapterTest {
 
     @Test
     void publishSendsSortToShippingEventToSortingMachineTopic() {
+        SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
+        sorterIntegrationProperties.getEventTypes().put("shipping", "sort-to-shipping");
         SortToShippingPublisherAdapter adapter =
-                new SortToShippingPublisherAdapter(kafkaOperations, "sorting-machine");
+                new SortToShippingPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
 
         adapter.publish();
 

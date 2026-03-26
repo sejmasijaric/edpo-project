@@ -8,20 +8,23 @@ import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineEventDt
 @Component
 public class SortToShippingPublisherAdapter implements SortToShippingPublisher {
 
-    private static final String SORT_TO_SHIPPING_EVENT_TYPE = "sort-to-shipping";
-
     private final KafkaOperations<String, SortingMachineEventDto> kafkaOperations;
     private final String sortingMachineTopic;
+    private final SorterIntegrationProperties sorterIntegrationProperties;
 
     public SortToShippingPublisherAdapter(
             KafkaOperations<String, SortingMachineEventDto> kafkaOperations,
-            @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic) {
+            @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic,
+            SorterIntegrationProperties sorterIntegrationProperties) {
         this.kafkaOperations = kafkaOperations;
         this.sortingMachineTopic = sortingMachineTopic;
+        this.sorterIntegrationProperties = sorterIntegrationProperties;
     }
 
     @Override
     public void publish() {
-        kafkaOperations.send(sortingMachineTopic, new SortingMachineEventDto(SORT_TO_SHIPPING_EVENT_TYPE));
+        kafkaOperations.send(
+                sortingMachineTopic,
+                new SortingMachineEventDto(sorterIntegrationProperties.getEventType(SorterSinkNames.SHIPPING)));
     }
 }

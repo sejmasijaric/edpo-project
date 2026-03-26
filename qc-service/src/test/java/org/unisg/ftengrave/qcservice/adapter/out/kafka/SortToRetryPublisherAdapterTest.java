@@ -19,8 +19,10 @@ class SortToRetryPublisherAdapterTest {
 
     @Test
     void publishSendsSortToRetryEventToSortingMachineTopic() {
+        SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
+        sorterIntegrationProperties.getEventTypes().put("retry", "sort-to-retry");
         SortToRetryPublisherAdapter adapter =
-                new SortToRetryPublisherAdapter(kafkaOperations, "sorting-machine");
+                new SortToRetryPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
 
         adapter.publish();
 
