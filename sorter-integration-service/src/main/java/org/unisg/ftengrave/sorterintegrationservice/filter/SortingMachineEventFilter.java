@@ -8,7 +8,7 @@ import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventDto;
 import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventTransformationDto;
 import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 
-@Service
+// @Service
 public class SortingMachineEventFilter implements MqttEventFilter<SortingMachineEventDto> {
 
   private final ObjectMapper objectMapper;

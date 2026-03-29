@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 import org.unisg.mqttkafkabridge.kafka.KafkaEventPublisher;
 
-@Component
+// @Component
 @ConditionalOnProperty(name = "mqtt.bridge.enabled", havingValue = "true", matchIfMissing = true)
 public class MqttSubscriber implements MqttCallback {
 
