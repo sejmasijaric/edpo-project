@@ -9,7 +9,9 @@ import org.camunda.bpm.engine.rest.dto.message.MessageCorrelationResultDto;
 import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
 import org.camunda.bpm.engine.runtime.MessageCorrelationResult;
 import org.springframework.stereotype.Component;
+import org.unisg.ftengrave.qcservice.DuplicateBusinessKeyException;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
+import org.unisg.ftengrave.qcservice.config.CamundaBusinessKeyConstraintInitializer;
 
 import java.util.Map;
 
@@ -22,12 +24,13 @@ public class MessageCorrelationService {
     private final ObjectMapper objectMapper;
 
     public MessageCorrelationResult correlateMessage(CamundaMessageDto camundaMessageDto, String messageName) {
+        Map<String, Object> variables = extractVariables(camundaMessageDto);
+        String itemIdentifier = extractItemIdentifier(variables);
+
         try {
             log.info("Consuming message {}", messageName);
 
             MessageCorrelationBuilder messageCorrelationBuilder = runtimeService.createMessageCorrelation(messageName);
-            Map<String, Object> variables = extractVariables(camundaMessageDto);
-            String itemIdentifier = extractItemIdentifier(variables);
 
             if (!variables.isEmpty()) {
                 messageCorrelationBuilder.setVariables(variables);
@@ -45,9 +48,24 @@ public class MessageCorrelationService {
         } catch (MismatchingMessageCorrelationException e) {
             log.error("Issue when correlating the message: {}", e.getMessage());
         } catch (Exception e) {
+            if (isDuplicateBusinessKeyViolation(e)) {
+                throw new DuplicateBusinessKeyException(itemIdentifier, e);
+            }
             log.error("Unknown issue occurred", e);
         }
         return null;
+    }
+
+    private boolean isDuplicateBusinessKeyViolation(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null && message.contains(CamundaBusinessKeyConstraintInitializer.BUSINESS_KEY_INDEX_NAME)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private Map<String, Object> extractVariables(CamundaMessageDto camundaMessageDto) {

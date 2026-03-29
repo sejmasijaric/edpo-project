@@ -21,15 +21,19 @@ public class TemporaryStartQcController {
 
     @PostMapping("/temporary/start-qc/{itemIdentifier}")
     public ResponseEntity<Void> startQc(@PathVariable String itemIdentifier) {
-        CamundaMessageDto message = CamundaMessageDto.builder()
-                .dto(MessageProcessDto.builder()
-                        .itemIdentifier(itemIdentifier)
-                        .build())
-                .build();
+        try {
+            CamundaMessageDto message = CamundaMessageDto.builder()
+                    .dto(MessageProcessDto.builder()
+                            .itemIdentifier(itemIdentifier)
+                            .build())
+                    .build();
 
-        MessageCorrelationResult result = messageCorrelationService.correlateMessage(message, START_QC_MESSAGE);
-        return result != null
-                ? ResponseEntity.accepted().build()
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            MessageCorrelationResult result = messageCorrelationService.correlateMessage(message, START_QC_MESSAGE);
+            return result != null
+                    ? ResponseEntity.accepted().build()
+                    : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (DuplicateBusinessKeyException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 }
