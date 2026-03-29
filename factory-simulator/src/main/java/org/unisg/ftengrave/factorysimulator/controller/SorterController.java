@@ -52,6 +52,21 @@ public class SorterController {
     return createResponse(request, execution);
   }
 
+  @GetMapping("/detect_color")
+  public OneWayTransportResponse detectColor(
+      HttpServletRequest request,
+      @RequestParam String machine) {
+    OneWayTransportExecution execution = sorterService.detectColor(machine);
+
+    return new OneWayTransportResponse(
+        List.of(new ColorAttribute(
+            execution.detectedColor() == null ? "none" : execution.detectedColor())),
+        formatTimestamp(execution.endTime()),
+        request.getRequestURL().toString(),
+        formatProcessTime(execution.processTime()),
+        formatTimestamp(execution.startTime()));
+  }
+
   @GetMapping("/set_motor_speed")
   public OneWayTransportResponse setMotorSpeed(
       HttpServletRequest request,
@@ -109,5 +124,8 @@ public class SorterController {
   }
 
   private record SorterAttribute(String sink) {
+  }
+
+  private record ColorAttribute(String color) {
   }
 }

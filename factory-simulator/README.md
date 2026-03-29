@@ -28,8 +28,10 @@ The endpoint blocks until both modeled movement phases have finished. The delay 
 ## Sorter
 
 The simulator exposes `GET /sm/sort?machine=sm_1&start=initial&predefined_ejection_location=sink_1`.
+The simulator also exposes `GET /sm/detect_color?machine=sm_1`.
 
-The sorter uses a reusable one-way point-to-point transport model. It prefers `SM-I` as input, can pull an item forward from `MM-Eject` when `SM-I` is empty, and maps `sink_1`, `sink_2`, and `sink_3` to `SINK-S1`, `SINK-S2`, and `SINK-S3`.
+The sorter uses a reusable one-way point-to-point transport model. It prefers `SM-I` as input, can pull an item forward from `MM-ejection` when `SM-I` is empty, and maps `sink_1`, `sink_2`, and `sink_3` to `SINK-S1`, `SINK-S2`, and `SINK-S3`.
+The `detect_color` endpoint reports the current item color at the sorter input in lowercase, or `none` when no item was available to move or detect. Calling it will also advance an item from `MM-ejection` to `SM-I` when possible.
 
 ## Milling Machine
 

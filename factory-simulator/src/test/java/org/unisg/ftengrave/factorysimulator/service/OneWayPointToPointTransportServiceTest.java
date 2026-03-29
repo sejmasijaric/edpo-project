@@ -108,6 +108,50 @@ class OneWayPointToPointTransportServiceTest {
     assertEquals("Belt off", service.getStatus().phase());
   }
 
+  @Test
+  void detectColorReturnsTheInputItemColorWithoutMovingIt() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SM-I");
+
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("red", response.detectedColor());
+    assertEquals("ITEM-1001", sink(factorySimulatorService, "SM-I").item().id());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
+  }
+
+  @Test
+  void detectColorMovesAnItemFromThePreviousSinkToInputAndReturnsItsColor() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.White, "MM-ejection");
+
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("white", response.detectedColor());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
+    assertEquals("ITEM-1001", sink(factorySimulatorService, "SM-I").item().id());
+  }
+
+  @Test
+  void detectColorReturnsNoneWhenNoItemWasMovedOrDetected() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("none", response.detectedColor());
+    assertNull(sink(factorySimulatorService, "SM-I").item());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
+  }
+
   private OneWayPointToPointTransportService sorterService(
       FactorySimulatorService factorySimulatorService,
       Duration movementDelay) {

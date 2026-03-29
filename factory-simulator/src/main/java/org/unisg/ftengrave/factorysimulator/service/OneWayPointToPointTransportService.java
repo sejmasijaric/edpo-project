@@ -3,6 +3,7 @@ package org.unisg.ftengrave.factorysimulator.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.unisg.ftengrave.factorysimulator.domain.Item;
@@ -71,6 +72,32 @@ public class OneWayPointToPointTransportService {
 
     LocalDateTime endTime = LocalDateTime.now();
     return new OneWayTransportExecution(startTime, endTime, Duration.between(startTime, endTime));
+  }
+
+  public OneWayTransportExecution detectColor(String machine) {
+    validateMachine(machine);
+    status.set(this.machine.status("Belt on"));
+
+    LocalDateTime startTime = LocalDateTime.now();
+    String detectedColor = "none";
+    try {
+      Item item = factorySimulatorService.getSink(this.machine.inputSink()).item();
+      if (item == null && advancePreviousSinkToInput()) {
+        item = factorySimulatorService.getSink(this.machine.inputSink()).item();
+      }
+
+      if (item != null) {
+        detectedColor = item.color().name().toLowerCase(Locale.ENGLISH);
+      }
+    } finally {
+      if (factorySimulatorService.getSink(this.machine.holdSink()).item() == null) {
+        status.set(this.machine.idleStatus());
+      }
+    }
+
+    LocalDateTime endTime = LocalDateTime.now();
+    return new OneWayTransportExecution(
+        startTime, endTime, Duration.between(startTime, endTime), detectedColor);
   }
 
   public MachineStatus getStatus() {
@@ -168,7 +195,14 @@ public class OneWayPointToPointTransportService {
   public record OneWayTransportExecution(
       LocalDateTime startTime,
       LocalDateTime endTime,
-      Duration processTime) {
+      Duration processTime,
+      String detectedColor) {
+    public OneWayTransportExecution(
+        LocalDateTime startTime,
+        LocalDateTime endTime,
+        Duration processTime) {
+      this(startTime, endTime, processTime, null);
+    }
   }
 
   public record OneWayTransportResponse(

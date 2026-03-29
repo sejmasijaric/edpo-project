@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
+import org.unisg.ftengrave.factorysimulator.domain.Sink;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulationProperties;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.unisg.ftengrave.factorysimulator.service.OneWayPointToPointTransportService;
@@ -107,5 +108,58 @@ class SorterControllerTest {
               "link":"http://localhost/sm/set_motor_speed"
             }
             """));
+  }
+
+  @Test
+  void detectColorReturnsTheLowercaseItemColor() throws Exception {
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SM-I");
+
+    mockMvc.perform(get("/sm/detect_color")
+            .param("machine", "sm_1"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[{"color":"red"}],
+              "link":"http://localhost/sm/detect_color"
+            }
+            """));
+  }
+
+  @Test
+  void detectColorMovesItemFromMmEjectionToSmInput() throws Exception {
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.White, "MM-ejection");
+
+    mockMvc.perform(get("/sm/detect_color")
+            .param("machine", "sm_1"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[{"color":"white"}],
+              "link":"http://localhost/sm/detect_color"
+            }
+            """));
+
+    org.junit.jupiter.api.Assertions.assertNull(sink("MM-ejection").item());
+    org.junit.jupiter.api.Assertions.assertEquals("ITEM-1001", sink("SM-I").item().id());
+  }
+
+  @Test
+  void detectColorReturnsNoneWhenNoItemIsAvailable() throws Exception {
+    mockMvc.perform(get("/sm/detect_color")
+            .param("machine", "sm_1"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[{"color":"none"}],
+              "link":"http://localhost/sm/detect_color"
+            }
+            """));
+  }
+
+  private Sink sink(String sinkId) {
+    return factorySimulatorService.getSinks().stream()
+        .filter(sink -> sink.id().equals(sinkId))
+        .findFirst()
+        .orElseThrow();
   }
 }
