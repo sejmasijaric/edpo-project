@@ -3,17 +3,17 @@ package org.unisg.ftengrave.qcservice.adapter.out.kafka;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Component;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 
 @Component
 public class RequestColorDetectionPublisherAdapter implements RequestColorDetectionPublisher {
 
-    private final KafkaOperations<String, SortingMachineEventDto> kafkaOperations;
+    private final KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
     private final String sortingMachineTopic;
     private final SorterIntegrationProperties sorterIntegrationProperties;
 
     public RequestColorDetectionPublisherAdapter(
-            KafkaOperations<String, SortingMachineEventDto> kafkaOperations,
+            KafkaOperations<String, SortingMachineCommandDto> kafkaOperations,
             @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic,
             SorterIntegrationProperties sorterIntegrationProperties) {
         this.kafkaOperations = kafkaOperations;
@@ -25,7 +25,7 @@ public class RequestColorDetectionPublisherAdapter implements RequestColorDetect
     public void publish() {
         kafkaOperations.send(
                 sortingMachineTopic,
-                new SortingMachineEventDto(
-                        sorterIntegrationProperties.getEventType(SorterSinkNames.COLOR_DETECTION)));
+                new SortingMachineCommandDto(
+                        sorterIntegrationProperties.getCommandType(SorterSinkNames.COLOR_DETECTION)));
     }
 }

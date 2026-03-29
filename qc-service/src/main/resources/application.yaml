@@ -15,11 +15,11 @@ kafka:
 
 integration:
   sorter:
-    event-types:
-      color-detection: ${SORTER_EVENT_TYPE_COLOR_DETECTION:request-color-detection}
-      rejection: ${SORTER_EVENT_TYPE_REJECTION:sort-to-reject}
-      retry: ${SORTER_EVENT_TYPE_RETRY:sort-to-retry}
-      shipping: ${SORTER_EVENT_TYPE_SHIPPING:sort-to-shipping}
+    command-types:
+      color-detection: ${SORTER_COMMAND_TYPE_COLOR_DETECTION:request-color-detection}
+      rejection: ${SORTER_COMMAND_TYPE_REJECTION:request-sort-to-reject}
+      retry: ${SORTER_COMMAND_TYPE_RETRY:request-sort-to-retry}
+      shipping: ${SORTER_COMMAND_TYPE_SHIPPING:request-sort-to-shipping}
 
 camunda.bpm:
   admin-user:

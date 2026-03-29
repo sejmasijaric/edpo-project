@@ -9,18 +9,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaOperations;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 
 @ExtendWith(MockitoExtension.class)
 class SortToRetryPublisherAdapterTest {
 
     @Mock
-    private KafkaOperations<String, SortingMachineEventDto> kafkaOperations;
+    private KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
 
     @Test
-    void publishSendsSortToRetryEventToSortingMachineTopic() {
+    void publishSendsSortToRetryCommandToSortingMachineTopic() {
         SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
-        sorterIntegrationProperties.getEventTypes().put("retry", "sort-to-retry");
+        sorterIntegrationProperties.getCommandTypes().put("retry", "request-sort-to-retry");
         SortToRetryPublisherAdapter adapter =
                 new SortToRetryPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
 
@@ -28,6 +28,6 @@ class SortToRetryPublisherAdapterTest {
 
         verify(kafkaOperations).send(
                 eq("sorting-machine"),
-                argThat(event -> event != null && "sort-to-retry".equals(event.getEventType())));
+                argThat(command -> command != null && "request-sort-to-retry".equals(command.getCommandType())));
     }
 }

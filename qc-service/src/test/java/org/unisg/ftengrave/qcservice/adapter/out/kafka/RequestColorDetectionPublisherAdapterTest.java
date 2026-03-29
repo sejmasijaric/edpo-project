@@ -9,18 +9,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaOperations;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 
 @ExtendWith(MockitoExtension.class)
 class RequestColorDetectionPublisherAdapterTest {
 
     @Mock
-    private KafkaOperations<String, SortingMachineEventDto> kafkaOperations;
+    private KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
 
     @Test
-    void publishSendsRequestColorDetectionEventToSortingMachineTopic() {
+    void publishSendsRequestColorDetectionCommandToSortingMachineTopic() {
         SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
-        sorterIntegrationProperties.getEventTypes().put("color-detection", "request-color-detection");
+        sorterIntegrationProperties.getCommandTypes().put("color-detection", "request-color-detection");
         RequestColorDetectionPublisherAdapter adapter =
                 new RequestColorDetectionPublisherAdapter(
                         kafkaOperations, "sorting-machine", sorterIntegrationProperties);
@@ -29,6 +29,6 @@ class RequestColorDetectionPublisherAdapterTest {
 
         verify(kafkaOperations).send(
                 eq("sorting-machine"),
-                argThat(event -> event != null && "request-color-detection".equals(event.getEventType())));
+                argThat(command -> command != null && "request-color-detection".equals(command.getCommandType())));
     }
 }

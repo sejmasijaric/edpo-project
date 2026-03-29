@@ -4,29 +4,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
-import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineCommandDto;
 
 class SortingMachineServiceTest {
 
   @Test
-  void handleRoutesRejectEventToSinkOne() {
+  void handleRoutesRejectCommandToSinkOne() {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
-    sortingMachineService.handle(new SortingMachineEventDto("sort_to_reject"));
+    sortingMachineService.handle(new SortingMachineCommandDto("request-sort-to-reject"));
 
     assertEquals("sink_1", sorterHttpService.lastSinkIdentifier);
   }
 
   @Test
-  void handleIgnoresDetectedColorEvents() {
+  void handleRejectsSorterEventsOnCommandChannel() {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
-    sortingMachineService.handle(new SortingMachineEventDto("detected-color-red"));
-
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> sortingMachineService.handle(new SortingMachineCommandDto("detected-color-red")));
     assertNull(sorterHttpService.lastSinkIdentifier);
   }
 
@@ -35,20 +37,34 @@ class SortingMachineServiceTest {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
-    sortingMachineService.handle(new SortingMachineEventDto("request-color-detection"));
+    sortingMachineService.handle(new SortingMachineCommandDto("request-color-detection"));
 
     assertEquals(1, sorterHttpService.detectColorCalls);
     assertNull(sorterHttpService.lastSinkIdentifier);
   }
 
   @Test
-  void handleRejectsUnknownEventType() {
+  void commandDtoAcceptsLegacyEventTypeFieldWhenDeserializing() throws Exception {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    SortingMachineCommandDto sortingMachineCommandDto =
+        objectMapper.readValue(
+            """
+            {"eventType":"request-sort-to-shipping"}
+            """,
+            SortingMachineCommandDto.class);
+
+    assertEquals("request-sort-to-shipping", sortingMachineCommandDto.getCommandType());
+  }
+
+  @Test
+  void handleRejectsUnknownCommandType() {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
     assertThrows(
         IllegalArgumentException.class,
-        () -> sortingMachineService.handle(new SortingMachineEventDto("unknown-event")));
+        () -> sortingMachineService.handle(new SortingMachineCommandDto("unknown-command")));
     assertNull(sorterHttpService.lastSinkIdentifier);
   }
 

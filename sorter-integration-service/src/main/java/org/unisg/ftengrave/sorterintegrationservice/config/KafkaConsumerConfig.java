@@ -11,7 +11,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineCommandDto;
 
 @Configuration
 public class KafkaConsumerConfig {
@@ -29,7 +29,7 @@ public class KafkaConsumerConfig {
   private boolean autoStartup;
 
   @Bean
-  public ConsumerFactory<String, SortingMachineEventDto> consumerFactory() {
+  public ConsumerFactory<String, SortingMachineCommandDto> consumerFactory() {
     Map<String, Object> props = new HashMap<>();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
     props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -39,13 +39,13 @@ public class KafkaConsumerConfig {
     return new DefaultKafkaConsumerFactory<>(
         props,
         new StringDeserializer(),
-        new JsonDeserializer<>(SortingMachineEventDto.class, false));
+        new JsonDeserializer<>(SortingMachineCommandDto.class, false));
   }
 
   @Bean
-  public ConcurrentKafkaListenerContainerFactory<String, SortingMachineEventDto>
+  public ConcurrentKafkaListenerContainerFactory<String, SortingMachineCommandDto>
       kafkaListenerContainerFactory() {
-    ConcurrentKafkaListenerContainerFactory<String, SortingMachineEventDto> factory =
+    ConcurrentKafkaListenerContainerFactory<String, SortingMachineCommandDto> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory());
     factory.setAutoStartup(autoStartup);

@@ -9,18 +9,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaOperations;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 
 @ExtendWith(MockitoExtension.class)
 class SortToRejectPublisherAdapterTest {
 
     @Mock
-    private KafkaOperations<String, SortingMachineEventDto> kafkaOperations;
+    private KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
 
     @Test
-    void publishSendsSortToRejectEventToSortingMachineTopic() {
+    void publishSendsSortToRejectCommandToSortingMachineTopic() {
         SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
-        sorterIntegrationProperties.getEventTypes().put("rejection", "sort-to-reject");
+        sorterIntegrationProperties.getCommandTypes().put("rejection", "request-sort-to-reject");
         SortToRejectPublisherAdapter adapter =
                 new SortToRejectPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
 
@@ -28,6 +28,6 @@ class SortToRejectPublisherAdapterTest {
 
         verify(kafkaOperations).send(
                 eq("sorting-machine"),
-                argThat(event -> event != null && "sort-to-reject".equals(event.getEventType())));
+                argThat(command -> command != null && "request-sort-to-reject".equals(command.getCommandType())));
     }
 }

@@ -7,17 +7,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "integration.sorter")
 public class SorterIntegrationProperties {
 
-    private final Map<String, String> eventTypes = new HashMap<>();
+    private final Map<String, String> commandTypes = new HashMap<>();
 
-    public Map<String, String> getEventTypes() {
-        return eventTypes;
+    public Map<String, String> getCommandTypes() {
+        return commandTypes;
     }
 
-    public String getEventType(String sink) {
-        String eventType = eventTypes.get(sink);
-        if (eventType == null || eventType.isBlank()) {
-            throw new IllegalStateException("No sorter event type configured for sink: " + sink);
+    public String getCommandType(String sink) {
+        String commandType = commandTypes.get(sink);
+        if (commandType == null || commandType.isBlank()) {
+            throw new IllegalStateException("No sorter command type configured for sink: " + sink);
         }
-        return eventType;
+        return commandType;
     }
 }

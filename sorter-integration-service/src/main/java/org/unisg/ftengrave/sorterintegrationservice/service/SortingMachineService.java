@@ -2,15 +2,15 @@ package org.unisg.ftengrave.sorterintegrationservice.service;
 
 import java.util.Map;
 import org.springframework.stereotype.Service;
-import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.sorterintegrationservice.dto.SortingMachineCommandDto;
 
 @Service
 public class SortingMachineService {
 
-  private static final Map<String, String> EVENT_TO_SINK = Map.of(
-      "sort-to-reject", "sink_1",
-      "sort-to-shipping", "sink_2",
-      "sort-to-retry", "sink_3");
+  private static final Map<String, String> COMMAND_TO_SINK = Map.of(
+      "request-sort-to-reject", "sink_1",
+      "request-sort-to-shipping", "sink_2",
+      "request-sort-to-retry", "sink_3");
 
   private final SorterHttpService sorterHttpService;
 
@@ -18,17 +18,17 @@ public class SortingMachineService {
     this.sorterHttpService = sorterHttpService;
   }
 
-  public void handle(SortingMachineEventDto sortingMachineEventDto) {
-    String eventType = sortingMachineEventDto.getEventType();
-    if ("request-color-detection".equals(eventType)) {
+  public void handle(SortingMachineCommandDto sortingMachineCommandDto) {
+    String commandType = sortingMachineCommandDto.getCommandType();
+    if ("request-color-detection".equals(commandType)) {
       sorterHttpService.detectColor();
       return;
     }
 
-    String sinkIdentifier = EVENT_TO_SINK.get(eventType);
+    String sinkIdentifier = COMMAND_TO_SINK.get(commandType);
 
     if (sinkIdentifier == null) {
-      throw new IllegalArgumentException("Unsupported sorting event type: " + eventType);
+      throw new IllegalArgumentException("Unsupported sorting command type: " + commandType);
     }
 
     sorterHttpService.sortToSink(sinkIdentifier);

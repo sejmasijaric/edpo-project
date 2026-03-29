@@ -14,7 +14,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineEventDto;
+import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 
 @Configuration
 @EnableConfigurationProperties(SorterIntegrationProperties.class)
@@ -27,7 +27,7 @@ public class KafkaProducerConfig {
     private String trustedPackages;
 
     @Bean
-    public ProducerFactory<String, SortingMachineEventDto> producerFactory() {
+    public ProducerFactory<String, SortingMachineCommandDto> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -37,7 +37,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, SortingMachineEventDto> kafkaTemplate() {
+    public KafkaTemplate<String, SortingMachineCommandDto> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
