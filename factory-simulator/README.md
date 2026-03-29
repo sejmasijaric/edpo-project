@@ -8,6 +8,7 @@ Standalone Spring Boot application for simulating sinks and items in a smart fac
 - Models items with an ID and color
 - Supports listing, deleting, and moving items between sinks through an HTTP API
 - Supports a vacuum gripper endpoint that transports items between machine-specific sink aliases
+- Publishes sorter MQTT snapshots every 2 seconds so the integration layer can react to `SM-I` (`i3_light_barrier`) state changes
 - Renders a web UI with sinks positioned on top of a factory layout and an item-management control panel
 
 ## Run
@@ -17,6 +18,8 @@ mvn spring-boot:run
 ```
 
 The UI is available on `http://localhost:8081`.
+
+When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1` every 2 seconds. `i3_light_barrier` is set to `0` when an item is present in `SM-I` and `1` when `SM-I` is empty.
 
 ## Vacuum Grippers
 
@@ -32,6 +35,22 @@ The simulator also exposes `GET /sm/detect_color?machine=sm_1`.
 
 The sorter uses a reusable one-way point-to-point transport model. It prefers `SM-I` as input, can pull an item forward from `MM-ejection` when `SM-I` is empty, and maps `sink_1`, `sink_2`, and `sink_3` to `SINK-S1`, `SINK-S2`, and `SINK-S3`.
 The `detect_color` endpoint reports the current item color at the sorter input in lowercase, or `none` when no item was available to move or detect. Calling it will also advance an item from `MM-ejection` to `SM-I` when possible.
+
+## MQTT Mocking
+
+The simulator publishes the MQTT payload shape expected by `sorter-integration-service`:
+
+- Topic: `FTFactory/SM_1`
+- Interval: `2s`
+- Relevant field: `i3_light_barrier`
+
+Configuration is available through these environment variables:
+
+- `FACTORY_MQTT_ENABLED`
+- `FACTORY_MQTT_BROKER_URL`
+- `FACTORY_MQTT_TOPIC`
+- `FACTORY_MQTT_CLIENT_ID`
+- `FACTORY_MQTT_PUBLISH_INTERVAL`
 
 ## Milling Machine
 

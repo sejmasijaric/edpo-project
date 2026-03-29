@@ -10,10 +10,32 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # --- Used for testing Only --- (if there is extra time make these build conditionally)
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  factory-simulator:
+    build:
+      context: ../factory-simulator
+      dockerfile: Dockerfile
+    depends_on:
+      - mqtt-broker
+    ports:
+      - "8081:8081"
+    environment:
+      FACTORY_MQTT_BROKER_URL: tcp://mqtt-broker:1883
+      FACTORY_MQTT_TOPIC: FTFactory/SM_1
+      FACTORY_MQTT_PUBLISH_INTERVAL: 2s
+  # --- END Used for testing Only ---
 
   demo-service:
     build:
@@ -48,11 +70,16 @@ services:
       dockerfile: sorter-integration-service/Dockerfile
     depends_on:
       - kafka
+      - mqtt-broker
+      - factory-simulator
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883
+      MQTT_USERNAME: ""
+      MQTT_PASSWORD: ""
       # SORTER_HOST: 192.168.0.21 # Production
-      SORTER_HOST: host.docker.internal # Simulation
+      SORTER_HOST: factory-simulator # Simulation
       # SORTER_PORT: 5000 # Production
       SORTER_PORT: 8081 # Simulation
 

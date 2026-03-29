@@ -32,5 +32,5 @@ camunda.bpm:
 
 mqtt:
   broker:
-    url: tcp://192.168.0.21:1883
+    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
   topic: FTFactory/SM_1

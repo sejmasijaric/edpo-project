@@ -9,3 +9,9 @@ factory:
   simulation:
     movement-delay: 4s
     oven-burn-duration: 5s
+  mqtt:
+    enabled: ${FACTORY_MQTT_ENABLED:true}
+    broker-url: ${FACTORY_MQTT_BROKER_URL:tcp://localhost:1883}
+    topic: ${FACTORY_MQTT_TOPIC:FTFactory/SM_1}
+    client-id: ${FACTORY_MQTT_CLIENT_ID:factory-simulator}
+    publish-interval: ${FACTORY_MQTT_PUBLISH_INTERVAL:2s}
