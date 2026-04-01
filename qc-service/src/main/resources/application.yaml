@@ -9,7 +9,8 @@ spring:
 
 kafka:
   bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
-  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
+  group-id: ${KAFKA_GROUP_ID:qc-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.in.kafka.dto,org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
   topic:
     sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
 

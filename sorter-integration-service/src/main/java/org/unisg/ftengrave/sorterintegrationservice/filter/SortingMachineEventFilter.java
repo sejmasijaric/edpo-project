@@ -27,11 +27,9 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
       if (eventType.isEmpty()) {
         return Optional.empty();
       }
-
       if (eventType.get().equals(lastPublishedEventType)) {
         return Optional.empty();
       }
-
       lastPublishedEventType = eventType.get();
       return eventType.map(SortingMachineEventDto::new);
     } catch (Exception e) {
@@ -90,13 +88,13 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
 
   private Optional<String> mapEventType(SortingMachineEventTransformationDto dto) {
     if (dto.getI6LightBarrier() == 0) {
-      return Optional.of("sort_to_reject");
+      return Optional.of("sort-to-reject");
     }
     if (dto.getI7LightBarrier() == 0) {
-      return Optional.of("sort_to_shipping");
+      return Optional.of("sort-to-shipping");
     }
     if (dto.getI8LightBarrier() == 0) {
-      return Optional.of("sort_to_retry");
+      return Optional.of("sort-to-retry");
     }
     return Optional.empty();
   }

@@ -3,6 +3,8 @@ package org.unisg.ftengrave.qcservice.adapter.out.kafka;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 
 @Component
@@ -23,9 +25,23 @@ public class RequestColorDetectionPublisherAdapter implements RequestColorDetect
 
     @Override
     public void publish() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sendColorDetectionCommand();
+                }
+            });
+            return;
+        }
+
+        sendColorDetectionCommand();
+    }
+
+    private void sendColorDetectionCommand() {
         kafkaOperations.send(
-                sortingMachineTopic,
-                new SortingMachineCommandDto(
-                        sorterIntegrationProperties.getCommandType(SorterSinkNames.COLOR_DETECTION)));
+            sortingMachineTopic,
+            new SortingMachineCommandDto(
+                sorterIntegrationProperties.getCommandType(SorterSinkNames.COLOR_DETECTION)));
     }
 }

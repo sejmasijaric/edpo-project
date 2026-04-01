@@ -14,7 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:qc-service-business-key-test;DB_CLOSE_DELAY=-1")
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:qc-service-business-key-test;DB_CLOSE_DELAY=-1",
+        "spring.kafka.listener.auto-startup=false",
+        "camunda.bpm.generate-unique-process-engine-name=true"
+})
 @AutoConfigureMockMvc
 class TemporaryStartQcControllerIntegrationTest {
 

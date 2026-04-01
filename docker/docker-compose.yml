@@ -72,16 +72,17 @@ services:
       - kafka
       - mqtt-broker
       - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883
-      MQTT_USERNAME: ""
-      MQTT_PASSWORD: ""
-      # SORTER_HOST: 192.168.0.21 # Production
-      SORTER_HOST: factory-simulator # Simulation
-      # SORTER_PORT: 5000 # Production
-      SORTER_PORT: 8081 # Simulation
+      MQTT_BROKER_URL: tcp://192.168.0.21:1883 # Production
+      # MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      SORTER_HOST: 192.168.0.21 # Production
+      # SORTER_HOST: factory-simulator # Simulation
+      SORTER_PORT: 5000 # Production
+      # SORTER_PORT: 8081 # Simulation
 
 volumes:
   demo-service-data:

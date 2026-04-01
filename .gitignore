@@ -142,3 +142,8 @@ Desktop.ini
 ######################
 .eslintcache
 /HELP.md
+
+######################
+# Local Docker Secrets
+######################
+/docker/.env.mqtt.local
