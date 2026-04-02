@@ -60,7 +60,7 @@ class SortingMachineEventFilterTest {
   }
 
   @Test
-  void emitsArrivalAndReleaseEventsForQcBarrier() {
+  void emitsArrivalAndReleaseEventsForColorSensorBarrier() {
     Optional<SortingMachineEventDto> arrivalEvent =
         filter.filter("FTFactory/SM_1", payload(0, 1800, 1, 1, 1, 1));
 
@@ -71,6 +71,20 @@ class SortingMachineEventFilterTest {
     assertEquals("item-arrived-at-color-sensor", arrivalEvent.get().getEventType());
     assertTrue(releaseEvent.isPresent());
     assertEquals("item-left-color-sensor", releaseEvent.get().getEventType());
+  }
+
+  @Test
+  void emitsArrivalAndReleaseEventsForQcBarrier() {
+    Optional<SortingMachineEventDto> arrivalEvent =
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 0, 1, 1, 1));
+
+    Optional<SortingMachineEventDto> releaseEvent =
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
+
+    assertTrue(arrivalEvent.isPresent());
+    assertEquals("item-arrived-at-qc", arrivalEvent.get().getEventType());
+    assertTrue(releaseEvent.isPresent());
+    assertEquals("item-left-qc", releaseEvent.get().getEventType());
   }
 
   @Test

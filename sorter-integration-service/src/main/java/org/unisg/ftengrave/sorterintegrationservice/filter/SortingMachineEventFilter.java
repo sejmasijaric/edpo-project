@@ -17,6 +17,8 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
   private static final int RED_UPPER_BOUNDARY = 1500;
   private static final String ITEM_ARRIVED_AT_COLOR_SENSOR = "item-arrived-at-color-sensor";
   private static final String ITEM_LEFT_COLOR_SENSOR = "item-left-color-sensor";
+  private static final String ITEM_ARRIVED_AT_QC = "item-arrived-at-qc";
+  private static final String ITEM_LEFT_QC = "item-left-qc";
   private static final String COLOR_DETECTED_EVENT = "color-detected";
   private static final String ITEM_ARRIVED_AT_REJECTION_SINK = "item-arrived-at-rejection-sink";
   private static final String ITEM_LEFT_REJECTION_SINK = "item-left-rejection-sink";
@@ -93,11 +95,20 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
       return colorSensorEvent;
     }
 
-    Optional<String> qcEvent = mapLightBarrierEvent(
+    Optional<String> colorSensorBarrierEvent = mapLightBarrierEvent(
         lastSnapshot == null ? null : lastSnapshot.getI1LightBarrier(),
         dto.getI1LightBarrier(),
         ITEM_ARRIVED_AT_COLOR_SENSOR,
         ITEM_LEFT_COLOR_SENSOR);
+    if (colorSensorBarrierEvent.isPresent()) {
+      return colorSensorBarrierEvent.map(SortingMachineEventDto::new);
+    }
+
+    Optional<String> qcEvent = mapLightBarrierEvent(
+        lastSnapshot == null ? null : lastSnapshot.getI3LightBarrier(),
+        dto.getI3LightBarrier(),
+        ITEM_ARRIVED_AT_QC,
+        ITEM_LEFT_QC);
     if (qcEvent.isPresent()) {
       return qcEvent.map(SortingMachineEventDto::new);
     }
