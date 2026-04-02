@@ -18,8 +18,7 @@ import org.unisg.ftengrave.qcservice.domain.ItemColor;
 public class ColorDetectedEventService {
 
     static final String COLOR_DETECTED_MESSAGE = "ColorDetectedMessage";
-    private static final String COLOR_DETECTED_EVENT_PREFIX = "color-detected-";
-    private static final String LEGACY_DETECTED_COLOR_EVENT_PREFIX = "detected-color-";
+    private static final String COLOR_DETECTED_EVENT = "color-detected";
 
     private final RuntimeService runtimeService;
     private final MessageCorrelationService messageCorrelationService;
@@ -52,12 +51,22 @@ public class ColorDetectedEventService {
             return null;
         }
 
-        return switch (event.getEventType()) {
-            case COLOR_DETECTED_EVENT_PREFIX + "white", LEGACY_DETECTED_COLOR_EVENT_PREFIX + "white" -> ItemColor.WHITE;
-            case COLOR_DETECTED_EVENT_PREFIX + "red", LEGACY_DETECTED_COLOR_EVENT_PREFIX + "red" -> ItemColor.RED;
-            case COLOR_DETECTED_EVENT_PREFIX + "blue", LEGACY_DETECTED_COLOR_EVENT_PREFIX + "blue" -> ItemColor.BLUE;
+        if (!COLOR_DETECTED_EVENT.equals(event.getEventType())) {
+            log.info("Ignoring unsupported sorting-machine event {}", event.getEventType());
+            return null;
+        }
+
+        if (event.getColor() == null || event.getColor().isBlank()) {
+            log.info("Ignoring color-detected event without color payload");
+            return null;
+        }
+
+        return switch (event.getColor().trim().toLowerCase()) {
+            case "white" -> ItemColor.WHITE;
+            case "red" -> ItemColor.RED;
+            case "blue" -> ItemColor.BLUE;
             default -> {
-                log.info("Ignoring unsupported sorting-machine event {}", event.getEventType());
+                log.info("Ignoring color-detected event with unsupported color {}", event.getColor());
                 yield null;
             }
         };

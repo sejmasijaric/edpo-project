@@ -21,7 +21,7 @@ class SortingMachineEventConsumerTest {
 
     @Test
     void delegatesConsumedEventToApplicationService() {
-        SortingMachineEventDto event = new SortingMachineEventDto("color-detected-white");
+        SortingMachineEventDto event = new SortingMachineEventDto("color-detected", "white");
 
         consumer.consume(event);
 

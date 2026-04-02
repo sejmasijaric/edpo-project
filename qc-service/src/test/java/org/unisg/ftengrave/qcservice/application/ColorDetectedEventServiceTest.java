@@ -61,7 +61,7 @@ class ColorDetectedEventServiceTest {
         when(processInstanceQuery.singleResult()).thenReturn(processInstance);
         when(processInstance.getBusinessKey()).thenReturn("item-42");
 
-        service.handle(new SortingMachineEventDto("color-detected-red"));
+        service.handle(new SortingMachineEventDto("color-detected", "red"));
 
         CamundaMessageDto expectedMessage = CamundaMessageDto.builder()
                 .dto(ColorDetectedMessageProcessDto.builder()
@@ -86,8 +86,16 @@ class ColorDetectedEventServiceTest {
         when(executionQuery.messageEventSubscriptionName(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(executionQuery);
         when(executionQuery.singleResult()).thenReturn(null);
 
-        service.handle(new SortingMachineEventDto("color-detected-blue"));
+        service.handle(new SortingMachineEventDto("color-detected", "blue"));
 
         verify(messageCorrelationService, never()).correlateMessage(any(), any());
+    }
+
+    @Test
+    void ignoresColorDetectedEventWithoutColorPayload() {
+        service.handle(new SortingMachineEventDto("color-detected"));
+
+        verify(messageCorrelationService, never()).correlateMessage(any(), any());
+        verify(runtimeService, never()).createExecutionQuery();
     }
 }
