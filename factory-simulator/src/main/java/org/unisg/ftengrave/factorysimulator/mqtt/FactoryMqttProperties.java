@@ -8,8 +8,10 @@ public class FactoryMqttProperties {
 
   private boolean enabled = true;
   private String brokerUrl = "tcp://localhost:1883";
-  private String topic = "FTFactory/SM_1";
-  private String clientId = "factory-simulator";
+  private String sorterTopic = "FTFactory/SM_1";
+  private String sorterClientId = "factory-simulator-sorter";
+  private String vacuumGripperTopic = "FTFactory/VGR_1";
+  private String vacuumGripperClientId = "factory-simulator-vgr";
   private Duration publishInterval = Duration.ofSeconds(2);
 
   public boolean isEnabled() {
@@ -28,20 +30,36 @@ public class FactoryMqttProperties {
     this.brokerUrl = brokerUrl;
   }
 
-  public String getTopic() {
-    return topic;
+  public String getSorterTopic() {
+    return sorterTopic;
   }
 
-  public void setTopic(String topic) {
-    this.topic = topic;
+  public void setSorterTopic(String sorterTopic) {
+    this.sorterTopic = sorterTopic;
   }
 
-  public String getClientId() {
-    return clientId;
+  public String getSorterClientId() {
+    return sorterClientId;
   }
 
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
+  public void setSorterClientId(String sorterClientId) {
+    this.sorterClientId = sorterClientId;
+  }
+
+  public String getVacuumGripperTopic() {
+    return vacuumGripperTopic;
+  }
+
+  public void setVacuumGripperTopic(String vacuumGripperTopic) {
+    this.vacuumGripperTopic = vacuumGripperTopic;
+  }
+
+  public String getVacuumGripperClientId() {
+    return vacuumGripperClientId;
+  }
+
+  public void setVacuumGripperClientId(String vacuumGripperClientId) {
+    this.vacuumGripperClientId = vacuumGripperClientId;
   }
 
   public Duration getPublishInterval() {

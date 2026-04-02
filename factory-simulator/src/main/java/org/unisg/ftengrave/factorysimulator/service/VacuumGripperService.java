@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
+
 public class VacuumGripperService {
 
   private final FactorySimulatorService factorySimulatorService;
   private final Duration movementDelay;
   private final VacuumGripperMachine machine;
   private final AtomicReference<MachineStatus> status;
+  private final AtomicReference<VacuumGripperTaskState> mqttStatus;
 
   public VacuumGripperService(
       FactorySimulatorService factorySimulatorService,
@@ -30,6 +32,7 @@ public class VacuumGripperService {
         statusCardY,
         Map.copyOf(requestToFactorySinkMapping));
     this.status = new AtomicReference<>(this.machine.idleStatus());
+    this.mqttStatus = new AtomicReference<>(VacuumGripperTaskState.idle());
   }
 
   public VacuumGripperExecution pickUpAndTransport(String machine, String start, String end) {
@@ -42,6 +45,7 @@ public class VacuumGripperService {
     LocalDateTime startTime = LocalDateTime.now();
 
     try {
+      mqttStatus.set(VacuumGripperTaskState.started("pick_up_and_transport"));
       status.set(this.machine.status("Moving to pickup"));
       waitBetweenMovements();
       factorySimulatorService.moveItemBetweenSinks(mappedStart, this.machine.holdSink(), true);
@@ -51,6 +55,7 @@ public class VacuumGripperService {
       factorySimulatorService.tryMoveItemBetweenSinks(this.machine.holdSink(), mappedEnd, true);
     } finally {
       status.set(this.machine.idleStatus());
+      mqttStatus.set(VacuumGripperTaskState.idle());
     }
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -59,6 +64,10 @@ public class VacuumGripperService {
 
   public MachineStatus getStatus() {
     return status.get();
+  }
+
+  public VacuumGripperMqttStatus getMqttStatus() {
+    return mqttStatus.get().snapshot();
   }
 
   private void waitBetweenMovements() {
@@ -107,5 +116,30 @@ public class VacuumGripperService {
       String link,
       String process_time,
       String start_time) {
+  }
+
+  public record VacuumGripperMqttStatus(
+      String currentTask,
+      double currentTaskDurationSeconds) {
+  }
+
+  private record VacuumGripperTaskState(String currentTask, LocalDateTime startedAt) {
+
+    private static VacuumGripperTaskState started(String currentTask) {
+      return new VacuumGripperTaskState(currentTask, LocalDateTime.now());
+    }
+
+    private static VacuumGripperTaskState idle() {
+      return new VacuumGripperTaskState("", null);
+    }
+
+    private VacuumGripperMqttStatus snapshot() {
+      if (startedAt == null || currentTask.isBlank()) {
+        return new VacuumGripperMqttStatus("", 0.0d);
+      }
+
+      long elapsedMillis = Duration.between(startedAt, LocalDateTime.now()).toMillis();
+      return new VacuumGripperMqttStatus(currentTask, elapsedMillis / 1000.0d);
+    }
   }
 }

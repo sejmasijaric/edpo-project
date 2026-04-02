@@ -13,7 +13,10 @@ class SortingMachineMqttPayloadFactoryTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
   private final SortingMachineMqttPayloadFactory payloadFactory =
-      new SortingMachineMqttPayloadFactory(objectMapper, factorySimulatorService);
+      new SortingMachineMqttPayloadFactory(
+          objectMapper,
+          new MqttTimestampFactory(),
+          factorySimulatorService);
 
   @Test
   void reportsClosedI3WhenSorterInputContainsAnItem() throws Exception {

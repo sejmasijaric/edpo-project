@@ -8,7 +8,7 @@ Standalone Spring Boot application for simulating sinks and items in a smart fac
 - Models items with an ID and color
 - Supports listing, deleting, and moving items between sinks through an HTTP API
 - Supports a vacuum gripper endpoint that transports items between machine-specific sink aliases
-- Publishes sorter MQTT snapshots every 2 seconds so the integration layer can react to `SM-I` (`i3_light_barrier`) state changes
+- Publishes sorter and vacuum gripper MQTT snapshots every 2 seconds so the integration layer can react to sensor changes
 - Renders a web UI with sinks positioned on top of a factory layout and an item-management control panel
 
 ## Run
@@ -19,7 +19,7 @@ mvn spring-boot:run
 
 The UI is available on `http://localhost:8081`.
 
-When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1` every 2 seconds. `i3_light_barrier` is set to `0` when an item is present in `SM-I` and `1` when `SM-I` is empty.
+When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1` and vacuum gripper events to `FTFactory/VGR_1` every 2 seconds. The vacuum gripper maps `i7_light_barrier` to `SINK-I1` and `i4_light_barrier` to `SINK-I2`.
 
 ## Vacuum Grippers
 
@@ -38,18 +38,22 @@ The `detect_color` endpoint reports the current item color at the sorter input i
 
 ## MQTT Mocking
 
-The simulator publishes the MQTT payload shape expected by `sorter-integration-service`:
+The simulator publishes MQTT payload shapes for the integration services:
 
-- Topic: `FTFactory/SM_1`
+- Sorter topic: `FTFactory/SM_1`
+- Vacuum gripper topic: `FTFactory/VGR_1`
 - Interval: `2s`
-- Relevant field: `i3_light_barrier`
+- Sorter relevant field: `i3_light_barrier`
+- Vacuum gripper relevant fields: `i7_light_barrier`, `i4_light_barrier`, `current_task`, `current_task_duration`
 
 Configuration is available through these environment variables:
 
 - `FACTORY_MQTT_ENABLED`
 - `FACTORY_MQTT_BROKER_URL`
-- `FACTORY_MQTT_TOPIC`
-- `FACTORY_MQTT_CLIENT_ID`
+- `FACTORY_MQTT_SORTER_TOPIC`
+- `FACTORY_MQTT_SORTER_CLIENT_ID`
+- `FACTORY_MQTT_VGR_TOPIC`
+- `FACTORY_MQTT_VGR_CLIENT_ID`
 - `FACTORY_MQTT_PUBLISH_INTERVAL`
 
 ## Milling Machine

@@ -77,6 +77,8 @@ class VacuumGripperServiceTest {
         service.pickUpAndTransport("vgr_1", "start", "end");
 
     assertTrue(!response.processTime().isNegative());
+    assertEquals("", service.getMqttStatus().currentTask());
+    assertEquals(0.0d, service.getMqttStatus().currentTaskDurationSeconds());
     assertNull(sink(factorySimulatorService, "VGR-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-I2").item().id());
   }

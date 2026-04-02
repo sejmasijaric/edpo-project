@@ -12,6 +12,8 @@ factory:
   mqtt:
     enabled: ${FACTORY_MQTT_ENABLED:true}
     broker-url: ${FACTORY_MQTT_BROKER_URL:tcp://localhost:1883}
-    topic: ${FACTORY_MQTT_TOPIC:FTFactory/SM_1}
-    client-id: ${FACTORY_MQTT_CLIENT_ID:factory-simulator}
+    sorter-topic: ${FACTORY_MQTT_SORTER_TOPIC:FTFactory/SM_1}
+    sorter-client-id: ${FACTORY_MQTT_SORTER_CLIENT_ID:factory-simulator-sorter}
+    vacuum-gripper-topic: ${FACTORY_MQTT_VGR_TOPIC:FTFactory/VGR_1}
+    vacuum-gripper-client-id: ${FACTORY_MQTT_VGR_CLIENT_ID:factory-simulator-vgr}
     publish-interval: ${FACTORY_MQTT_PUBLISH_INTERVAL:2s}

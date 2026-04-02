@@ -7,14 +7,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(prefix = "factory.mqtt", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class SortingMachineMqttPublisher extends AbstractMqttPublisher {
+public class VacuumGripperMqttPublisher extends AbstractMqttPublisher {
 
-  private final SortingMachineMqttPayloadFactory payloadFactory;
+  private final VacuumGripperMqttPayloadFactory payloadFactory;
 
-  public SortingMachineMqttPublisher(
+  public VacuumGripperMqttPublisher(
       FactoryMqttProperties properties,
-      SortingMachineMqttPayloadFactory payloadFactory) {
-    super(properties.getBrokerUrl(), properties.getSorterClientId(), properties.getSorterTopic());
+      VacuumGripperMqttPayloadFactory payloadFactory) {
+    super(
+        properties.getBrokerUrl(),
+        properties.getVacuumGripperClientId(),
+        properties.getVacuumGripperTopic());
     this.payloadFactory = payloadFactory;
   }
 
