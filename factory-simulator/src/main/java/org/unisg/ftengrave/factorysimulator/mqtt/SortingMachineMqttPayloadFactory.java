@@ -28,9 +28,10 @@ public class SortingMachineMqttPayloadFactory {
     Item sink_s1_item = factorySimulatorService.getSink("SINK-S1").item();
     Item sink_s2_item = factorySimulatorService.getSink("SINK-S2").item();
     Item sink_s3_item = factorySimulatorService.getSink("SINK-S3").item();
+    Item sorter_start_item = factorySimulatorService.getSink("MM-ejection").item();
 
     payload.put("timestamp", Instant.now().toString());
-    payload.put("i1_light_barrier", 1);
+    payload.put("i1_light_barrier", sorter_start_item==null ? 1 : 0);
     payload.put("i2_color_sensor", mapColorSensor(sink_i_item));
     payload.put("i3_light_barrier", sink_i_item == null ? 1 : 0);
     payload.put("i6_light_barrier", sink_s1_item == null ? 1 : 0);
