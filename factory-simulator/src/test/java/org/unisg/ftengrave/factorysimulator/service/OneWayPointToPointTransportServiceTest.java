@@ -25,6 +25,8 @@ class OneWayPointToPointTransportServiceTest {
 
     assertTrue(!response.processTime().isNegative());
     assertEquals("Belt off", service.getStatus().phase());
+    assertEquals("", service.getMqttStatus().currentTask());
+    assertEquals(0.0d, service.getMqttStatus().currentTaskDurationSeconds());
     assertNull(sink(factorySimulatorService, "SM-I").item());
     assertNull(sink(factorySimulatorService, "SM-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-S1").item().id());

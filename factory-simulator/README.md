@@ -8,7 +8,7 @@ Standalone Spring Boot application for simulating sinks and items in a smart fac
 - Models items with an ID and color
 - Supports listing, deleting, and moving items between sinks through an HTTP API
 - Supports a vacuum gripper endpoint that transports items between machine-specific sink aliases
-- Publishes sorter, vacuum gripper, and oven MQTT snapshots every 2 seconds so the integration layer can react to sensor changes
+- Publishes sorter, vacuum gripper, oven, and milling machine MQTT snapshots every 2 seconds so the integration layer can react to sensor changes
 - Renders a web UI with sinks positioned on top of a factory layout and an item-management control panel
 
 ## Run
@@ -19,7 +19,7 @@ mvn spring-boot:run
 
 The UI is available on `http://localhost:8081`.
 
-When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1`, vacuum gripper events to `FTFactory/VGR_1`, and oven events to `FTFactory/OV_1` every 2 seconds. The vacuum gripper maps `i7_light_barrier` to `SINK-I1` and `i4_light_barrier` to `SINK-I2`. The oven maps `i5_light_barrier` to `VGR-oven`.
+When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1`, vacuum gripper events to `FTFactory/VGR_1`, oven events to `FTFactory/OV_1`, and milling machine events to `FTFactory/MM_1` every 2 seconds. The vacuum gripper maps `i7_light_barrier` to `SINK-I1` and `i4_light_barrier` to `SINK-I2`. The oven maps `i5_light_barrier` to `VGR-oven`. The milling machine maps `i4_light_barrier` to `MM-ejection`.
 
 ## Vacuum Grippers
 
@@ -43,10 +43,12 @@ The simulator publishes MQTT payload shapes for the integration services:
 - Sorter topic: `FTFactory/SM_1`
 - Vacuum gripper topic: `FTFactory/VGR_1`
 - Oven topic: `FTFactory/OV_1`
+- Milling machine topic: `FTFactory/MM_1`
 - Interval: `2s`
 - Sorter relevant field: `i3_light_barrier`
 - Vacuum gripper relevant fields: `i7_light_barrier`, `i4_light_barrier`, `current_task`, `current_task_duration`
 - Oven relevant fields: `i5_light_barrier`, `current_task`, `current_task_duration`
+- Milling machine relevant fields: `i4_light_barrier`, `current_task`, `current_task_duration`
 
 Configuration is available through these environment variables:
 
@@ -58,6 +60,8 @@ Configuration is available through these environment variables:
 - `FACTORY_MQTT_VGR_CLIENT_ID`
 - `FACTORY_MQTT_OVEN_TOPIC`
 - `FACTORY_MQTT_OVEN_CLIENT_ID`
+- `FACTORY_MQTT_MM_TOPIC`
+- `FACTORY_MQTT_MM_CLIENT_ID`
 - `FACTORY_MQTT_PUBLISH_INTERVAL`
 
 ## Milling Machine

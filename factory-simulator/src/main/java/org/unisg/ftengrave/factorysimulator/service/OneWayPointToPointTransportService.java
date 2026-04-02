@@ -17,6 +17,7 @@ public class OneWayPointToPointTransportService {
   private final Duration movementDelay;
   private final OneWayTransportMachine machine;
   private final AtomicReference<MachineStatus> status;
+  private final AtomicReference<TransportTaskState> mqttStatus;
 
   public OneWayPointToPointTransportService(
       FactorySimulatorService factorySimulatorService,
@@ -39,6 +40,7 @@ public class OneWayPointToPointTransportService {
         statusCardX,
         statusCardY);
     this.status = new AtomicReference<>(this.machine.idleStatus());
+    this.mqttStatus = new AtomicReference<>(TransportTaskState.idle());
   }
 
   public OneWayTransportExecution transport(
@@ -46,6 +48,7 @@ public class OneWayPointToPointTransportService {
       String start,
       Function<Item, String> targetSinkResolver) {
     validate(machine, start);
+    mqttStatus.set(TransportTaskState.started("move_from_to"));
     status.set(this.machine.status("Belt on"));
 
     LocalDateTime startTime = LocalDateTime.now();
@@ -68,6 +71,7 @@ public class OneWayPointToPointTransportService {
       if (factorySimulatorService.getSink(this.machine.holdSink()).item() == null) {
         status.set(this.machine.idleStatus());
       }
+      mqttStatus.set(TransportTaskState.idle());
     }
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -76,6 +80,7 @@ public class OneWayPointToPointTransportService {
 
   public OneWayTransportExecution detectColor(String machine) {
     validateMachine(machine);
+    mqttStatus.set(TransportTaskState.started("detect_color"));
     status.set(this.machine.status("Belt on"));
 
     LocalDateTime startTime = LocalDateTime.now();
@@ -93,6 +98,7 @@ public class OneWayPointToPointTransportService {
       if (factorySimulatorService.getSink(this.machine.holdSink()).item() == null) {
         status.set(this.machine.idleStatus());
       }
+      mqttStatus.set(TransportTaskState.idle());
     }
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -104,13 +110,19 @@ public class OneWayPointToPointTransportService {
     return status.get();
   }
 
+  public TransportMqttStatus getMqttStatus() {
+    return mqttStatus.get().snapshot();
+  }
+
   public OneWayTransportExecution setMotorSpeed(String machine, int motor, int speed) {
     validateMachine(machine);
 
     LocalDateTime startTime = LocalDateTime.now();
     if (speed > 0) {
+      mqttStatus.set(TransportTaskState.started("set_motor_speed"));
       status.set(this.machine.status("Belt on"));
     } else {
+      mqttStatus.set(TransportTaskState.idle());
       status.set(this.machine.idleStatus());
     }
     LocalDateTime endTime = LocalDateTime.now();
@@ -211,5 +223,30 @@ public class OneWayPointToPointTransportService {
       String link,
       String process_time,
       String start_time) {
+  }
+
+  public record TransportMqttStatus(
+      String currentTask,
+      double currentTaskDurationSeconds) {
+  }
+
+  private record TransportTaskState(String currentTask, LocalDateTime startedAt) {
+
+    private static TransportTaskState started(String currentTask) {
+      return new TransportTaskState(currentTask, LocalDateTime.now());
+    }
+
+    private static TransportTaskState idle() {
+      return new TransportTaskState("", null);
+    }
+
+    private TransportMqttStatus snapshot() {
+      if (startedAt == null || currentTask.isBlank()) {
+        return new TransportMqttStatus("", 0.0d);
+      }
+
+      long elapsedMillis = Duration.between(startedAt, LocalDateTime.now()).toMillis();
+      return new TransportMqttStatus(currentTask, elapsedMillis / 1000.0d);
+    }
   }
 }
