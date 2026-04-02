@@ -12,24 +12,9 @@
       <bpmn:outgoing>Flow_10vm4zk</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0bfxafc" sourceRef="Activity_1wtp2k8" targetRef="Activity_1vhipym" />
-    <bpmn:serviceTask id="Activity_0dwpaza" name="Sorting Machine Sort to Rejection Sink" camunda:delegateExpression="${SortToRejectionAdapter}">
-      <bpmn:extensionElements />
-      <bpmn:incoming>Flow_0q1zuzk</bpmn:incoming>
-      <bpmn:outgoing>Flow_02ip3b5</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_11xvwaz" name="Color Incorrect" sourceRef="Gateway_0a372n8" targetRef="Gateway_1knde2s">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!passedColorCheck}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:serviceTask id="Activity_031az9x" name="Sorting Machine Sort to Re-Try Sink" camunda:delegateExpression="${SortToRetryAdapter}">
-      <bpmn:extensionElements />
-      <bpmn:incoming>Flow_09xv5l2</bpmn:incoming>
-      <bpmn:outgoing>Flow_0f506hl</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_0c13ean" name="Sorting Machine Sort to Shipping Sink" camunda:delegateExpression="${SortToShippingAdapter}">
-      <bpmn:extensionElements />
-      <bpmn:incoming>Flow_1pcv6k5</bpmn:incoming>
-      <bpmn:outgoing>Flow_1nv6c25</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_09xv5l2" name="No Color Detected" sourceRef="Event_17dlz0w" targetRef="Activity_031az9x" />
     <bpmn:sequenceFlow id="Flow_10vm4zk" name="Color Correct" sourceRef="Gateway_0a372n8" targetRef="Activity_1mrwlyg">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${passedColorCheck}</bpmn:conditionExpression>
@@ -110,15 +95,27 @@
       <bpmn:outgoing>Flow_09xv5l2</bpmn:outgoing>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_0efthlv" errorRef="Error_1gz0n9o" />
     </bpmn:boundaryEvent>
-    <bpmn:sendTask id="Activity_1wtp2k8" name="Sorting Machine Request Color Detection" camunda:delegateExpression="${RequestColorDetectionAdapter}">
+    <bpmn:sendTask id="Activity_1wtp2k8" name="Send SM Detect Color Command" camunda:delegateExpression="${RequestColorDetectionAdapter}">
       <bpmn:incoming>Flow_0haitj1</bpmn:incoming>
       <bpmn:outgoing>Flow_0bfxafc</bpmn:outgoing>
     </bpmn:sendTask>
-    <bpmn:receiveTask id="Activity_1vhipym" name="Sorting Machine Color Detected" messageRef="Message_119r48s">
+    <bpmn:receiveTask id="Activity_1vhipym" name="Await Color Detection Result" messageRef="Message_119r48s">
       <bpmn:incoming>Flow_0bfxafc</bpmn:incoming>
       <bpmn:outgoing>Flow_0hicsj9</bpmn:outgoing>
     </bpmn:receiveTask>
     <bpmn:sequenceFlow id="Flow_0hicsj9" sourceRef="Activity_1vhipym" targetRef="Gateway_0a372n8" />
+    <bpmn:sendTask id="Activity_031az9x" name="Send SM Sort to Re-Try Command" camunda:delegateExpression="${SortToRetryAdapter}">
+      <bpmn:incoming>Flow_09xv5l2</bpmn:incoming>
+      <bpmn:outgoing>Flow_0f506hl</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="Activity_0c13ean" name="Send SM Sort to Shipping Command" camunda:delegateExpression="${SortToShippingAdapter}">
+      <bpmn:incoming>Flow_1pcv6k5</bpmn:incoming>
+      <bpmn:outgoing>Flow_1nv6c25</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="Activity_0dwpaza" name="Send SM Sort to Rejection Command" camunda:delegateExpression="${SortToRejectionAdapter}">
+      <bpmn:incoming>Flow_0q1zuzk</bpmn:incoming>
+      <bpmn:outgoing>Flow_02ip3b5</bpmn:outgoing>
+    </bpmn:sendTask>
   </bpmn:process>
   <bpmn:message id="Message_1maa6ei" name="StartQcMessage" />
   <bpmn:message id="Message_119r48s" name="ColorDetectedMessage" />
@@ -136,18 +133,6 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="604" y="226" width="71" height="27" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0c6po70" bpmnElement="Activity_0dwpaza">
-        <dc:Bounds x="1020" y="320" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1ot2fvz" bpmnElement="Activity_031az9x">
-        <dc:Bounds x="1020" y="120" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1vojvrs" bpmnElement="Activity_0c13ean">
-        <dc:Bounds x="1020" y="220" width="100" height="80" />
-        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1jm0vm9" bpmnElement="Event_0nvzha9">
         <dc:Bounds x="1162" y="342" width="36" height="36" />
@@ -187,6 +172,18 @@
         <dc:Bounds x="500" y="220" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qd9c02_di" bpmnElement="Activity_031az9x">
+        <dc:Bounds x="1020" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jzepfs_di" bpmnElement="Activity_0c13ean">
+        <dc:Bounds x="1020" y="220" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vodvkg_di" bpmnElement="Activity_0dwpaza">
+        <dc:Bounds x="1020" y="320" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0guv598_di" bpmnElement="Event_17dlz0w">
         <dc:Bounds x="532" y="202" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -213,7 +210,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_09xv5l2_di" bpmnElement="Flow_09xv5l2">
-        <di:waypoint x="550" y="200" />
+        <di:waypoint x="550" y="202" />
         <di:waypoint x="550" y="160" />
         <di:waypoint x="1020" y="160" />
         <bpmndi:BPMNLabel>
