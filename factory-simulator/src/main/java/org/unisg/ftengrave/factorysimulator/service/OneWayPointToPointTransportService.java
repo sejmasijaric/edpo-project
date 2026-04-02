@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.unisg.ftengrave.factorysimulator.domain.Item;
 import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
+import org.unisg.ftengrave.factorysimulator.mqtt.SorterColorDetectionMqttPublisher;
 
 public class OneWayPointToPointTransportService {
 
@@ -18,6 +19,7 @@ public class OneWayPointToPointTransportService {
   private final OneWayTransportMachine machine;
   private final AtomicReference<MachineStatus> status;
   private final AtomicReference<TransportTaskState> mqttStatus;
+  private final SorterColorDetectionMqttPublisher sorterColorDetectionMqttPublisher;
 
   public OneWayPointToPointTransportService(
       FactorySimulatorService factorySimulatorService,
@@ -29,6 +31,31 @@ public class OneWayPointToPointTransportService {
       String holdSink,
       int statusCardX,
       int statusCardY) {
+    this(
+        factorySimulatorService,
+        properties,
+        machineName,
+        acceptedStart,
+        inputSink,
+        previousSinks,
+        holdSink,
+        statusCardX,
+        statusCardY,
+        item -> {
+        });
+  }
+
+  public OneWayPointToPointTransportService(
+      FactorySimulatorService factorySimulatorService,
+      FactorySimulationProperties properties,
+      String machineName,
+      String acceptedStart,
+      String inputSink,
+      List<String> previousSinks,
+      String holdSink,
+      int statusCardX,
+      int statusCardY,
+      SorterColorDetectionMqttPublisher sorterColorDetectionMqttPublisher) {
     this.factorySimulatorService = factorySimulatorService;
     this.movementDelay = properties.getMovementDelay();
     this.machine = new OneWayTransportMachine(
@@ -41,6 +68,7 @@ public class OneWayPointToPointTransportService {
         statusCardY);
     this.status = new AtomicReference<>(this.machine.idleStatus());
     this.mqttStatus = new AtomicReference<>(TransportTaskState.idle());
+    this.sorterColorDetectionMqttPublisher = sorterColorDetectionMqttPublisher;
   }
 
   public OneWayTransportExecution transport(
@@ -87,6 +115,12 @@ public class OneWayPointToPointTransportService {
     String detectedColor = "none";
     try {
       Item item = factorySimulatorService.getSink(this.machine.inputSink()).item();
+      if (item == null) {
+        Item previousItem = findItemInPreviousSinks();
+        if (previousItem != null) {
+          sorterColorDetectionMqttPublisher.publishDetectedColor(previousItem);
+        }
+      }
       if (item == null && advancePreviousSinkToInput()) {
         item = factorySimulatorService.getSink(this.machine.inputSink()).item();
       }
@@ -166,6 +200,16 @@ public class OneWayPointToPointTransportService {
       }
     }
     return false;
+  }
+
+  private Item findItemInPreviousSinks() {
+    for (String previousSink : this.machine.previousSinks()) {
+      Item item = factorySimulatorService.getSink(previousSink).item();
+      if (item != null) {
+        return item;
+      }
+    }
+    return null;
   }
 
   private void waitBetweenMovements() {
