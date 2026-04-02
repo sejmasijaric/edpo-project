@@ -29,7 +29,7 @@ class SortingMachineEventFilterTest {
         filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
 
     assertTrue(event.isPresent());
-    assertEquals("item-left-color-sensor", event.get().getEventType());
+    assertEquals("item-left-qc-station", event.get().getEventType());
   }
 
   @Test
@@ -55,9 +55,9 @@ class SortingMachineEventFilterTest {
         filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
 
     assertTrue(arrivalEvent.isPresent());
-    assertEquals("item-arrived-at-qc", arrivalEvent.get().getEventType());
+    assertEquals("item-arrived-at-color-sensor", arrivalEvent.get().getEventType());
     assertTrue(releaseEvent.isPresent());
-    assertEquals("item-left-qc", releaseEvent.get().getEventType());
+    assertEquals("item-left-color-sensor", releaseEvent.get().getEventType());
   }
 
   @Test

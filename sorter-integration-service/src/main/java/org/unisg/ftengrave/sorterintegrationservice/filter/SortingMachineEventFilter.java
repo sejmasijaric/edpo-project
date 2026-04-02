@@ -12,10 +12,10 @@ import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 public class SortingMachineEventFilter implements MqttEventFilter<SortingMachineEventDto> {
 
   private static final int LIGHT_BARRIER_INTERRUPTED = 0;
-  private static final String ITEM_ARRIVED_AT_QC = "item-arrived-at-qc";
-  private static final String ITEM_LEFT_QC = "item-left-qc";
-  private static final String COLOR_DETECTED_EVENT_PREFIX = "color-detected-";
+  private static final String ITEM_ARRIVED_AT_COLOR_SENSOR = "item-arrived-at-color-sensor";
   private static final String ITEM_LEFT_COLOR_SENSOR = "item-left-color-sensor";
+  private static final String COLOR_DETECTED_EVENT_PREFIX = "color-detected-";
+  private static final String ITEM_LEFT_QC_STATION = "item-left-qc-station";
   private static final String ITEM_ARRIVED_AT_REJECTION_SINK = "item-arrived-at-rejection-sink";
   private static final String ITEM_LEFT_REJECTION_SINK = "item-left-rejection-sink";
   private static final String ITEM_ARRIVED_AT_SHIPPING_SINK = "item-arrived-at-shipping-sink";
@@ -91,8 +91,8 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
     Optional<String> qcEvent = mapLightBarrierEvent(
         lastSnapshot == null ? null : lastSnapshot.getI1LightBarrier(),
         dto.getI1LightBarrier(),
-        ITEM_ARRIVED_AT_QC,
-        ITEM_LEFT_QC);
+        ITEM_ARRIVED_AT_COLOR_SENSOR,
+        ITEM_LEFT_COLOR_SENSOR);
     if (qcEvent.isPresent()) {
       return qcEvent;
     }
@@ -138,7 +138,7 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
         previousBarrierState,
         dto.getI3LightBarrier(),
         COLOR_DETECTED_EVENT_PREFIX + determineColor(dto),
-        ITEM_LEFT_COLOR_SENSOR);
+        ITEM_LEFT_QC_STATION);
   }
 
   private Optional<String> mapLightBarrierEvent(
