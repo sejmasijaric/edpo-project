@@ -33,6 +33,9 @@ public class MessageCorrelationService {
             MessageCorrelationBuilder messageCorrelationBuilder = runtimeService.createMessageCorrelation(messageName);
 
             if (!variables.isEmpty()) {
+                for (Object variable : variables.values()){
+                    System.out.println(variable);
+                }
                 messageCorrelationBuilder.setVariables(variables);
             }
 
