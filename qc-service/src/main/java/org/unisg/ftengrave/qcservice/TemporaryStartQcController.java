@@ -6,10 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.MessageCorrelationService;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.MessageProcessDto;
+import org.unisg.ftengrave.qcservice.domain.ItemColor;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,11 +22,12 @@ public class TemporaryStartQcController {
     private final MessageCorrelationService messageCorrelationService;
 
     @PostMapping("/temporary/start-qc/{itemIdentifier}")
-    public ResponseEntity<Void> startQc(@PathVariable String itemIdentifier) {
+    public ResponseEntity<Void> startQc(@PathVariable String itemIdentifier, @RequestParam ItemColor targetColor) {
         try {
             CamundaMessageDto message = CamundaMessageDto.builder()
                     .dto(MessageProcessDto.builder()
                             .itemIdentifier(itemIdentifier)
+                            .targetColor(targetColor)
                             .build())
                     .build();
 

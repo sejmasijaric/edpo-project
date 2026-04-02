@@ -44,11 +44,12 @@ class MessageCorrelationServiceTest {
         CamundaMessageDto messageDto = CamundaMessageDto.builder()
                 .dto(MessageProcessDto.builder()
                         .itemIdentifier("item-42")
+                        .targetColor(ItemColor.RED)
                         .build())
                 .build();
 
         when(runtimeService.createMessageCorrelation("MessageKafkaDemo")).thenReturn(messageCorrelationBuilder);
-        when(messageCorrelationBuilder.setVariables(Map.of("itemIdentifier", "item-42"))).thenReturn(messageCorrelationBuilder);
+        when(messageCorrelationBuilder.setVariables(Map.of("itemIdentifier", "item-42", "targetColor", "RED"))).thenReturn(messageCorrelationBuilder);
         when(messageCorrelationBuilder.processInstanceBusinessKey("item-42")).thenReturn(messageCorrelationBuilder);
         when(messageCorrelationBuilder.correlateWithResult()).thenReturn(messageCorrelationResult);
 
@@ -56,7 +57,7 @@ class MessageCorrelationServiceTest {
 
         assertThat(result).isSameAs(messageCorrelationResult);
         verify(messageCorrelationBuilder).processInstanceBusinessKey("item-42");
-        verify(messageCorrelationBuilder).setVariables(Map.of("itemIdentifier", "item-42"));
+        verify(messageCorrelationBuilder).setVariables(Map.of("itemIdentifier", "item-42", "targetColor", "RED"));
     }
 
     @Test

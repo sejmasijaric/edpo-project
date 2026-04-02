@@ -49,6 +49,21 @@ class ColorDetectedEventServiceTest {
     }
 
     @Test
+    void correlatesNoneColorEventForBoundaryErrorHandling() {
+        when(waitingMessageBusinessKeyResolver.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn("item-42");
+
+        service.handle(new SortingMachineEventDto("color-detected", "none"));
+
+        CamundaMessageDto expectedMessage = CamundaMessageDto.builder()
+                .dto(ColorDetectedMessageProcessDto.builder()
+                        .itemIdentifier("item-42")
+                        .color(ItemColor.NONE)
+                        .build())
+                .build();
+        verify(messageCorrelationService).correlateMessage(eq(expectedMessage), eq(ColorDetectedEventService.COLOR_DETECTED_MESSAGE));
+    }
+
+    @Test
     void ignoresNonColorEvents() {
         service.handle(new SortingMachineEventDto("sort-to-shipping"));
 

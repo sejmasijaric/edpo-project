@@ -58,14 +58,10 @@ public class ColorDetectedEventService {
             return null;
         }
 
-        return switch (event.getColor().trim().toLowerCase()) {
-            case "white" -> ItemColor.WHITE;
-            case "red" -> ItemColor.RED;
-            case "blue" -> ItemColor.BLUE;
-            default -> {
-                log.info("Ignoring color-detected event with unsupported color {}", event.getColor());
-                yield null;
-            }
-        };
+        ItemColor detectedColor = ItemColor.fromExternalValue(event.getColor());
+        if (detectedColor == null) {
+            log.info("Ignoring color-detected event with unsupported color {}", event.getColor());
+        }
+        return detectedColor;
     }
 }
