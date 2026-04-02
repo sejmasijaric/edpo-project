@@ -16,4 +16,6 @@ factory:
     sorter-client-id: ${FACTORY_MQTT_SORTER_CLIENT_ID:factory-simulator-sorter}
     vacuum-gripper-topic: ${FACTORY_MQTT_VGR_TOPIC:FTFactory/VGR_1}
     vacuum-gripper-client-id: ${FACTORY_MQTT_VGR_CLIENT_ID:factory-simulator-vgr}
+    oven-topic: ${FACTORY_MQTT_OVEN_TOPIC:FTFactory/OV_1}
+    oven-client-id: ${FACTORY_MQTT_OVEN_CLIENT_ID:factory-simulator-oven}
     publish-interval: ${FACTORY_MQTT_PUBLISH_INTERVAL:2s}

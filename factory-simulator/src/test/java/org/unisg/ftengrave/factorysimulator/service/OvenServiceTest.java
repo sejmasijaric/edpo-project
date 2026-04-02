@@ -20,6 +20,8 @@ class OvenServiceTest {
 
     assertFalse(service.getStatus().performingAction());
     assertEquals("Idle", service.getStatus().phase());
+    assertEquals("", service.getMqttStatus().currentTask());
+    assertEquals(0.0d, service.getMqttStatus().currentTaskDurationSeconds());
     assertTrue(execution.processTime().compareTo(Duration.ofSeconds(1)) < 0);
   }
 

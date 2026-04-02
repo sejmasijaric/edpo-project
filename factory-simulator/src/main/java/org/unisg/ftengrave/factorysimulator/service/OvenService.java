@@ -11,6 +11,7 @@ public class OvenService {
   private final OvenMachine machine;
   private final Duration defaultBurnDuration;
   private final AtomicReference<MachineStatus> status;
+  private final AtomicReference<OvenTaskState> mqttStatus;
 
   public OvenService(
       FactorySimulationProperties properties,
@@ -20,6 +21,7 @@ public class OvenService {
     this.machine = new OvenMachine(machineName, statusCardX, statusCardY);
     this.defaultBurnDuration = properties.getOvenBurnDuration();
     this.status = new AtomicReference<>(this.machine.idleStatus());
+    this.mqttStatus = new AtomicReference<>(OvenTaskState.idle());
   }
 
   public OvenExecution burn(String machine, Integer timeInSeconds) {
@@ -29,10 +31,12 @@ public class OvenService {
     LocalDateTime startTime = LocalDateTime.now();
 
     try {
+      mqttStatus.set(OvenTaskState.started("burn"));
       status.set(this.machine.status("burn"));
       waitForBurn(burnDuration);
     } finally {
       status.set(this.machine.idleStatus());
+      mqttStatus.set(OvenTaskState.idle());
     }
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -41,6 +45,10 @@ public class OvenService {
 
   public MachineStatus getStatus() {
     return status.get();
+  }
+
+  public OvenMqttStatus getMqttStatus() {
+    return mqttStatus.get().snapshot();
   }
 
   private void validateMachine(String machine) {
@@ -94,5 +102,30 @@ public class OvenService {
       String link,
       String process_time,
       String start_time) {
+  }
+
+  public record OvenMqttStatus(
+      String currentTask,
+      double currentTaskDurationSeconds) {
+  }
+
+  private record OvenTaskState(String currentTask, LocalDateTime startedAt) {
+
+    private static OvenTaskState started(String currentTask) {
+      return new OvenTaskState(currentTask, LocalDateTime.now());
+    }
+
+    private static OvenTaskState idle() {
+      return new OvenTaskState("", null);
+    }
+
+    private OvenMqttStatus snapshot() {
+      if (startedAt == null || currentTask.isBlank()) {
+        return new OvenMqttStatus("", 0.0d);
+      }
+
+      long elapsedMillis = Duration.between(startedAt, LocalDateTime.now()).toMillis();
+      return new OvenMqttStatus(currentTask, elapsedMillis / 1000.0d);
+    }
   }
 }
