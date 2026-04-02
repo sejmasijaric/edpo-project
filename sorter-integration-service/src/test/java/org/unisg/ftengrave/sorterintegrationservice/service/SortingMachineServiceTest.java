@@ -2,7 +2,6 @@ package org.unisg.ftengrave.sorterintegrationservice.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -22,13 +21,12 @@ class SortingMachineServiceTest {
   }
 
   @Test
-  void handleRejectsSorterEventsOnCommandChannel() {
+  void handleIgnoresSorterEventsOnCommandChannel() {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> sortingMachineService.handle(new SortingMachineCommandDto("detected-color-red")));
+    sortingMachineService.handle(new SortingMachineCommandDto("detected-color-red"));
+
     assertNull(sorterHttpService.lastSinkIdentifier);
   }
 
@@ -58,13 +56,12 @@ class SortingMachineServiceTest {
   }
 
   @Test
-  void handleRejectsUnknownCommandType() {
+  void handleIgnoresUnknownCommandType() {
     RecordingSorterHttpService sorterHttpService = new RecordingSorterHttpService();
     SortingMachineService sortingMachineService = new SortingMachineService(sorterHttpService);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> sortingMachineService.handle(new SortingMachineCommandDto("unknown-command")));
+    sortingMachineService.handle(new SortingMachineCommandDto("unknown-command"));
+
     assertNull(sorterHttpService.lastSinkIdentifier);
   }
 

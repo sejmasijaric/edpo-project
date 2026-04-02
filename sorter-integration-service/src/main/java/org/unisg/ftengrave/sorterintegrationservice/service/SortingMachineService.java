@@ -28,7 +28,7 @@ public class SortingMachineService {
     String sinkIdentifier = COMMAND_TO_SINK.get(commandType);
 
     if (sinkIdentifier == null) {
-      throw new IllegalArgumentException("Unsupported sorting command type: " + commandType);
+      return;
     }
 
     sorterHttpService.sortToSink(sinkIdentifier);
