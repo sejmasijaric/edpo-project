@@ -87,14 +87,14 @@ class MessageCorrelationServiceTest {
                 .build();
 
         when(runtimeService.createMessageCorrelation("ColorDetectedMessage")).thenReturn(messageCorrelationBuilder);
-        when(messageCorrelationBuilder.setVariables(Map.of("itemIdentifier", "item-77", "color", "BLUE"))).thenReturn(messageCorrelationBuilder);
+        when(messageCorrelationBuilder.setVariables(Map.of("itemIdentifier", "item-77", "detected-color", "BLUE"))).thenReturn(messageCorrelationBuilder);
         when(messageCorrelationBuilder.processInstanceBusinessKey("item-77")).thenReturn(messageCorrelationBuilder);
         when(messageCorrelationBuilder.correlateWithResult()).thenReturn(messageCorrelationResult);
 
         MessageCorrelationResult result = messageCorrelationService.correlateMessage(messageDto, "ColorDetectedMessage");
 
         assertThat(result).isSameAs(messageCorrelationResult);
-        verify(messageCorrelationBuilder).setVariables(Map.of("itemIdentifier", "item-77", "color", "BLUE"));
+        verify(messageCorrelationBuilder).setVariables(Map.of("itemIdentifier", "item-77", "detected-color", "BLUE"));
         verify(messageCorrelationBuilder).processInstanceBusinessKey("item-77");
     }
 }
