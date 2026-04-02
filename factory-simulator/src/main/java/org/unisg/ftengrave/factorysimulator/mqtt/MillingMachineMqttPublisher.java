@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(prefix = "factory.mqtt", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class MillingMachineMqttPublisher extends AbstractMqttPublisher {
+public class MillingMachineMqttPublisher extends AbstractMqttPublisher
+    implements MovementTriggeredMqttPublisher {
 
   private final MillingMachineMqttPayloadFactory payloadFactory;
 
@@ -24,5 +25,15 @@ public class MillingMachineMqttPublisher extends AbstractMqttPublisher {
   @Scheduled(fixedDelayString = "${factory.mqtt.publish-interval:2s}")
   void publish() throws MqttException {
     publishPayload(payloadFactory.createPayload());
+  }
+
+  @Override
+  public void publishForMovement() {
+    try {
+      publish();
+    } catch (MqttException exception) {
+      // Scheduled publishing already tolerates connection issues; movement-triggered publishing
+      // should behave the same and never block simulator state updates.
+    }
   }
 }

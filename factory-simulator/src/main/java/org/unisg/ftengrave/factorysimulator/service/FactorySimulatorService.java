@@ -9,14 +9,24 @@ import org.unisg.ftengrave.factorysimulator.domain.Item;
 import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
 import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FactorySimulatorService {
 
   private final Map<String, Sink> sinks = new LinkedHashMap<>();
+  private final ApplicationEventPublisher eventPublisher;
 
   public FactorySimulatorService() {
+    this(event -> {
+    });
+  }
+
+  @Autowired
+  public FactorySimulatorService(ApplicationEventPublisher eventPublisher) {
+    this.eventPublisher = eventPublisher;
     initializeSinks();
   }
 
@@ -109,6 +119,7 @@ public class FactorySimulatorService {
     Item item = sourceSink.item();
 
     sinks.put(sourceSinkId, sourceSink.withItem(null));
+    eventPublisher.publishEvent(new SinkItemRemovedEvent(sourceSinkId));
     sinks.put(targetSinkId, targetSink.withItem(item));
     return true;
   }
