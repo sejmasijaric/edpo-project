@@ -16,6 +16,8 @@ public class FactoryMqttProperties {
   private String ovenClientId = "factory-simulator-oven";
   private String millingMachineTopic = "FTFactory/MM_1";
   private String millingMachineClientId = "factory-simulator-mm";
+  private String workstationTransportTopic = "FTFactory/WT_1";
+  private String workstationTransportClientId = "factory-simulator-wt";
   private Duration publishInterval = Duration.ofSeconds(2);
 
   public boolean isEnabled() {
@@ -96,6 +98,22 @@ public class FactoryMqttProperties {
 
   public void setMillingMachineClientId(String millingMachineClientId) {
     this.millingMachineClientId = millingMachineClientId;
+  }
+
+  public String getWorkstationTransportTopic() {
+    return workstationTransportTopic;
+  }
+
+  public void setWorkstationTransportTopic(String workstationTransportTopic) {
+    this.workstationTransportTopic = workstationTransportTopic;
+  }
+
+  public String getWorkstationTransportClientId() {
+    return workstationTransportClientId;
+  }
+
+  public void setWorkstationTransportClientId(String workstationTransportClientId) {
+    this.workstationTransportClientId = workstationTransportClientId;
   }
 
   public Duration getPublishInterval() {

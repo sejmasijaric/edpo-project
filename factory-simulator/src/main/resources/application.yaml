@@ -20,4 +20,6 @@ factory:
     oven-client-id: ${FACTORY_MQTT_OVEN_CLIENT_ID:factory-simulator-oven}
     milling-machine-topic: ${FACTORY_MQTT_MM_TOPIC:FTFactory/MM_1}
     milling-machine-client-id: ${FACTORY_MQTT_MM_CLIENT_ID:factory-simulator-mm}
+    workstation-transport-topic: ${FACTORY_MQTT_WT_TOPIC:FTFactory/WT_1}
+    workstation-transport-client-id: ${FACTORY_MQTT_WT_CLIENT_ID:factory-simulator-wt}
     publish-interval: ${FACTORY_MQTT_PUBLISH_INTERVAL:2s}
