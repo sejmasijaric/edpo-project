@@ -99,6 +99,7 @@ services:
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      MQTT_TOPIC: FTFactory/SM_1
       # MQTT_BROKER_URL: tcp://192.168.0.21:1883 # Production
       MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
       # SORTER_HOST: 192.168.0.21 # Production
@@ -119,8 +120,8 @@ services:
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
       MQTT_TOPIC: FTFactory/VGR_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
       VACUUM_GRIPPER_HOST: factory-simulator # Simulation
       VACUUM_GRIPPER_PORT: 8081 # Simulation
 
