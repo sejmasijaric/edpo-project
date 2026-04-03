@@ -41,10 +41,13 @@ services:
     build:
       context: ../qc-service
       dockerfile: Dockerfile
+    depends_on:
+      - kafka
     ports:
       - "8100:8100"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
@@ -54,9 +57,13 @@ services:
     build:
       context: ../order-orchestrator
       dockerfile: Dockerfile
+    depends_on:
+      - kafka
     ports:
       - "8101:8101"
     environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - order-orchestrator-data:/app/data

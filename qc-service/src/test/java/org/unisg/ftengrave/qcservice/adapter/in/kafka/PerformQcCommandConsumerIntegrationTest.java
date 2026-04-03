@@ -1,34 +1,32 @@
-package org.unisg.ftengrave.qcservice;
+package org.unisg.ftengrave.qcservice.adapter.in.kafka;
 
+import org.camunda.bpm.engine.RuntimeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.camunda.bpm.engine.RuntimeService;
+import org.unisg.ftengrave.qcservice.DuplicateBusinessKeyException;
 import org.unisg.ftengrave.qcservice.config.CamundaBusinessKeyConstraintInitializer;
+import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.PerformQcCommandDto;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
 import org.unisg.ftengrave.qcservice.port.out.RequestColorDetectionPort;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:qc-service-business-key-test;DB_CLOSE_DELAY=-1",
         "spring.kafka.listener.auto-startup=false",
         "camunda.bpm.generate-unique-process-engine-name=true"
 })
-@AutoConfigureMockMvc
-class TemporaryStartQcControllerIntegrationTest {
+class PerformQcCommandConsumerIntegrationTest {
 
     @MockitoBean
     private RequestColorDetectionPort requestColorDetectionPort;
 
     @Autowired
-    private MockMvc mockMvc;
+    private PerformQcCommandConsumer performQcCommandConsumer;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -37,12 +35,13 @@ class TemporaryStartQcControllerIntegrationTest {
     private RuntimeService runtimeService;
 
     @Test
-    void startQcRejectsDuplicateBusinessKeyForRunningProcessInstances() throws Exception {
-        mockMvc.perform(post("/temporary/start-qc/item-42").param("targetColor", "RED"))
-                .andExpect(status().isAccepted());
-
-        mockMvc.perform(post("/temporary/start-qc/item-42").param("targetColor", "RED"))
-                .andExpect(status().isConflict());
+    void consumeStartsQcAndRejectsDuplicateBusinessKeyForRunningProcessInstances() {
+        performQcCommandConsumer.consume(new PerformQcCommandDto(
+                "item-42",
+                ItemColor.RED));
+        assertThrows(DuplicateBusinessKeyException.class, () -> performQcCommandConsumer.consume(new PerformQcCommandDto(
+                "item-42",
+                ItemColor.RED)));
 
         Integer runningInstances = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM ACT_RU_EXECUTION WHERE PROC_DEF_ID_ IS NOT NULL AND BUSINESS_KEY_ = ?",
@@ -54,9 +53,10 @@ class TemporaryStartQcControllerIntegrationTest {
     }
 
     @Test
-    void startQcStoresTargetColorAsProcessVariable() throws Exception {
-        mockMvc.perform(post("/temporary/start-qc/item-77").param("targetColor", "BLUE"))
-                .andExpect(status().isAccepted());
+    void consumeStoresTargetColorAsProcessVariable() {
+        performQcCommandConsumer.consume(new PerformQcCommandDto(
+                "item-77",
+                ItemColor.BLUE));
 
         Object targetColor = runtimeService.getVariable(
                 runtimeService.createProcessInstanceQuery()

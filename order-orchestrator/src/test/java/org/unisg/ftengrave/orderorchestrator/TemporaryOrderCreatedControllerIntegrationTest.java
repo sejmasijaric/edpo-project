@@ -1,25 +1,33 @@
 package org.unisg.ftengrave.orderorchestrator;
 
-import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.HistoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.unisg.ftengrave.orderorchestrator.config.CamundaBusinessKeyConstraintInitializer;
+import org.unisg.ftengrave.orderorchestrator.domain.ItemColor;
+import org.unisg.ftengrave.orderorchestrator.port.out.SendPerformQcCommandPort;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:order-orchestrator-business-key-test;DB_CLOSE_DELAY=-1",
+        "kafka.topic.auto-create=false",
         "camunda.bpm.generate-unique-process-engine-name=true",
         "camunda.bpm.generate-unique-process-application-name=true"
 })
 @AutoConfigureMockMvc
-class TemporaryStartOrderOrchestrationControllerIntegrationTest {
+class TemporaryOrderCreatedControllerIntegrationTest {
+
+    @MockitoBean
+    private SendPerformQcCommandPort sendPerformQcCommandPort;
 
     @Autowired
     private MockMvc mockMvc;
@@ -28,39 +36,34 @@ class TemporaryStartOrderOrchestrationControllerIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private RuntimeService runtimeService;
+    private HistoryService historyService;
 
     @Test
-    void startOrderOrchestrationRejectsDuplicateBusinessKeyForRunningProcessInstances() throws Exception {
-        mockMvc.perform(post("/temporary/start-order-orchestration/order-42"))
+    void orderCreatedStartsProcessAndSendsPerformQcCommand() throws Exception {
+        mockMvc.perform(post("/temporary/order-created/item-42").param("targetColor", "RED"))
                 .andExpect(status().isAccepted());
 
-        mockMvc.perform(post("/temporary/start-order-orchestration/order-42"))
-                .andExpect(status().isConflict());
-
-        Integer runningInstances = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM ACT_RU_EXECUTION WHERE PROC_DEF_ID_ IS NOT NULL AND BUSINESS_KEY_ = ?",
-                Integer.class,
-                "order-42"
-        );
-
-        assertThat(runningInstances).isEqualTo(1);
+        verify(sendPerformQcCommandPort).publish("item-42", ItemColor.RED);
     }
 
     @Test
-    void startOrderOrchestrationStoresOrderIdentifierAsProcessVariable() throws Exception {
-        mockMvc.perform(post("/temporary/start-order-orchestration/order-77"))
+    void orderCreatedStoresTargetColorAsHistoricProcessVariable() throws Exception {
+        mockMvc.perform(post("/temporary/order-created/item-77").param("targetColor", "BLUE"))
                 .andExpect(status().isAccepted());
 
-        Object orderIdentifier = runtimeService.getVariable(
-                runtimeService.createProcessInstanceQuery()
-                        .processInstanceBusinessKey("order-77")
-                        .singleResult()
-                        .getId(),
-                "orderIdentifier"
-        );
+        String processInstanceId = historyService.createHistoricProcessInstanceQuery()
+                .processInstanceBusinessKey("item-77")
+                .singleResult()
+                .getId();
 
-        assertThat(orderIdentifier).isEqualTo("order-77");
+        String targetColor = historyService.createHistoricVariableInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .variableName("targetColor")
+                .singleResult()
+                .getValue()
+                .toString();
+
+        assertThat(targetColor).isEqualTo(ItemColor.BLUE.name());
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.unisg.ftengrave.qcservice;
+package org.unisg.ftengrave.orderorchestrator;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -7,19 +7,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.unisg.ftengrave.qcservice.domain.ItemColor;
-import org.unisg.ftengrave.qcservice.port.in.StartQcUseCase;
+import org.unisg.ftengrave.orderorchestrator.domain.ItemColor;
+import org.unisg.ftengrave.orderorchestrator.port.in.StartOrderOrchestrationUseCase;
 
 @RestController
 @RequiredArgsConstructor
-public class TemporaryStartQcController {
+public class TemporaryOrderCreatedController {
 
-    private final StartQcUseCase startQcUseCase;
+    private final StartOrderOrchestrationUseCase startOrderOrchestrationUseCase;
 
-    @PostMapping("/temporary/start-qc/{itemIdentifier}")
-    public ResponseEntity<Void> startQc(@PathVariable String itemIdentifier, @RequestParam ItemColor targetColor) {
+    @PostMapping("/temporary/order-created/{itemIdentifier}")
+    public ResponseEntity<Void> orderCreated(@PathVariable String itemIdentifier, @RequestParam ItemColor targetColor) {
         try {
-            return startQcUseCase.startQc(itemIdentifier, targetColor)
+            return startOrderOrchestrationUseCase.startOrderOrchestration(itemIdentifier, targetColor)
                     ? ResponseEntity.accepted().build()
                     : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (DuplicateBusinessKeyException exception) {

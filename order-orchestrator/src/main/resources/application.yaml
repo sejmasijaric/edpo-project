@@ -7,6 +7,13 @@ spring:
   datasource:
     url: jdbc:h2:file:./data/camunda-h2-database
 
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.orderorchestrator.adapter.out.kafka.dto}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+
 camunda.bpm:
   admin-user:
     id: demo

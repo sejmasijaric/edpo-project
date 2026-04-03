@@ -12,6 +12,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.PerformQcCommandDto;
 import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
 
 @EnableKafka
@@ -32,17 +33,30 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConsumerFactory<String, SortingMachineEventDto> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+                consumerProperties(),
+                new StringDeserializer(),
+                new JsonDeserializer<>(SortingMachineEventDto.class, false)
+        );
+    }
+
+    @Bean
+    public ConsumerFactory<String, PerformQcCommandDto> performQcCommandConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+                consumerProperties(),
+                new StringDeserializer(),
+                new JsonDeserializer<>(PerformQcCommandDto.class, false)
+        );
+    }
+
+    private Map<String, Object> consumerProperties() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(JsonDeserializer.TRUSTED_PACKAGES, trustedPackages);
-        return new DefaultKafkaConsumerFactory<>(
-                props,
-                new StringDeserializer(),
-                new JsonDeserializer<>(SortingMachineEventDto.class, false)
-        );
+        return props;
     }
 
     @Bean
@@ -50,6 +64,16 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, SortingMachineEventDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setAutoStartup(autoStartup);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, PerformQcCommandDto>
+    performQcCommandKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, PerformQcCommandDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(performQcCommandConsumerFactory());
         factory.setAutoStartup(autoStartup);
         return factory;
     }
