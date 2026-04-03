@@ -83,6 +83,7 @@ services:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_SUBSCRIBE: sorting-machine
       KAFKA_TOPIC_PUBLISH: sorting-machine
+      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine
   # --- END Debugging ---
 
   sorter-integration-service:

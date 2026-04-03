@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.unisg.ftengrave.kafkainspectorservice.dto.SortingMachineCommandDto;
 import org.unisg.ftengrave.sharedkafka.config.AbstractKafkaProducerConfig;
 
 @Configuration
@@ -18,5 +19,15 @@ public class KafkaProducerConfig extends AbstractKafkaProducerConfig {
   @Bean
   public KafkaTemplate<String, JsonNode> kafkaTemplate() {
     return super.kafkaTemplate(producerFactory());
+  }
+
+  @Bean
+  public ProducerFactory<String, SortingMachineCommandDto> sortingMachineCommandProducerFactory() {
+    return super.producerFactory();
+  }
+
+  @Bean
+  public KafkaTemplate<String, SortingMachineCommandDto> sortingMachineCommandKafkaTemplate() {
+    return super.kafkaTemplate(sortingMachineCommandProducerFactory());
   }
 }

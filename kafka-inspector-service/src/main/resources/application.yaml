@@ -12,4 +12,12 @@ kafka:
   topic:
     subscribe: ${KAFKA_TOPIC_SUBSCRIBE:stage-orchestration}
     publish: ${KAFKA_TOPIC_PUBLISH:machine-orchestration}
+    command-publish: ${KAFKA_TOPIC_COMMAND_PUBLISH:sorting-machine}
 
+integration:
+  sorter:
+    command-types:
+      color-detection: ${SORTER_COMMAND_TYPE_COLOR_DETECTION:request-color-detection}
+      rejection: ${SORTER_COMMAND_TYPE_REJECTION:request-sort-to-reject}
+      retry: ${SORTER_COMMAND_TYPE_RETRY:request-sort-to-retry}
+      shipping: ${SORTER_COMMAND_TYPE_SHIPPING:request-sort-to-shipping}
