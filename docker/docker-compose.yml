@@ -50,6 +50,17 @@ services:
     volumes:
       - qc-service-data:/app/data
 
+  order-orchestrator:
+    build:
+      context: ../order-orchestrator
+      dockerfile: Dockerfile
+    ports:
+      - "8101:8101"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
+    volumes:
+      - order-orchestrator-data:/app/data
+
   sorter-integration-service:
     build:
       context: ..
@@ -73,3 +84,4 @@ services:
 volumes:
   demo-service-data:
   qc-service-data:
+  order-orchestrator-data:

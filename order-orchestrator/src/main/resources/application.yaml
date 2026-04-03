@@ -1,0 +1,17 @@
+server:
+  port: 8101
+
+spring:
+  application:
+    name: order-orchestrator
+  datasource:
+    url: jdbc:h2:file:./data/camunda-h2-database
+
+camunda.bpm:
+  admin-user:
+    id: demo
+    password: demo
+  filter.create: All Tasks
+  generic-properties:
+    properties:
+      historyTimeToLive: P1D

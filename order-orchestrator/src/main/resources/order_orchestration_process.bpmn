@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_OrderOrchestration"
+                  targetNamespace="http://unisg.org/ftengrave/order-orchestrator">
+  <bpmn:message id="Message_StartOrderOrchestration" name="StartOrderOrchestrationMessage" />
+  <bpmn:message id="Message_OrderOrchestrationUpdated" name="OrderOrchestrationUpdatedMessage" />
+
+  <bpmn:process id="OrderOrchestrationProcess" name="Order Orchestration Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_OrderCreated" name="Start order orchestration">
+      <bpmn:outgoing>Flow_Start_To_Initialize</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_StartOrderOrchestration"
+                                   messageRef="Message_StartOrderOrchestration" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_InitializeOrderContext"
+                      name="Initialize order context"
+                      camunda:delegateExpression="${initializeOrderContextDelegate}">
+      <bpmn:incoming>Flow_Start_To_Initialize</bpmn:incoming>
+      <bpmn:outgoing>Flow_Initialize_To_Wait</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_WaitForOrderUpdate" name="Wait for order update">
+      <bpmn:incoming>Flow_Initialize_To_Wait</bpmn:incoming>
+      <bpmn:outgoing>Flow_Wait_To_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_OrderOrchestrationUpdated"
+                                   messageRef="Message_OrderOrchestrationUpdated" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="Event_OrderInitialized" name="Order context initialized">
+      <bpmn:incoming>Flow_Wait_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Initialize" sourceRef="StartEvent_OrderCreated" targetRef="Activity_InitializeOrderContext" />
+    <bpmn:sequenceFlow id="Flow_Initialize_To_Wait" sourceRef="Activity_InitializeOrderContext" targetRef="Event_WaitForOrderUpdate" />
+    <bpmn:sequenceFlow id="Flow_Wait_To_End" sourceRef="Event_WaitForOrderUpdate" targetRef="Event_OrderInitialized" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_OrderOrchestration">
+    <bpmndi:BPMNPlane id="BPMNPlane_OrderOrchestration" bpmnElement="OrderOrchestrationProcess">
+      <bpmndi:BPMNShape id="Shape_StartEvent_OrderCreated" bpmnElement="StartEvent_OrderCreated">
+        <dc:Bounds x="160" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Activity_InitializeOrderContext" bpmnElement="Activity_InitializeOrderContext">
+        <dc:Bounds x="260" y="78" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_WaitForOrderUpdate" bpmnElement="Event_WaitForOrderUpdate">
+        <dc:Bounds x="420" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_OrderInitialized" bpmnElement="Event_OrderInitialized">
+        <dc:Bounds x="520" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_Start_To_Initialize" bpmnElement="Flow_Start_To_Initialize">
+        <di:waypoint x="196" y="118" />
+        <di:waypoint x="260" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Initialize_To_Wait" bpmnElement="Flow_Initialize_To_Wait">
+        <di:waypoint x="360" y="118" />
+        <di:waypoint x="420" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Wait_To_End" bpmnElement="Flow_Wait_To_End">
+        <di:waypoint x="456" y="118" />
+        <di:waypoint x="520" y="118" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
