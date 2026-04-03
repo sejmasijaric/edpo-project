@@ -22,7 +22,7 @@ public class VacuumGripperConfiguration {
         360,
         createSinkMapping(
             "oven", "VGR-oven",
-            "start", "SINK-I1",
+            "delivery_pick_up_station", "SINK-I1",
             "end", "SINK-I2",
             "sink_1", "SINK-S1",
             "sink_2", "SINK-S2",

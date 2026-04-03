@@ -70,6 +70,22 @@ services:
     volumes:
       - order-orchestrator-data:/app/data
 
+  # --- Begin Debugging ---
+  kafka-inspector-service:
+    build:
+      context: ..
+      dockerfile: kafka-inspector-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8102:8102"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_SUBSCRIBE: vacuum-gripper
+      KAFKA_TOPIC_PUBLISH: vacuum-gripper
+      KAFKA_TOPIC_COMMAND_PUBLISH: vacuum-gripper
+  # --- END Debugging ---
+
   sorter-integration-service:
     build:
       context: ..
@@ -83,12 +99,31 @@ services:
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      MQTT_TOPIC: FTFactory/SM_1
       # MQTT_BROKER_URL: tcp://192.168.0.21:1883 # Production
       MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
       # SORTER_HOST: 192.168.0.21 # Production
       SORTER_HOST: factory-simulator # Simulation
       # SORTER_PORT: 5000 # Production
       SORTER_PORT: 8081 # Simulation
+
+  vacuum-gripper-integration-service:
+    build:
+      context: ..
+      dockerfile: vacuum-gripper-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      MQTT_TOPIC: FTFactory/VGR_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      VACUUM_GRIPPER_HOST: factory-simulator # Simulation
+      VACUUM_GRIPPER_PORT: 8081 # Simulation
 
 volumes:
   demo-service-data:

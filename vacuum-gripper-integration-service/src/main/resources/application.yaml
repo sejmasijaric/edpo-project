@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: vacuum-gripper-integration-service
+  main:
+    web-application-type: none
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
+  group-id: ${KAFKA_GROUP_ID:vacuum-gripper-integration-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.vacuumgripperintegrationservice}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.vacuum-gripper}}
+    vacuum-gripper: ${KAFKA_TOPIC_VACUUM_GRIPPER:vacuum-gripper}
+
+mqtt:
+  bridge:
+    enabled: ${MQTT_BRIDGE_ENABLED:true}
+  broker:
+    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
+  topic: ${MQTT_TOPIC:FTFactory/VGR_1}
+  client-id: ${MQTT_CLIENT_ID:vacuum-gripper-integration-service}
+  username: ${MQTT_USERNAME:}
+  password: ${MQTT_PASSWORD:}
+
+vacuum-gripper:
+  protocol: ${VACUUM_GRIPPER_PROTOCOL:http}
+  host: ${VACUUM_GRIPPER_HOST:localhost}
+  port: ${VACUUM_GRIPPER_PORT:8081}
+  transport-path: ${VACUUM_GRIPPER_TRANSPORT_PATH:/vgr/pick_up_and_transport}
+  machine: ${VACUUM_GRIPPER_MACHINE:vgr_1}
+  input-sink: ${VACUUM_GRIPPER_INPUT_SINK:delivery_pick_up_station}
+  engraver-sink: ${VACUUM_GRIPPER_ENGRAVER_SINK:oven}

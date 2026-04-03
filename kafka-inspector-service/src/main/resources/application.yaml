@@ -1,0 +1,23 @@
+server:
+  port: 8102
+
+spring:
+  application:
+    name: kafka-inspector-service
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  group-id: ${KAFKA_GROUP_ID:kafka-inspector-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:*}
+  topic:
+    subscribe: ${KAFKA_TOPIC_SUBSCRIBE:stage-orchestration}
+    publish: ${KAFKA_TOPIC_PUBLISH:machine-orchestration}
+    command-publish: ${KAFKA_TOPIC_COMMAND_PUBLISH:sorting-machine}
+
+integration:
+  sorter:
+    command-types:
+      color-detection: ${SORTER_COMMAND_TYPE_COLOR_DETECTION:request-color-detection}
+      rejection: ${SORTER_COMMAND_TYPE_REJECTION:request-sort-to-reject}
+      retry: ${SORTER_COMMAND_TYPE_RETRY:request-sort-to-retry}
+      shipping: ${SORTER_COMMAND_TYPE_SHIPPING:request-sort-to-shipping}

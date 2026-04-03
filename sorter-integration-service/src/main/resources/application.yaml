@@ -18,7 +18,7 @@ mqtt:
     enabled: ${MQTT_BRIDGE_ENABLED:true}
   broker:
     url: ${MQTT_BROKER_URL:tcp://localhost:1883}
-  topic: FTFactory/SM_1
+  topic: ${MQTT_TOPIC:FTFactory/SM_1}
   client-id: ${MQTT_CLIENT_ID:sorter-integration-service}
   username: ${MQTT_USERNAME:}
   password: ${MQTT_PASSWORD:}
