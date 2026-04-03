@@ -36,7 +36,7 @@ class EngraverServiceTest {
     EngraverCommandDto engraverCommandDto =
         objectMapper.readValue(
             """
-            {"eventType":"run-engraviing-command"}
+            {"eventType":"run-engraving-command"}
             """,
             EngraverCommandDto.class);
 

@@ -6,7 +6,7 @@ import org.unisg.ftengrave.engraverintegrationservice.dto.EngraverCommandDto;
 @Service
 public class EngraverService {
 
-  public static final String RUN_ENGRAVING_COMMAND = "run-engraviing-command";
+  public static final String RUN_ENGRAVING_COMMAND = "run-engraving-command";
 
   private final EngraverHttpService engraverHttpService;
 
