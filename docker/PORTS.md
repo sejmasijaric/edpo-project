@@ -9,6 +9,7 @@ This file documents the ports currently used or reserved by services in this rep
 | `factory-simulator` | Local application | `8081` | `8081` | Configured in `factory-simulator/src/main/resources/application.yaml` |
 | `qc-service` | Docker Compose | `8100` | `8100` | Embedded Camunda engine for quality-control BPMN models |
 | `order-orchestrator` | Docker Compose | `8101` | `8101` | Embedded Camunda engine for global order orchestration BPMN models |
+| `kafka-inspector-service` | Docker Compose | `8102` | `8102` | Lightweight Kafka listener and JSON publisher endpoint |
 | `sorter-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `vacuum-gripper-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `kafka` | Docker Compose | `9092`, `29092` | `9092`, `29092` | Broker ports exposed by the compose stack |
@@ -22,7 +23,7 @@ The host port range `8100-8109` is intentionally reserved for service applicatio
 | --- | --- |
 | `8100` | `qc-service` |
 | `8101` | `order-orchestrator` |
-| `8102` | Reserved for future service |
+| `8102` | `kafka-inspector-service` |
 | `8103` | Reserved for future service |
 | `8104` | Reserved for future service |
 | `8105` | Reserved for future service |

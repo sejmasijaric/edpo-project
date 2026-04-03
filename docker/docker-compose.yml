@@ -70,6 +70,21 @@ services:
     volumes:
       - order-orchestrator-data:/app/data
 
+  # --- Begin Debugging ---
+  kafka-inspector-service:
+    build:
+      context: ..
+      dockerfile: kafka-inspector-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8102:8102"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_SUBSCRIBE: sorting-machine
+      KAFKA_TOPIC_PUBLISH: sorting-machine
+  # --- END Debugging ---
+
   sorter-integration-service:
     build:
       context: ..
