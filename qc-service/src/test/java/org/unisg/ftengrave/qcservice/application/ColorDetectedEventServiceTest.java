@@ -6,11 +6,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.runtime.Execution;
-import org.camunda.bpm.engine.runtime.ExecutionQuery;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,42 +21,23 @@ import org.unisg.ftengrave.qcservice.domain.ItemColor;
 class ColorDetectedEventServiceTest {
 
     @Mock
-    private RuntimeService runtimeService;
+    private WaitingMessageBusinessKeyResolver waitingMessageBusinessKeyResolver;
 
     @Mock
     private MessageCorrelationService messageCorrelationService;
-
-    @Mock
-    private ExecutionQuery executionQuery;
-
-    @Mock
-    private ProcessInstanceQuery processInstanceQuery;
-
-    @Mock
-    private Execution execution;
-
-    @Mock
-    private ProcessInstance processInstance;
 
     private ColorDetectedEventService service;
 
     @BeforeEach
     void setUp() {
-        service = new ColorDetectedEventService(runtimeService, messageCorrelationService);
+        service = new ColorDetectedEventService(waitingMessageBusinessKeyResolver, messageCorrelationService);
     }
 
     @Test
     void correlatesDetectedColorRedEventForWaitingProcess() {
-        when(runtimeService.createExecutionQuery()).thenReturn(executionQuery);
-        when(executionQuery.messageEventSubscriptionName(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(executionQuery);
-        when(executionQuery.singleResult()).thenReturn(execution);
-        when(execution.getProcessInstanceId()).thenReturn("process-1");
-        when(runtimeService.createProcessInstanceQuery()).thenReturn(processInstanceQuery);
-        when(processInstanceQuery.processInstanceId("process-1")).thenReturn(processInstanceQuery);
-        when(processInstanceQuery.singleResult()).thenReturn(processInstance);
-        when(processInstance.getBusinessKey()).thenReturn("item-42");
+        when(waitingMessageBusinessKeyResolver.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn("item-42");
 
-        service.handle(new SortingMachineEventDto("color-detected-red"));
+        service.handle(new SortingMachineEventDto("color-detected", "red"));
 
         CamundaMessageDto expectedMessage = CamundaMessageDto.builder()
                 .dto(ColorDetectedMessageProcessDto.builder()
@@ -73,21 +49,42 @@ class ColorDetectedEventServiceTest {
     }
 
     @Test
+    void correlatesNoneColorEventForBoundaryErrorHandling() {
+        when(waitingMessageBusinessKeyResolver.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn("item-42");
+
+        service.handle(new SortingMachineEventDto("color-detected", "none"));
+
+        CamundaMessageDto expectedMessage = CamundaMessageDto.builder()
+                .dto(ColorDetectedMessageProcessDto.builder()
+                        .itemIdentifier("item-42")
+                        .color(ItemColor.NONE)
+                        .build())
+                .build();
+        verify(messageCorrelationService).correlateMessage(eq(expectedMessage), eq(ColorDetectedEventService.COLOR_DETECTED_MESSAGE));
+    }
+
+    @Test
     void ignoresNonColorEvents() {
         service.handle(new SortingMachineEventDto("sort-to-shipping"));
 
         verify(messageCorrelationService, never()).correlateMessage(any(), any());
-        verify(runtimeService, never()).createExecutionQuery();
+        verify(waitingMessageBusinessKeyResolver, never()).resolve(any());
     }
 
     @Test
     void ignoresDetectedColorEventWhenNoProcessWaitsForMessage() {
-        when(runtimeService.createExecutionQuery()).thenReturn(executionQuery);
-        when(executionQuery.messageEventSubscriptionName(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(executionQuery);
-        when(executionQuery.singleResult()).thenReturn(null);
+        when(waitingMessageBusinessKeyResolver.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(null);
 
-        service.handle(new SortingMachineEventDto("color-detected-blue"));
+        service.handle(new SortingMachineEventDto("color-detected", "blue"));
 
         verify(messageCorrelationService, never()).correlateMessage(any(), any());
+    }
+
+    @Test
+    void ignoresColorDetectedEventWithoutColorPayload() {
+        service.handle(new SortingMachineEventDto("color-detected"));
+
+        verify(messageCorrelationService, never()).correlateMessage(any(), any());
+        verify(waitingMessageBusinessKeyResolver, never()).resolve(any());
     }
 }

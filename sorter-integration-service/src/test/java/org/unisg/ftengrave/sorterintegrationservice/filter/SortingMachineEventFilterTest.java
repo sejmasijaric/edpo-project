@@ -13,32 +13,45 @@ class SortingMachineEventFilterTest {
   private final SortingMachineEventFilter filter = new SortingMachineEventFilter(new ObjectMapper());
 
   @Test
-  void emitsColorDetectedEventWhenColorSensorLightBarrierIsInterrupted() {
+  void emitsColorDetectedEventWhenColorSensorDropsBelowDetectionThreshold() {
     Optional<SortingMachineEventDto> event =
-        filter.filter("FTFactory/SM_1", payload(1, 1300, 0, 1, 1, 1));
+        filter.filter("FTFactory/SM_1", payload(1, 1300, 1, 1, 1, 1));
 
     assertTrue(event.isPresent());
-    assertEquals("color-detected-red", event.get().getEventType());
+    assertEquals("color-detected", event.get().getEventType());
+    assertEquals("red", event.get().getColor());
   }
 
   @Test
-  void emitsReleaseEventWhenColorSensorLightBarrierOpensAgain() {
-    filter.filter("FTFactory/SM_1", payload(1, 1300, 0, 1, 1, 1));
+  void emitsColorDetectedEventWhenThresholdCrossingOccursWithoutLightBarrierChange() {
+    filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
 
     Optional<SortingMachineEventDto> event =
         filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
 
     assertTrue(event.isPresent());
-    assertEquals("item-left-qc-station", event.get().getEventType());
+    assertEquals("color-detected", event.get().getEventType());
+    assertEquals("white", event.get().getColor());
+  }
+
+  @Test
+  void doesNotEmitAdditionalColorDetectedEventWhileSensorValueRemainsBelowThreshold() {
+    filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
+    filter.filter("FTFactory/SM_1", payload(1, 1400, 1, 1, 1, 1));
+
+    Optional<SortingMachineEventDto> event =
+        filter.filter("FTFactory/SM_1", payload(1, 1300, 1, 1, 1, 1));
+
+    assertTrue(event.isEmpty());
   }
 
   @Test
   void emitsArrivalAndReleaseEventsForRejectionSinkBarrier() {
     Optional<SortingMachineEventDto> arrivalEvent =
-        filter.filter("FTFactory/SM_1", payload(1, 0, 1, 0, 1, 1));
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 0, 1, 1));
 
     Optional<SortingMachineEventDto> releaseEvent =
-        filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
 
     assertTrue(arrivalEvent.isPresent());
     assertEquals("item-arrived-at-rejection-sink", arrivalEvent.get().getEventType());
@@ -47,12 +60,12 @@ class SortingMachineEventFilterTest {
   }
 
   @Test
-  void emitsArrivalAndReleaseEventsForQcBarrier() {
+  void emitsArrivalAndReleaseEventsForColorSensorBarrier() {
     Optional<SortingMachineEventDto> arrivalEvent =
-        filter.filter("FTFactory/SM_1", payload(0, 0, 1, 1, 1, 1));
+        filter.filter("FTFactory/SM_1", payload(0, 1800, 1, 1, 1, 1));
 
     Optional<SortingMachineEventDto> releaseEvent =
-        filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
 
     assertTrue(arrivalEvent.isPresent());
     assertEquals("item-arrived-at-color-sensor", arrivalEvent.get().getEventType());
@@ -61,11 +74,25 @@ class SortingMachineEventFilterTest {
   }
 
   @Test
+  void emitsArrivalAndReleaseEventsForQcBarrier() {
+    Optional<SortingMachineEventDto> arrivalEvent =
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 0, 1, 1, 1));
+
+    Optional<SortingMachineEventDto> releaseEvent =
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
+
+    assertTrue(arrivalEvent.isPresent());
+    assertEquals("item-arrived-at-qc", arrivalEvent.get().getEventType());
+    assertTrue(releaseEvent.isPresent());
+    assertEquals("item-left-qc", releaseEvent.get().getEventType());
+  }
+
+  @Test
   void ignoresUnchangedSnapshots() {
-    filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
+    filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
 
     Optional<SortingMachineEventDto> event =
-        filter.filter("FTFactory/SM_1", payload(1, 0, 1, 1, 1, 1));
+        filter.filter("FTFactory/SM_1", payload(1, 1800, 1, 1, 1, 1));
 
     assertTrue(event.isEmpty());
   }

@@ -17,21 +17,6 @@ public class RequestColorDetectionAdapter implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution) {
-
-
-        // BEGIN GARBAGE
-        // TODO: Remove Garbage
-        System.out.println("DetectingColor");
-
-        Boolean failed = false;
-        if (failed) {
-            //delegateExecution.setVariable("colorCheckMessage", "No color could be detected");
-            throw new BpmnError("COLOR_DETECTION_FAILED", "No color detected");
-        }
-
-        delegateExecution.setVariable("passedColorCheck", (boolean)true);
-        // END GARBAGE
-
         requestColorDetectionPublisher.publish();
     }
 }

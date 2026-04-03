@@ -12,10 +12,14 @@ import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 public class SortingMachineEventFilter implements MqttEventFilter<SortingMachineEventDto> {
 
   private static final int LIGHT_BARRIER_INTERRUPTED = 0;
+  private static final int COLOR_SENSOR_DETECTION_THRESHOLD = 1700;
+  private static final int WHITE_UPPER_BOUNDARY = 1200;
+  private static final int RED_UPPER_BOUNDARY = 1500;
   private static final String ITEM_ARRIVED_AT_COLOR_SENSOR = "item-arrived-at-color-sensor";
   private static final String ITEM_LEFT_COLOR_SENSOR = "item-left-color-sensor";
-  private static final String COLOR_DETECTED_EVENT_PREFIX = "color-detected-";
-  private static final String ITEM_LEFT_QC_STATION = "item-left-qc-station";
+  private static final String ITEM_ARRIVED_AT_QC = "item-arrived-at-qc";
+  private static final String ITEM_LEFT_QC = "item-left-qc";
+  private static final String COLOR_DETECTED_EVENT = "color-detected";
   private static final String ITEM_ARRIVED_AT_REJECTION_SINK = "item-arrived-at-rejection-sink";
   private static final String ITEM_LEFT_REJECTION_SINK = "item-left-rejection-sink";
   private static final String ITEM_ARRIVED_AT_SHIPPING_SINK = "item-arrived-at-shipping-sink";
@@ -34,13 +38,13 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
   public synchronized Optional<SortingMachineEventDto> filter(String topic, String rawPayload) {
     try {
       SortingMachineEventTransformationDto dto = parse(rawPayload);
-      Optional<String> eventType = mapEventType(dto);
+      Optional<SortingMachineEventDto> event = mapEventType(dto);
       lastSnapshot = dto;
 
-      if (eventType.isEmpty()) {
+      if (event.isEmpty()) {
         return Optional.empty();
       }
-      return eventType.map(SortingMachineEventDto::new);
+      return event;
     } catch (Exception e) {
       return Optional.empty();
     }
@@ -76,30 +80,37 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
 
   private String determineColor(SortingMachineEventTransformationDto dto) {
     int colorValue = dto.getI2ColorSensor();
-    int redLowerBoundary = 1200;
-    int blueLowerBoundary = 1500;
-    if (colorValue <= redLowerBoundary) {
+    if (colorValue <= WHITE_UPPER_BOUNDARY) {
       return "white";
-    } else if (redLowerBoundary < colorValue && colorValue < blueLowerBoundary) {
+    } else if (colorValue < RED_UPPER_BOUNDARY) {
       return "red";
     } else {
       return "blue";
     }
   }
 
-  private Optional<String> mapEventType(SortingMachineEventTransformationDto dto) {
-    Optional<String> qcEvent = mapLightBarrierEvent(
+  private Optional<SortingMachineEventDto> mapEventType(SortingMachineEventTransformationDto dto) {
+    Optional<SortingMachineEventDto> colorSensorEvent = mapColorSensorEvent(dto);
+    if (colorSensorEvent.isPresent()) {
+      return colorSensorEvent;
+    }
+
+    Optional<String> colorSensorBarrierEvent = mapLightBarrierEvent(
         lastSnapshot == null ? null : lastSnapshot.getI1LightBarrier(),
         dto.getI1LightBarrier(),
         ITEM_ARRIVED_AT_COLOR_SENSOR,
         ITEM_LEFT_COLOR_SENSOR);
-    if (qcEvent.isPresent()) {
-      return qcEvent;
+    if (colorSensorBarrierEvent.isPresent()) {
+      return colorSensorBarrierEvent.map(SortingMachineEventDto::new);
     }
 
-    Optional<String> colorSensorEvent = mapColorSensorEvent(dto);
-    if (colorSensorEvent.isPresent()) {
-      return colorSensorEvent;
+    Optional<String> qcEvent = mapLightBarrierEvent(
+        lastSnapshot == null ? null : lastSnapshot.getI3LightBarrier(),
+        dto.getI3LightBarrier(),
+        ITEM_ARRIVED_AT_QC,
+        ITEM_LEFT_QC);
+    if (qcEvent.isPresent()) {
+      return qcEvent.map(SortingMachineEventDto::new);
     }
 
     Optional<String> rejectionSinkEvent = mapLightBarrierEvent(
@@ -108,7 +119,7 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
         ITEM_ARRIVED_AT_REJECTION_SINK,
         ITEM_LEFT_REJECTION_SINK);
     if (rejectionSinkEvent.isPresent()) {
-      return rejectionSinkEvent;
+      return rejectionSinkEvent.map(SortingMachineEventDto::new);
     }
 
     Optional<String> shippingSinkEvent = mapLightBarrierEvent(
@@ -117,7 +128,7 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
         ITEM_ARRIVED_AT_SHIPPING_SINK,
         ITEM_LEFT_SHIPPING_SINK);
     if (shippingSinkEvent.isPresent()) {
-      return shippingSinkEvent;
+      return shippingSinkEvent.map(SortingMachineEventDto::new);
     }
 
     Optional<String> retrySinkEvent = mapLightBarrierEvent(
@@ -126,19 +137,25 @@ public class SortingMachineEventFilter implements MqttEventFilter<SortingMachine
         ITEM_ARRIVED_AT_RETRY_SINK,
         ITEM_LEFT_RETRY_SINK);
     if (retrySinkEvent.isPresent()) {
-      return retrySinkEvent;
+      return retrySinkEvent.map(SortingMachineEventDto::new);
     }
 
     return Optional.empty();
   }
 
-  private Optional<String> mapColorSensorEvent(SortingMachineEventTransformationDto dto) {
-    Integer previousBarrierState = lastSnapshot == null ? null : lastSnapshot.getI3LightBarrier();
-    return mapLightBarrierEvent(
-        previousBarrierState,
-        dto.getI3LightBarrier(),
-        COLOR_DETECTED_EVENT_PREFIX + determineColor(dto),
-        ITEM_LEFT_QC_STATION);
+  private Optional<SortingMachineEventDto> mapColorSensorEvent(SortingMachineEventTransformationDto dto) {
+    Integer previousColorValue = lastSnapshot == null ? null : lastSnapshot.getI2ColorSensor();
+    int currentColorValue = dto.getI2ColorSensor();
+
+    boolean isDetectedNow = currentColorValue < COLOR_SENSOR_DETECTION_THRESHOLD;
+    boolean wasDetectedBefore =
+        previousColorValue != null && previousColorValue < COLOR_SENSOR_DETECTION_THRESHOLD;
+
+    if (!isDetectedNow || wasDetectedBefore) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new SortingMachineEventDto(COLOR_DETECTED_EVENT, determineColor(dto)));
   }
 
   private Optional<String> mapLightBarrierEvent(

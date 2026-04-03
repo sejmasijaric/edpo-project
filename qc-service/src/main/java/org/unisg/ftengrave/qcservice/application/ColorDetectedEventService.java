@@ -2,9 +2,6 @@ package org.unisg.ftengrave.qcservice.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.runtime.Execution;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.springframework.stereotype.Service;
 import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
 import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.MessageCorrelationService;
@@ -18,10 +15,9 @@ import org.unisg.ftengrave.qcservice.domain.ItemColor;
 public class ColorDetectedEventService {
 
     static final String COLOR_DETECTED_MESSAGE = "ColorDetectedMessage";
-    private static final String COLOR_DETECTED_EVENT_PREFIX = "color-detected-";
-    private static final String LEGACY_DETECTED_COLOR_EVENT_PREFIX = "detected-color-";
+    private static final String COLOR_DETECTED_EVENT = "color-detected";
 
-    private final RuntimeService runtimeService;
+    private final WaitingMessageBusinessKeyResolver waitingMessageBusinessKeyResolver;
     private final MessageCorrelationService messageCorrelationService;
 
     public void handle(SortingMachineEventDto event) {
@@ -30,7 +26,7 @@ public class ColorDetectedEventService {
             return;
         }
 
-        String itemIdentifier = resolveWaitingItemIdentifier();
+        String itemIdentifier = waitingMessageBusinessKeyResolver.resolve(COLOR_DETECTED_MESSAGE);
         if (itemIdentifier == null) {
             return;
         }
@@ -52,41 +48,20 @@ public class ColorDetectedEventService {
             return null;
         }
 
-        return switch (event.getEventType()) {
-            case COLOR_DETECTED_EVENT_PREFIX + "white", LEGACY_DETECTED_COLOR_EVENT_PREFIX + "white" -> ItemColor.WHITE;
-            case COLOR_DETECTED_EVENT_PREFIX + "red", LEGACY_DETECTED_COLOR_EVENT_PREFIX + "red" -> ItemColor.RED;
-            case COLOR_DETECTED_EVENT_PREFIX + "blue", LEGACY_DETECTED_COLOR_EVENT_PREFIX + "blue" -> ItemColor.BLUE;
-            default -> {
-                log.info("Ignoring unsupported sorting-machine event {}", event.getEventType());
-                yield null;
-            }
-        };
-    }
-
-    private String resolveWaitingItemIdentifier() {
-        try {
-            Execution execution = runtimeService.createExecutionQuery()
-                    .messageEventSubscriptionName(COLOR_DETECTED_MESSAGE)
-                    .singleResult();
-
-            if (execution == null) {
-                log.warn("Ignoring detected color event because no process is waiting for {}", COLOR_DETECTED_MESSAGE);
-                return null;
-            }
-
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-                    .processInstanceId(execution.getProcessInstanceId())
-                    .singleResult();
-
-            if (processInstance == null || processInstance.getBusinessKey() == null || processInstance.getBusinessKey().isBlank()) {
-                log.warn("Ignoring detected color event because the waiting process instance has no business key");
-                return null;
-            }
-
-            return processInstance.getBusinessKey();
-        } catch (Exception exception) {
-            log.warn("Ignoring detected color event because waiting process resolution is ambiguous", exception);
+        if (!COLOR_DETECTED_EVENT.equals(event.getEventType())) {
+            log.info("Ignoring unsupported sorting-machine event {}", event.getEventType());
             return null;
         }
+
+        if (event.getColor() == null || event.getColor().isBlank()) {
+            log.info("Ignoring color-detected event without color payload");
+            return null;
+        }
+
+        ItemColor detectedColor = ItemColor.fromExternalValue(event.getColor());
+        if (detectedColor == null) {
+            log.info("Ignoring color-detected event with unsupported color {}", event.getColor());
+        }
+        return detectedColor;
     }
 }
