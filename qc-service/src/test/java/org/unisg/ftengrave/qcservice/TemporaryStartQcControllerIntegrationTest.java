@@ -7,8 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.RequestColorDetectionPublisher;
+import org.camunda.bpm.engine.RuntimeService;
 import org.unisg.ftengrave.qcservice.config.CamundaBusinessKeyConstraintInitializer;
+import org.unisg.ftengrave.qcservice.domain.ItemColor;
+import org.unisg.ftengrave.qcservice.port.out.RequestColorDetectionPort;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TemporaryStartQcControllerIntegrationTest {
 
     @MockitoBean
-    private RequestColorDetectionPublisher requestColorDetectionPublisher;
+    private RequestColorDetectionPort requestColorDetectionPort;
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,12 +33,15 @@ class TemporaryStartQcControllerIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private RuntimeService runtimeService;
+
     @Test
     void startQcRejectsDuplicateBusinessKeyForRunningProcessInstances() throws Exception {
-        mockMvc.perform(post("/temporary/start-qc/item-42"))
+        mockMvc.perform(post("/temporary/start-qc/item-42").param("targetColor", "RED"))
                 .andExpect(status().isAccepted());
 
-        mockMvc.perform(post("/temporary/start-qc/item-42"))
+        mockMvc.perform(post("/temporary/start-qc/item-42").param("targetColor", "RED"))
                 .andExpect(status().isConflict());
 
         Integer runningInstances = jdbcTemplate.queryForObject(
@@ -46,6 +51,22 @@ class TemporaryStartQcControllerIntegrationTest {
         );
 
         assertThat(runningInstances).isEqualTo(1);
+    }
+
+    @Test
+    void startQcStoresTargetColorAsProcessVariable() throws Exception {
+        mockMvc.perform(post("/temporary/start-qc/item-77").param("targetColor", "BLUE"))
+                .andExpect(status().isAccepted());
+
+        Object targetColor = runtimeService.getVariable(
+                runtimeService.createProcessInstanceQuery()
+                        .processInstanceBusinessKey("item-77")
+                        .singleResult()
+                        .getId(),
+                "targetColor"
+        );
+
+        assertThat(targetColor).isEqualTo(ItemColor.BLUE.name());
     }
 
     @Test

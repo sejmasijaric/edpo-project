@@ -10,30 +10,33 @@ import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
 import org.camunda.bpm.engine.runtime.MessageCorrelationResult;
 import org.springframework.stereotype.Component;
 import org.unisg.ftengrave.qcservice.DuplicateBusinessKeyException;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
 import org.unisg.ftengrave.qcservice.config.CamundaBusinessKeyConstraintInitializer;
+import org.unisg.ftengrave.qcservice.port.out.CorrelateMessagePort;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class MessageCorrelationService {
+public class MessageCorrelationService implements CorrelateMessagePort {
 
     private final RuntimeService runtimeService;
     private final ObjectMapper objectMapper;
 
-    public MessageCorrelationResult correlateMessage(CamundaMessageDto camundaMessageDto, String messageName) {
-        Map<String, Object> variables = extractVariables(camundaMessageDto);
-        String itemIdentifier = extractItemIdentifier(variables);
-
+    @Override
+    public MessageCorrelationResult correlateMessage(String messageName, String itemIdentifier, Map<String, Object> variables) {
+        validateItemIdentifier(itemIdentifier);
+        Map<String, Object> sanitizedVariables = sanitizeVariables(variables);
         try {
             log.info("Consuming message {}", messageName);
 
             MessageCorrelationBuilder messageCorrelationBuilder = runtimeService.createMessageCorrelation(messageName);
 
-            if (!variables.isEmpty()) {
-                messageCorrelationBuilder.setVariables(variables);
+            if (!sanitizedVariables.isEmpty()) {
+                messageCorrelationBuilder.setVariables(sanitizedVariables);
             }
 
             MessageCorrelationResult messageResult = messageCorrelationBuilder.processInstanceBusinessKey(itemIdentifier)
@@ -68,20 +71,62 @@ public class MessageCorrelationService {
         return false;
     }
 
-    private Map<String, Object> extractVariables(CamundaMessageDto camundaMessageDto) {
-        if (camundaMessageDto == null || camundaMessageDto.getDto() == null) {
+    private Map<String, Object> sanitizeVariables(Map<String, Object> rawVariables) {
+        if (rawVariables == null || rawVariables.isEmpty()) {
             return Map.of();
         }
 
-        return objectMapper.convertValue(camundaMessageDto.getDto(), objectMapper.getTypeFactory()
-                .constructMapType(Map.class, String.class, Object.class));
+        List<String> omittedPaths = new ArrayList<>();
+        Map<String, Object> sanitizedVariables = sanitizeMap(rawVariables, null, omittedPaths);
+        if (!omittedPaths.isEmpty()) {
+            log.warn("Omitting null-valued process variables before Camunda correlation: {}", omittedPaths);
+        }
+        return sanitizedVariables;
     }
 
-    private String extractItemIdentifier(Map<String, Object> variables) {
-        Object itemIdentifier = variables.get("itemIdentifier");
-        if (!(itemIdentifier instanceof String identifier) || identifier.isBlank()) {
+    private Map<String, Object> sanitizeMap(Map<String, Object> source, String path, List<String> omittedPaths) {
+        Map<String, Object> sanitized = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
+            String currentPath = path == null ? entry.getKey() : path + "." + entry.getKey();
+            Object sanitizedValue = sanitizeValue(entry.getValue(), currentPath, omittedPaths);
+            if (sanitizedValue != null) {
+                sanitized.put(entry.getKey(), sanitizedValue);
+            }
+        }
+        return sanitized;
+    }
+
+    private Object sanitizeValue(Object value, String path, List<String> omittedPaths) {
+        if (value == null) {
+            omittedPaths.add(path);
+            return null;
+        }
+
+        if (value instanceof Map<?, ?> nestedMap) {
+            return sanitizeNestedMap(nestedMap, path, omittedPaths);
+        }
+
+        if (value instanceof Enum<?> enumValue) {
+            return enumValue.name();
+        }
+
+        return value;
+    }
+
+    private Map<String, Object> sanitizeNestedMap(Map<?, ?> nestedMap, String path, List<String> omittedPaths) {
+        Map<String, Object> convertedMap = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> entry : nestedMap.entrySet()) {
+            if (!(entry.getKey() instanceof String key)) {
+                throw new IllegalArgumentException("Process variable maps must use String keys");
+            }
+            convertedMap.put(key, entry.getValue());
+        }
+        return sanitizeMap(convertedMap, path, omittedPaths);
+    }
+
+    private void validateItemIdentifier(String itemIdentifier) {
+        if (itemIdentifier == null || itemIdentifier.isBlank()) {
             throw new IllegalArgumentException("Message payload must contain a non-blank itemIdentifier");
         }
-        return identifier;
     }
 }

@@ -6,88 +6,78 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.runtime.Execution;
-import org.camunda.bpm.engine.runtime.ExecutionQuery;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.MessageCorrelationService;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.ColorDetectedMessageProcessDto;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
+import org.unisg.ftengrave.qcservice.port.in.SortingMachineEvent;
+import org.unisg.ftengrave.qcservice.port.out.CorrelateMessagePort;
+import org.unisg.ftengrave.qcservice.port.out.ResolveWaitingMessageBusinessKeyPort;
 
 @ExtendWith(MockitoExtension.class)
 class ColorDetectedEventServiceTest {
 
     @Mock
-    private RuntimeService runtimeService;
+    private ResolveWaitingMessageBusinessKeyPort resolveWaitingMessageBusinessKeyPort;
 
     @Mock
-    private MessageCorrelationService messageCorrelationService;
-
-    @Mock
-    private ExecutionQuery executionQuery;
-
-    @Mock
-    private ProcessInstanceQuery processInstanceQuery;
-
-    @Mock
-    private Execution execution;
-
-    @Mock
-    private ProcessInstance processInstance;
+    private CorrelateMessagePort correlateMessagePort;
 
     private ColorDetectedEventService service;
 
     @BeforeEach
     void setUp() {
-        service = new ColorDetectedEventService(runtimeService, messageCorrelationService);
+        service = new ColorDetectedEventService(resolveWaitingMessageBusinessKeyPort, correlateMessagePort);
     }
 
     @Test
     void correlatesDetectedColorRedEventForWaitingProcess() {
-        when(runtimeService.createExecutionQuery()).thenReturn(executionQuery);
-        when(executionQuery.messageEventSubscriptionName(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(executionQuery);
-        when(executionQuery.singleResult()).thenReturn(execution);
-        when(execution.getProcessInstanceId()).thenReturn("process-1");
-        when(runtimeService.createProcessInstanceQuery()).thenReturn(processInstanceQuery);
-        when(processInstanceQuery.processInstanceId("process-1")).thenReturn(processInstanceQuery);
-        when(processInstanceQuery.singleResult()).thenReturn(processInstance);
-        when(processInstance.getBusinessKey()).thenReturn("item-42");
+        when(resolveWaitingMessageBusinessKeyPort.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn("item-42");
 
-        service.handle(new SortingMachineEventDto("detected-color-red"));
+        service.handle(new SortingMachineEvent("color-detected", "red"));
 
-        CamundaMessageDto expectedMessage = CamundaMessageDto.builder()
-                .dto(ColorDetectedMessageProcessDto.builder()
-                        .itemIdentifier("item-42")
-                        .color(ItemColor.RED)
-                        .build())
-                .build();
-        verify(messageCorrelationService).correlateMessage(eq(expectedMessage), eq(ColorDetectedEventService.COLOR_DETECTED_MESSAGE));
+        verify(correlateMessagePort).correlateMessage(
+                eq(ColorDetectedEventService.COLOR_DETECTED_MESSAGE),
+                eq("item-42"),
+                eq(java.util.Map.of("itemIdentifier", "item-42", "detected-color", ItemColor.RED)));
+    }
+
+    @Test
+    void correlatesNoneColorEventForBoundaryErrorHandling() {
+        when(resolveWaitingMessageBusinessKeyPort.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn("item-42");
+
+        service.handle(new SortingMachineEvent("color-detected", "none"));
+
+        verify(correlateMessagePort).correlateMessage(
+                eq(ColorDetectedEventService.COLOR_DETECTED_MESSAGE),
+                eq("item-42"),
+                eq(java.util.Map.of("itemIdentifier", "item-42", "detected-color", ItemColor.NONE)));
     }
 
     @Test
     void ignoresNonColorEvents() {
-        service.handle(new SortingMachineEventDto("sort-to-shipping"));
+        service.handle(new SortingMachineEvent("sort-to-shipping", null));
 
-        verify(messageCorrelationService, never()).correlateMessage(any(), any());
-        verify(runtimeService, never()).createExecutionQuery();
+        verify(correlateMessagePort, never()).correlateMessage(any(), any(), any());
+        verify(resolveWaitingMessageBusinessKeyPort, never()).resolve(any());
     }
 
     @Test
     void ignoresDetectedColorEventWhenNoProcessWaitsForMessage() {
-        when(runtimeService.createExecutionQuery()).thenReturn(executionQuery);
-        when(executionQuery.messageEventSubscriptionName(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(executionQuery);
-        when(executionQuery.singleResult()).thenReturn(null);
+        when(resolveWaitingMessageBusinessKeyPort.resolve(ColorDetectedEventService.COLOR_DETECTED_MESSAGE)).thenReturn(null);
 
-        service.handle(new SortingMachineEventDto("detected-color-blue"));
+        service.handle(new SortingMachineEvent("color-detected", "blue"));
 
-        verify(messageCorrelationService, never()).correlateMessage(any(), any());
+        verify(correlateMessagePort, never()).correlateMessage(any(), any(), any());
+    }
+
+    @Test
+    void ignoresColorDetectedEventWithoutColorPayload() {
+        service.handle(new SortingMachineEvent("color-detected", null));
+
+        verify(correlateMessagePort, never()).correlateMessage(any(), any(), any());
+        verify(resolveWaitingMessageBusinessKeyPort, never()).resolve(any());
     }
 }

@@ -4,16 +4,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
-import org.unisg.ftengrave.qcservice.application.ColorDetectedEventService;
+import org.unisg.ftengrave.qcservice.port.in.HandleColorDetectedEventUseCase;
+import org.unisg.ftengrave.qcservice.port.in.HandleItemArrivedAtQcEventUseCase;
+import org.unisg.ftengrave.qcservice.port.in.SortingMachineEvent;
 
 @Component
 @RequiredArgsConstructor
 public class SortingMachineEventConsumer {
 
-    private final ColorDetectedEventService colorDetectedEventService;
+    private final HandleColorDetectedEventUseCase handleColorDetectedEventUseCase;
+    private final HandleItemArrivedAtQcEventUseCase handleItemArrivedAtQcEventUseCase;
 
     @KafkaListener(topics = "${kafka.topic.sorting-machine}")
     public void consume(SortingMachineEventDto event) {
-        colorDetectedEventService.handle(event);
+        SortingMachineEvent sortingMachineEvent = new SortingMachineEvent(event.getEventType(), event.getColor());
+        handleItemArrivedAtQcEventUseCase.handle(sortingMachineEvent);
+        handleColorDetectedEventUseCase.handle(sortingMachineEvent);
     }
 }

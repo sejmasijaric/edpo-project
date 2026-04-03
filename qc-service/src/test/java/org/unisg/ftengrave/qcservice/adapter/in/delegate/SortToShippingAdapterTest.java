@@ -4,27 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.junit.jupiter.api.Test;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.SortToShippingPublisher;
+import org.unisg.ftengrave.qcservice.port.in.SortToShippingUseCase;
 
 class SortToShippingAdapterTest {
 
     @Test
     void executePublishesSortToShippingEvent() throws Exception {
-        RecordingSortToShippingPublisher publisher = new RecordingSortToShippingPublisher();
-        SortToShippingAdapter adapter = new SortToShippingAdapter(publisher);
+        RecordingSortToShippingUseCase useCase = new RecordingSortToShippingUseCase();
+        SortToShippingAdapter adapter = new SortToShippingAdapter(useCase);
 
         adapter.execute((DelegateExecution) null);
 
-        assertThat(publisher.publishCalls).isEqualTo(1);
+        assertThat(useCase.sortCalls).isEqualTo(1);
     }
 
-    private static final class RecordingSortToShippingPublisher implements SortToShippingPublisher {
+    private static final class RecordingSortToShippingUseCase implements SortToShippingUseCase {
 
-        private int publishCalls;
+        private int sortCalls;
 
         @Override
-        public void publish() {
-            publishCalls++;
+        public void sortToShipping() {
+            sortCalls++;
         }
     }
 }

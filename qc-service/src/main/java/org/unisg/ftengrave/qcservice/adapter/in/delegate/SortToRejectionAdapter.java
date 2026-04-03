@@ -3,19 +3,19 @@ package org.unisg.ftengrave.qcservice.adapter.in.delegate;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.SortToRejectPublisher;
+import org.unisg.ftengrave.qcservice.port.in.SortToRejectUseCase;
 
 @Component("SortToRejectionAdapter")
 public class SortToRejectionAdapter implements JavaDelegate {
 
-    private final SortToRejectPublisher sortToRejectPublisher;
+    private final SortToRejectUseCase sortToRejectUseCase;
 
-    public SortToRejectionAdapter(SortToRejectPublisher sortToRejectPublisher) {
-        this.sortToRejectPublisher = sortToRejectPublisher;
+    public SortToRejectionAdapter(SortToRejectUseCase sortToRejectUseCase) {
+        this.sortToRejectUseCase = sortToRejectUseCase;
     }
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-        sortToRejectPublisher.publish();
+        sortToRejectUseCase.sortToReject();
     }
 }

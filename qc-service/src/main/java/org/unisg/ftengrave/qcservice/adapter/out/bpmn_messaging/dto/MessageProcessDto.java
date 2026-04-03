@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.unisg.ftengrave.qcservice.domain.ItemColor;
 
 import java.io.Serializable;
 
@@ -14,4 +15,5 @@ import java.io.Serializable;
 public class MessageProcessDto implements Serializable {
 
     private String itemIdentifier;
+    private ItemColor targetColor;
 }

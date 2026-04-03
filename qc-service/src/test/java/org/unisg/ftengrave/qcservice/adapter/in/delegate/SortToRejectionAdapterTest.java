@@ -4,27 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.junit.jupiter.api.Test;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.SortToRejectPublisher;
+import org.unisg.ftengrave.qcservice.port.in.SortToRejectUseCase;
 
 class SortToRejectionAdapterTest {
 
     @Test
     void executePublishesSortToRejectEvent() throws Exception {
-        RecordingSortToRejectPublisher publisher = new RecordingSortToRejectPublisher();
-        SortToRejectionAdapter adapter = new SortToRejectionAdapter(publisher);
+        RecordingSortToRejectUseCase useCase = new RecordingSortToRejectUseCase();
+        SortToRejectionAdapter adapter = new SortToRejectionAdapter(useCase);
 
         adapter.execute((DelegateExecution) null);
 
-        assertThat(publisher.publishCalls).isEqualTo(1);
+        assertThat(useCase.sortCalls).isEqualTo(1);
     }
 
-    private static final class RecordingSortToRejectPublisher implements SortToRejectPublisher {
+    private static final class RecordingSortToRejectUseCase implements SortToRejectUseCase {
 
-        private int publishCalls;
+        private int sortCalls;
 
         @Override
-        public void publish() {
-            publishCalls++;
+        public void sortToReject() {
+            sortCalls++;
         }
     }
 }
