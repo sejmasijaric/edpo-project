@@ -15,6 +15,7 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
 
 integration:
   sorter:

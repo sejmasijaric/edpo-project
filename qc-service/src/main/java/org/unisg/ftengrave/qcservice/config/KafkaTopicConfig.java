@@ -1,4 +1,4 @@
-package org.unisg.ftengrave.orderorchestrator.config;
+package org.unisg.ftengrave.qcservice.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +17,6 @@ public class KafkaTopicConfig {
     @Value("${kafka.bootstrap-address}")
     private String bootstrapAddress;
 
-    @Value("${kafka.topic.stage-orchestration}")
-    private String stageOrchestrationTopic;
-
     @Value("${kafka.topic.machine-orchestration}")
     private String machineOrchestrationTopic;
 
@@ -28,11 +25,6 @@ public class KafkaTopicConfig {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(configs);
-    }
-
-    @Bean
-    public NewTopic stageOrchestrationTopic() {
-        return new NewTopic(stageOrchestrationTopic, 1, (short) 1);
     }
 
     @Bean

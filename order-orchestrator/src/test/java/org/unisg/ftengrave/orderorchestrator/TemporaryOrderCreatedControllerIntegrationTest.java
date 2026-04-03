@@ -1,6 +1,7 @@
 package org.unisg.ftengrave.orderorchestrator;
 
 import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.RuntimeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:order-orchestrator-business-key-test;DB_CLOSE_DELAY=-1",
         "kafka.topic.auto-create=false",
+        "spring.kafka.listener.auto-startup=false",
         "camunda.bpm.generate-unique-process-engine-name=true",
         "camunda.bpm.generate-unique-process-application-name=true"
 })
@@ -38,12 +40,18 @@ class TemporaryOrderCreatedControllerIntegrationTest {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private RuntimeService runtimeService;
+
     @Test
     void orderCreatedStartsProcessAndSendsPerformQcCommand() throws Exception {
         mockMvc.perform(post("/temporary/order-created/item-42").param("targetColor", "RED"))
                 .andExpect(status().isAccepted());
 
         verify(sendPerformQcCommandPort).publish("item-42", ItemColor.RED);
+        assertThat(runtimeService.createProcessInstanceQuery()
+                .processInstanceBusinessKey("item-42")
+                .singleResult()).isNotNull();
     }
 
     @Test
