@@ -56,6 +56,16 @@ public class MillingMachineController {
         formatTimestamp(execution.startTime()));
   }
 
+  @GetMapping("/mill")
+  public OneWayTransportResponse mill(
+      HttpServletRequest request,
+      @RequestParam String machine,
+      @RequestParam(required = false) Integer time,
+      @RequestParam String start,
+      @RequestParam String end) {
+    return moveFromTo(request, machine, start, end);
+  }
+
   @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public String handleBadRequest(RuntimeException exception) {

@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: polishing-machine-integration-service
+  main:
+    web-application-type: none
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
+  group-id: ${KAFKA_GROUP_ID:polishing-machine-integration-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.polishingmachineintegrationservice}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.polishing-machine}}
+    polishing-machine: ${KAFKA_TOPIC_POLISHING_MACHINE:polishing-machine}
+
+mqtt:
+  bridge:
+    enabled: ${MQTT_BRIDGE_ENABLED:true}
+  broker:
+    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
+  topic: ${MQTT_TOPIC:FTFactory/MM_1}
+  client-id: ${MQTT_CLIENT_ID:polishing-machine-integration-service}
+  username: ${MQTT_USERNAME:}
+  password: ${MQTT_PASSWORD:}
+
+polishing-machine:
+  protocol: ${POLISHING_MACHINE_PROTOCOL:http}
+  host: ${POLISHING_MACHINE_HOST:localhost}
+  port: ${POLISHING_MACHINE_PORT:8081}
+  run-path: ${POLISHING_MACHINE_RUN_PATH:/mm/mill}
+  machine: ${POLISHING_MACHINE_MACHINE:mm_1}
+  processing-time: ${POLISHING_MACHINE_PROCESSING_TIME:10}
+  start: ${POLISHING_MACHINE_START:initial}
+  end: ${POLISHING_MACHINE_END:ejection}

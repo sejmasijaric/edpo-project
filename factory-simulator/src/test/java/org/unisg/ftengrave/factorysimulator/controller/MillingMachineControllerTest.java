@@ -60,6 +60,27 @@ class MillingMachineControllerTest {
   }
 
   @Test
+  void millEndpointProvidesRequestedAliasForPolishingContract() throws Exception {
+    factorySimulatorService.addItem("ITEM-1002", ItemColor.Blue, "MM-initial");
+
+    mockMvc.perform(get("/mm/mill")
+            .param("machine", "mm_1")
+            .param("time", "10")
+            .param("start", "initial")
+            .param("end", "ejection"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "attributes":[],
+              "link":"http://localhost/mm/mill"
+            }
+            """))
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("\"start_time\":\"")))
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("\"end_time\":\"")))
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("\"process_time\":\"0:00:00.")));
+  }
+
+  @Test
   void rejectsUnknownEndPositions() throws Exception {
     mockMvc.perform(get("/mm/move_from_to")
             .param("machine", "mm_1")
