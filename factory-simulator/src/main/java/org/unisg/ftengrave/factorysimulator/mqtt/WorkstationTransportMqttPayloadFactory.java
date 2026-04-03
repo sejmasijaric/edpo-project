@@ -30,6 +30,7 @@ public class WorkstationTransportMqttPayloadFactory {
 
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("timestamp", timestampFactory.createTimestamp());
+    payload.put("current_state", status.currentState());
     payload.put("current_task", status.currentTask());
     payload.put("current_task_duration", status.currentTaskDurationSeconds());
 
