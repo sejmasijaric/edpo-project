@@ -90,6 +90,24 @@ services:
       # SORTER_PORT: 5000 # Production
       SORTER_PORT: 8081 # Simulation
 
+  vacuum-gripper-integration-service:
+    build:
+      context: ..
+      dockerfile: vacuum-gripper-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      MQTT_TOPIC: FTFactory/VGR_1
+      VACUUM_GRIPPER_HOST: factory-simulator # Simulation
+      VACUUM_GRIPPER_PORT: 8081 # Simulation
+
 volumes:
   demo-service-data:
   qc-service-data:

@@ -10,6 +10,7 @@ This file documents the ports currently used or reserved by services in this rep
 | `qc-service` | Docker Compose | `8100` | `8100` | Embedded Camunda engine for quality-control BPMN models |
 | `order-orchestrator` | Docker Compose | `8101` | `8101` | Embedded Camunda engine for global order orchestration BPMN models |
 | `sorter-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
+| `vacuum-gripper-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `kafka` | Docker Compose | `9092`, `29092` | `9092`, `29092` | Broker ports exposed by the compose stack |
 | `mqtt-broker` | Docker Compose | `1883` | `1883` | Local Mosquitto broker used between the simulator and integration layer |
 
