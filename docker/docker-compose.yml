@@ -81,9 +81,9 @@ services:
       - "8102:8102"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
-      KAFKA_TOPIC_SUBSCRIBE: vacuum-gripper
-      KAFKA_TOPIC_PUBLISH: vacuum-gripper
-      KAFKA_TOPIC_COMMAND_PUBLISH: vacuum-gripper
+      KAFKA_TOPIC_SUBSCRIBE: engraver
+      KAFKA_TOPIC_PUBLISH: engraver
+      KAFKA_TOPIC_COMMAND_PUBLISH: engraver
   # --- END Debugging ---
 
   sorter-integration-service:
@@ -124,6 +124,24 @@ services:
       MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
       VACUUM_GRIPPER_HOST: factory-simulator # Simulation
       VACUUM_GRIPPER_PORT: 8081 # Simulation
+
+  engraver-integration-service:
+    build:
+      context: ..
+      dockerfile: engraver-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_ENGRAVER: engraver
+      MQTT_TOPIC: FTFactory/OV_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      ENGRAVER_HOST: factory-simulator # Simulation
+      ENGRAVER_PORT: 8081 # Simulation
 
 volumes:
   demo-service-data:
