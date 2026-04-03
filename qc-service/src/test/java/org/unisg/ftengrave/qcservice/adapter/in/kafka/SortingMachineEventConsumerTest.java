@@ -8,17 +8,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
-import org.unisg.ftengrave.qcservice.application.ColorDetectedEventService;
-import org.unisg.ftengrave.qcservice.application.ItemArrivedAtQcEventService;
+import org.unisg.ftengrave.qcservice.port.in.HandleColorDetectedEventUseCase;
+import org.unisg.ftengrave.qcservice.port.in.HandleItemArrivedAtQcEventUseCase;
+import org.unisg.ftengrave.qcservice.port.in.SortingMachineEvent;
 
 @ExtendWith(MockitoExtension.class)
 class SortingMachineEventConsumerTest {
 
     @Mock
-    private ColorDetectedEventService colorDetectedEventService;
+    private HandleColorDetectedEventUseCase handleColorDetectedEventUseCase;
 
     @Mock
-    private ItemArrivedAtQcEventService itemArrivedAtQcEventService;
+    private HandleItemArrivedAtQcEventUseCase handleItemArrivedAtQcEventUseCase;
 
     @InjectMocks
     private SortingMachineEventConsumer consumer;
@@ -29,7 +30,7 @@ class SortingMachineEventConsumerTest {
 
         consumer.consume(event);
 
-        verify(itemArrivedAtQcEventService).handle(event);
-        verify(colorDetectedEventService).handle(event);
+        verify(handleItemArrivedAtQcEventUseCase).handle(new SortingMachineEvent("color-detected", "white"));
+        verify(handleColorDetectedEventUseCase).handle(new SortingMachineEvent("color-detected", "white"));
     }
 }

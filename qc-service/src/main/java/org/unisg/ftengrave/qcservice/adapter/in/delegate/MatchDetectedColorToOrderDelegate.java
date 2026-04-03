@@ -4,8 +4,8 @@ import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-import org.unisg.ftengrave.qcservice.application.MatchItemColorService;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
+import org.unisg.ftengrave.qcservice.port.in.MatchItemColorUseCase;
 
 @Component("MatchDetectedColorToOrderDelegate")
 public class MatchDetectedColorToOrderDelegate implements JavaDelegate {
@@ -15,10 +15,10 @@ public class MatchDetectedColorToOrderDelegate implements JavaDelegate {
     static final String PASSED_COLOR_CHECK_VARIABLE = "passedColorCheck";
     static final String COLOR_DETECTION_FAILED_ERROR = "COLOR_DETECTION_FAILED";
 
-    private final MatchItemColorService matchItemColorService;
+    private final MatchItemColorUseCase matchItemColorUseCase;
 
-    public MatchDetectedColorToOrderDelegate(MatchItemColorService matchItemColorService) {
-        this.matchItemColorService = matchItemColorService;
+    public MatchDetectedColorToOrderDelegate(MatchItemColorUseCase matchItemColorUseCase) {
+        this.matchItemColorUseCase = matchItemColorUseCase;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class MatchDetectedColorToOrderDelegate implements JavaDelegate {
         }
 
         ItemColor targetColor = getRequiredColor(delegateExecution, TARGET_COLOR_VARIABLE);
-        boolean passedColorCheck = matchItemColorService.matches(detectedColor, targetColor);
+        boolean passedColorCheck = matchItemColorUseCase.matches(detectedColor, targetColor);
         delegateExecution.setVariable(PASSED_COLOR_CHECK_VARIABLE, passedColorCheck);
     }
 

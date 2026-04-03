@@ -3,19 +3,19 @@ package org.unisg.ftengrave.qcservice.adapter.in.delegate;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.SortToShippingPublisher;
+import org.unisg.ftengrave.qcservice.port.in.SortToShippingUseCase;
 
 @Component("SortToShippingAdapter")
 public class SortToShippingAdapter implements JavaDelegate {
 
-    private final SortToShippingPublisher sortToShippingPublisher;
+    private final SortToShippingUseCase sortToShippingUseCase;
 
-    public SortToShippingAdapter(SortToShippingPublisher sortToShippingPublisher) {
-        this.sortToShippingPublisher = sortToShippingPublisher;
+    public SortToShippingAdapter(SortToShippingUseCase sortToShippingUseCase) {
+        this.sortToShippingUseCase = sortToShippingUseCase;
     }
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-        sortToShippingPublisher.publish();
+        sortToShippingUseCase.sortToShipping();
     }
 }

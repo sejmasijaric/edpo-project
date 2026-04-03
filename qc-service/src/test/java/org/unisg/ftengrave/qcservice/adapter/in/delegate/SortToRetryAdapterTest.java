@@ -4,27 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.junit.jupiter.api.Test;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.SortToRetryPublisher;
+import org.unisg.ftengrave.qcservice.port.in.SortToRetryUseCase;
 
 class SortToRetryAdapterTest {
 
     @Test
     void executePublishesSortToRetryEvent() throws Exception {
-        RecordingSortToRetryPublisher publisher = new RecordingSortToRetryPublisher();
-        SortToRetryAdapter adapter = new SortToRetryAdapter(publisher);
+        RecordingSortToRetryUseCase useCase = new RecordingSortToRetryUseCase();
+        SortToRetryAdapter adapter = new SortToRetryAdapter(useCase);
 
         adapter.execute((DelegateExecution) null);
 
-        assertThat(publisher.publishCalls).isEqualTo(1);
+        assertThat(useCase.sortCalls).isEqualTo(1);
     }
 
-    private static final class RecordingSortToRetryPublisher implements SortToRetryPublisher {
+    private static final class RecordingSortToRetryUseCase implements SortToRetryUseCase {
 
-        private int publishCalls;
+        private int sortCalls;
 
         @Override
-        public void publish() {
-            publishCalls++;
+        public void sortToRetry() {
+            sortCalls++;
         }
     }
 }

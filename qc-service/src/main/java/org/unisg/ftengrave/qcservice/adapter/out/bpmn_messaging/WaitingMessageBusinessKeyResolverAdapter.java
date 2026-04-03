@@ -1,4 +1,4 @@
-package org.unisg.ftengrave.qcservice.application;
+package org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,14 +6,16 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.Execution;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.springframework.stereotype.Component;
+import org.unisg.ftengrave.qcservice.port.out.ResolveWaitingMessageBusinessKeyPort;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class WaitingMessageBusinessKeyResolver {
+public class WaitingMessageBusinessKeyResolverAdapter implements ResolveWaitingMessageBusinessKeyPort {
 
     private final RuntimeService runtimeService;
 
+    @Override
     public String resolve(String messageName) {
         try {
             Execution execution = runtimeService.createExecutionQuery()

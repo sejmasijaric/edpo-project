@@ -8,31 +8,31 @@ import static org.mockito.Mockito.when;
 import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.junit.jupiter.api.Test;
-import org.unisg.ftengrave.qcservice.application.MatchItemColorService;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
+import org.unisg.ftengrave.qcservice.port.in.MatchItemColorUseCase;
 
 class MatchDetectedColorToOrderDelegateTest {
 
     @Test
     void executeSetsPassedColorCheckFromMatchingService() {
-        MatchItemColorService matchItemColorService = mock(MatchItemColorService.class);
-        MatchDetectedColorToOrderDelegate delegate = new MatchDetectedColorToOrderDelegate(matchItemColorService);
+        MatchItemColorUseCase matchItemColorUseCase = mock(MatchItemColorUseCase.class);
+        MatchDetectedColorToOrderDelegate delegate = new MatchDetectedColorToOrderDelegate(matchItemColorUseCase);
         DelegateExecution delegateExecution = mock(DelegateExecution.class);
 
         when(delegateExecution.getVariable(MatchDetectedColorToOrderDelegate.DETECTED_COLOR_VARIABLE)).thenReturn(ItemColor.BLUE);
         when(delegateExecution.getVariable(MatchDetectedColorToOrderDelegate.TARGET_COLOR_VARIABLE)).thenReturn(ItemColor.BLUE);
-        when(matchItemColorService.matches(ItemColor.BLUE, ItemColor.BLUE)).thenReturn(true);
+        when(matchItemColorUseCase.matches(ItemColor.BLUE, ItemColor.BLUE)).thenReturn(true);
 
         delegate.execute(delegateExecution);
 
-        verify(matchItemColorService).matches(ItemColor.BLUE, ItemColor.BLUE);
+        verify(matchItemColorUseCase).matches(ItemColor.BLUE, ItemColor.BLUE);
         verify(delegateExecution).setVariable(MatchDetectedColorToOrderDelegate.PASSED_COLOR_CHECK_VARIABLE, true);
     }
 
     @Test
     void executeRaisesBpmnErrorWhenDetectedColorIsNone() {
-        MatchItemColorService matchItemColorService = mock(MatchItemColorService.class);
-        MatchDetectedColorToOrderDelegate delegate = new MatchDetectedColorToOrderDelegate(matchItemColorService);
+        MatchItemColorUseCase matchItemColorUseCase = mock(MatchItemColorUseCase.class);
+        MatchDetectedColorToOrderDelegate delegate = new MatchDetectedColorToOrderDelegate(matchItemColorUseCase);
         DelegateExecution delegateExecution = mock(DelegateExecution.class);
 
         when(delegateExecution.getVariable(MatchDetectedColorToOrderDelegate.DETECTED_COLOR_VARIABLE)).thenReturn(ItemColor.NONE);
