@@ -119,6 +119,7 @@ public class VacuumGripperService {
   }
 
   public record VacuumGripperMqttStatus(
+      String currentState,
       String currentTask,
       double currentTaskDurationSeconds) {
   }
@@ -135,11 +136,11 @@ public class VacuumGripperService {
 
     private VacuumGripperMqttStatus snapshot() {
       if (startedAt == null || currentTask.isBlank()) {
-        return new VacuumGripperMqttStatus("", 0.0d);
+        return new VacuumGripperMqttStatus("ready", "", 0.0d);
       }
 
       long elapsedMillis = Duration.between(startedAt, LocalDateTime.now()).toMillis();
-      return new VacuumGripperMqttStatus(currentTask, elapsedMillis / 1000.0d);
+      return new VacuumGripperMqttStatus("busy", currentTask, elapsedMillis / 1000.0d);
     }
   }
 }

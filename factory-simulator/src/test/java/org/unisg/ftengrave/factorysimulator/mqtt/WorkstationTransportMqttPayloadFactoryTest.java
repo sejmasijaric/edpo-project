@@ -24,6 +24,7 @@ class WorkstationTransportMqttPayloadFactoryTest {
   void reportsIdleTaskWhenWorkstationTransportIsIdle() throws Exception {
     JsonNode payload = objectMapper.readTree(payloadFactory.createPayload());
 
+    assertEquals("ready", payload.get("current_state").asText());
     assertEquals("", payload.get("current_task").asText());
     assertEquals(0.0d, payload.get("current_task_duration").asDouble());
   }

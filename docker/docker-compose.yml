@@ -81,9 +81,9 @@ services:
       - "8102:8102"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
-      KAFKA_TOPIC_SUBSCRIBE: polishing-machine
-      KAFKA_TOPIC_PUBLISH: polishing-machine
-      KAFKA_TOPIC_COMMAND_PUBLISH: polishing-machine
+      KAFKA_TOPIC_SUBSCRIBE: workstation-transport
+      KAFKA_TOPIC_PUBLISH: workstation-transport
+      KAFKA_TOPIC_COMMAND_PUBLISH: workstation-transport
   # --- END Debugging ---
 
   sorter-integration-service:
@@ -160,6 +160,24 @@ services:
       MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
       POLISHING_MACHINE_HOST: factory-simulator # Simulation
       POLISHING_MACHINE_PORT: 8081 # Simulation
+
+  workstation-transport-integration-service:
+    build:
+      context: ..
+      dockerfile: workstation-transport-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
+      MQTT_TOPIC: FTFactory/WT_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      WORKSTATION_TRANSPORT_HOST: factory-simulator # Simulation
+      WORKSTATION_TRANSPORT_PORT: 8081 # Simulation
 
 volumes:
   demo-service-data:
