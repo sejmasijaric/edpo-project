@@ -37,20 +37,6 @@ services:
       FACTORY_MQTT_PUBLISH_INTERVAL: 2s
   # --- END Used for testing Only ---
 
-  demo-service:
-    build:
-      context: ../demo-service
-      dockerfile: Dockerfile
-    depends_on:
-      - kafka
-    ports:
-      - "8080:8080"
-    environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
-      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
-    volumes:
-      - demo-service-data:/app/data
-
   qc-service:
     build:
       context: ../qc-service

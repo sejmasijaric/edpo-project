@@ -6,7 +6,6 @@ This file documents the ports currently used or reserved by services in this rep
 
 | Service | Scope | Host port(s) | Container/Application port(s) | Notes |
 | --- | --- | --- | --- | --- |
-| `demo-service` | Docker Compose | `8080` | `8080` | Camunda demo service |
 | `factory-simulator` | Local application | `8081` | `8081` | Configured in `factory-simulator/src/main/resources/application.yaml` |
 | `qc-service` | Docker Compose | `8100` | `8100` | Embedded Camunda engine for quality-control BPMN models |
 | `sorter-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
