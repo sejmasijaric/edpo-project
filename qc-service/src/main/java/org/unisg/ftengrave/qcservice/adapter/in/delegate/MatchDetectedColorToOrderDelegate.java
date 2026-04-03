@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.unisg.ftengrave.qcservice.application.MatchItemColorService;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
 
-@Component("MatchItemColorAdapter")
-public class MatchItemColorAdapter implements JavaDelegate {
+@Component("MatchDetectedColorToOrderDelegate")
+public class MatchDetectedColorToOrderDelegate implements JavaDelegate {
 
     static final String DETECTED_COLOR_VARIABLE = "detected-color";
     static final String TARGET_COLOR_VARIABLE = "targetColor";
@@ -17,7 +17,7 @@ public class MatchItemColorAdapter implements JavaDelegate {
 
     private final MatchItemColorService matchItemColorService;
 
-    public MatchItemColorAdapter(MatchItemColorService matchItemColorService) {
+    public MatchDetectedColorToOrderDelegate(MatchItemColorService matchItemColorService) {
         this.matchItemColorService = matchItemColorService;
     }
 

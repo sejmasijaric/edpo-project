@@ -11,35 +11,35 @@ import org.junit.jupiter.api.Test;
 import org.unisg.ftengrave.qcservice.application.MatchItemColorService;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
 
-class MatchItemColorAdapterTest {
+class MatchDetectedColorToOrderDelegateTest {
 
     @Test
     void executeSetsPassedColorCheckFromMatchingService() {
         MatchItemColorService matchItemColorService = mock(MatchItemColorService.class);
-        MatchItemColorAdapter adapter = new MatchItemColorAdapter(matchItemColorService);
+        MatchDetectedColorToOrderDelegate delegate = new MatchDetectedColorToOrderDelegate(matchItemColorService);
         DelegateExecution delegateExecution = mock(DelegateExecution.class);
 
-        when(delegateExecution.getVariable(MatchItemColorAdapter.DETECTED_COLOR_VARIABLE)).thenReturn(ItemColor.BLUE);
-        when(delegateExecution.getVariable(MatchItemColorAdapter.TARGET_COLOR_VARIABLE)).thenReturn(ItemColor.BLUE);
+        when(delegateExecution.getVariable(MatchDetectedColorToOrderDelegate.DETECTED_COLOR_VARIABLE)).thenReturn(ItemColor.BLUE);
+        when(delegateExecution.getVariable(MatchDetectedColorToOrderDelegate.TARGET_COLOR_VARIABLE)).thenReturn(ItemColor.BLUE);
         when(matchItemColorService.matches(ItemColor.BLUE, ItemColor.BLUE)).thenReturn(true);
 
-        adapter.execute(delegateExecution);
+        delegate.execute(delegateExecution);
 
         verify(matchItemColorService).matches(ItemColor.BLUE, ItemColor.BLUE);
-        verify(delegateExecution).setVariable(MatchItemColorAdapter.PASSED_COLOR_CHECK_VARIABLE, true);
+        verify(delegateExecution).setVariable(MatchDetectedColorToOrderDelegate.PASSED_COLOR_CHECK_VARIABLE, true);
     }
 
     @Test
     void executeRaisesBpmnErrorWhenDetectedColorIsNone() {
         MatchItemColorService matchItemColorService = mock(MatchItemColorService.class);
-        MatchItemColorAdapter adapter = new MatchItemColorAdapter(matchItemColorService);
+        MatchDetectedColorToOrderDelegate delegate = new MatchDetectedColorToOrderDelegate(matchItemColorService);
         DelegateExecution delegateExecution = mock(DelegateExecution.class);
 
-        when(delegateExecution.getVariable(MatchItemColorAdapter.DETECTED_COLOR_VARIABLE)).thenReturn(ItemColor.NONE);
+        when(delegateExecution.getVariable(MatchDetectedColorToOrderDelegate.DETECTED_COLOR_VARIABLE)).thenReturn(ItemColor.NONE);
 
-        assertThatThrownBy(() -> adapter.execute(delegateExecution))
+        assertThatThrownBy(() -> delegate.execute(delegateExecution))
                 .isInstanceOf(BpmnError.class)
                 .extracting(throwable -> ((BpmnError) throwable).getErrorCode())
-                .isEqualTo(MatchItemColorAdapter.COLOR_DETECTION_FAILED_ERROR);
+                .isEqualTo(MatchDetectedColorToOrderDelegate.COLOR_DETECTION_FAILED_ERROR);
     }
 }

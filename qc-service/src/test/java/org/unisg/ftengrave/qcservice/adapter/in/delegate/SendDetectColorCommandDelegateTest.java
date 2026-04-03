@@ -5,14 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.RequestColorDetectionPublisher;
 
-class RequestColorDetectionAdapterTest {
+class SendDetectColorCommandDelegateTest {
 
     @Test
     void executePublishesColorDetectionRequestEvent() throws Exception {
         RecordingRequestColorDetectionPublisher publisher = new RecordingRequestColorDetectionPublisher();
-        RequestColorDetectionAdapter adapter = new RequestColorDetectionAdapter(publisher);
+        SendDetectColorCommandDelegate delegate = new SendDetectColorCommandDelegate(publisher);
 
-        adapter.execute(null);
+        delegate.execute(null);
 
         assertThat(publisher.publishCalls).isEqualTo(1);
     }
