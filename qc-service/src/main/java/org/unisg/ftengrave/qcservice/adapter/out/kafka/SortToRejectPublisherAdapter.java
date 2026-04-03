@@ -5,11 +5,11 @@ import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Component;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 import org.unisg.ftengrave.qcservice.port.out.SortToRejectPort;
+import org.unisg.ftengrave.sharedkafka.publisher.TransactionAwareKafkaPublisher;
 
 @Component
-public class SortToRejectPublisherAdapter implements SortToRejectPort {
-
-    private final KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
+public class SortToRejectPublisherAdapter extends TransactionAwareKafkaPublisher<String, SortingMachineCommandDto>
+        implements SortToRejectPort {
     private final String sortingMachineTopic;
     private final SorterIntegrationProperties sorterIntegrationProperties;
 
@@ -17,16 +17,16 @@ public class SortToRejectPublisherAdapter implements SortToRejectPort {
             KafkaOperations<String, SortingMachineCommandDto> kafkaOperations,
             @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic,
             SorterIntegrationProperties sorterIntegrationProperties) {
-        this.kafkaOperations = kafkaOperations;
+        super(kafkaOperations);
         this.sortingMachineTopic = sortingMachineTopic;
         this.sorterIntegrationProperties = sorterIntegrationProperties;
     }
 
     @Override
     public void publish() {
-        kafkaOperations.send(
+        publishAfterCommitOrNow(() -> send(
                 sortingMachineTopic,
                 new SortingMachineCommandDto(
-                        sorterIntegrationProperties.getCommandType(SorterSinkNames.REJECTION)));
+                        sorterIntegrationProperties.getCommandType(SorterSinkNames.REJECTION))));
     }
 }

@@ -3,15 +3,13 @@ package org.unisg.ftengrave.qcservice.adapter.out.kafka;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 import org.unisg.ftengrave.qcservice.port.out.RequestColorDetectionPort;
+import org.unisg.ftengrave.sharedkafka.publisher.TransactionAwareKafkaPublisher;
 
 @Component
-public class RequestColorDetectionPublisherAdapter implements RequestColorDetectionPort {
-
-    private final KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
+public class RequestColorDetectionPublisherAdapter extends TransactionAwareKafkaPublisher<String, SortingMachineCommandDto>
+        implements RequestColorDetectionPort {
     private final String sortingMachineTopic;
     private final SorterIntegrationProperties sorterIntegrationProperties;
 
@@ -19,28 +17,18 @@ public class RequestColorDetectionPublisherAdapter implements RequestColorDetect
             KafkaOperations<String, SortingMachineCommandDto> kafkaOperations,
             @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic,
             SorterIntegrationProperties sorterIntegrationProperties) {
-        this.kafkaOperations = kafkaOperations;
+        super(kafkaOperations);
         this.sortingMachineTopic = sortingMachineTopic;
         this.sorterIntegrationProperties = sorterIntegrationProperties;
     }
 
     @Override
     public void publish() {
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    sendColorDetectionCommand();
-                }
-            });
-            return;
-        }
-
-        sendColorDetectionCommand();
+        publishAfterCommitOrNow(this::sendColorDetectionCommand);
     }
 
     private void sendColorDetectionCommand() {
-        kafkaOperations.send(
+        send(
             sortingMachineTopic,
             new SortingMachineCommandDto(
                 sorterIntegrationProperties.getCommandType(SorterSinkNames.COLOR_DETECTION)));

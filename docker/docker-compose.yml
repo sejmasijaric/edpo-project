@@ -39,8 +39,8 @@ services:
 
   qc-service:
     build:
-      context: ../qc-service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: qc-service/Dockerfile
     depends_on:
       - kafka
     ports:
@@ -56,8 +56,8 @@ services:
 
   order-orchestrator:
     build:
-      context: ../order-orchestrator
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: order-orchestrator/Dockerfile
     depends_on:
       - kafka
     ports:
