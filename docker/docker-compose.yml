@@ -81,9 +81,9 @@ services:
       - "8102:8102"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
-      KAFKA_TOPIC_SUBSCRIBE: sorting-machine
-      KAFKA_TOPIC_PUBLISH: sorting-machine
-      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine
+      KAFKA_TOPIC_SUBSCRIBE: vacuum-gripper
+      KAFKA_TOPIC_PUBLISH: vacuum-gripper
+      KAFKA_TOPIC_COMMAND_PUBLISH: vacuum-gripper
   # --- END Debugging ---
 
   sorter-integration-service:
