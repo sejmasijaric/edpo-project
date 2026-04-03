@@ -35,18 +35,6 @@ public class MatchItemColorAdapter implements JavaDelegate {
 
     private ItemColor getRequiredColor(DelegateExecution delegateExecution, String variableName) {
         Object rawValue = delegateExecution.getVariable(variableName);
-        System.out.println("Check: " + rawValue + " " + variableName);
-        System.out.println("execId = " + delegateExecution.getId());
-        System.out.println("parentId = " + delegateExecution.getParentId());
-        System.out.println("activityId = " + delegateExecution.getCurrentActivityId());
-        System.out.println("processInstanceId = " + delegateExecution.getProcessInstanceId());
-
-        System.out.println("targetColor visible = " + delegateExecution.getVariable("targetColor"));
-        System.out.println("targetColor local   = " + delegateExecution.getVariableLocal("targetColor"));
-        System.out.println("process targetColor = " + delegateExecution.getProcessInstance().getVariable("targetColor"));
-
-        System.out.println("all local vars = " + delegateExecution.getVariablesLocal());
-        System.out.println("all visible vars = " + delegateExecution.getVariables());
 
         if (rawValue instanceof ItemColor color) {
             return color;
@@ -56,6 +44,9 @@ public class MatchItemColorAdapter implements JavaDelegate {
             if (color != null) {
                 return color;
             }
+        }
+        if (rawValue == null) {
+            return ItemColor.NONE;
         }
         throw new IllegalStateException("Process variable '%s' must contain a valid ItemColor".formatted(variableName));
     }

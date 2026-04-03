@@ -15,8 +15,7 @@ public enum ItemColor {
             case "white" -> WHITE;
             case "red" -> RED;
             case "blue" -> BLUE;
-            case "none" -> NONE;
-            default -> null;
+            default -> NONE;
         };
     }
 }
