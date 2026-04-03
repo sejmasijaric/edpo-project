@@ -12,7 +12,10 @@ kafka:
   group-id: ${KAFKA_GROUP_ID:qc-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.in.kafka.dto,org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
   topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
 
 integration:
   sorter:

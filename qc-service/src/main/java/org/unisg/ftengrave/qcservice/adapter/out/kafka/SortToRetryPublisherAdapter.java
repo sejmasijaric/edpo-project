@@ -5,11 +5,11 @@ import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Component;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
 import org.unisg.ftengrave.qcservice.port.out.SortToRetryPort;
+import org.unisg.ftengrave.sharedkafka.publisher.TransactionAwareKafkaPublisher;
 
 @Component
-public class SortToRetryPublisherAdapter implements SortToRetryPort {
-
-    private final KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
+public class SortToRetryPublisherAdapter extends TransactionAwareKafkaPublisher<String, SortingMachineCommandDto>
+        implements SortToRetryPort {
     private final String sortingMachineTopic;
     private final SorterIntegrationProperties sorterIntegrationProperties;
 
@@ -17,15 +17,15 @@ public class SortToRetryPublisherAdapter implements SortToRetryPort {
             KafkaOperations<String, SortingMachineCommandDto> kafkaOperations,
             @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic,
             SorterIntegrationProperties sorterIntegrationProperties) {
-        this.kafkaOperations = kafkaOperations;
+        super(kafkaOperations);
         this.sortingMachineTopic = sortingMachineTopic;
         this.sorterIntegrationProperties = sorterIntegrationProperties;
     }
 
     @Override
     public void publish() {
-        kafkaOperations.send(
+        publishAfterCommitOrNow(() -> send(
                 sortingMachineTopic,
-                new SortingMachineCommandDto(sorterIntegrationProperties.getCommandType(SorterSinkNames.RETRY)));
+                new SortingMachineCommandDto(sorterIntegrationProperties.getCommandType(SorterSinkNames.RETRY))));
     }
 }

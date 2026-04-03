@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_OrderOrchestration"
+                  targetNamespace="http://unisg.org/ftengrave/order-orchestrator">
+  <bpmn:message id="Message_OrderCreated" name="OrderCreatedMessage" />
+  <bpmn:message id="Message_QcShippingOutcome" name="QcShippingOutcomeMessage" />
+  <bpmn:message id="Message_QcRejectionOutcome" name="QcRejectionOutcomeMessage" />
+
+  <bpmn:process id="OrderOrchestrationProcess" name="Order Orchestration Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_OrderCreated" name="Order Created Event">
+      <bpmn:outgoing>Flow_Start_To_SendPerformQc</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_OrderCreated" messageRef="Message_OrderCreated" />
+    </bpmn:startEvent>
+    <bpmn:sendTask id="Activity_SendPerformQcCommand"
+                   name="Send Perform QC Command"
+                   camunda:delegateExpression="${sendPerformQcCommandDelegate}">
+      <bpmn:incoming>Flow_Start_To_SendPerformQc</bpmn:incoming>
+      <bpmn:outgoing>Flow_SendPerformQc_To_WaitForQcOutcome</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:eventBasedGateway id="Gateway_WaitForQcOutcome" name="Wait for QC outcome">
+      <bpmn:incoming>Flow_SendPerformQc_To_WaitForQcOutcome</bpmn:incoming>
+      <bpmn:outgoing>Flow_WaitForQcOutcome_To_Shipping</bpmn:outgoing>
+      <bpmn:outgoing>Flow_WaitForQcOutcome_To_Rejection</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Event_QcShippingOutcome" name="QC Shipping Outcome">
+      <bpmn:incoming>Flow_WaitForQcOutcome_To_Shipping</bpmn:incoming>
+      <bpmn:outgoing>Flow_QcShippingOutcome_To_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_QcShippingOutcome" messageRef="Message_QcShippingOutcome" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_QcRejectionOutcome" name="QC Rejection Outcome">
+      <bpmn:incoming>Flow_WaitForQcOutcome_To_Rejection</bpmn:incoming>
+      <bpmn:outgoing>Flow_QcRejectionOutcome_To_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_QcRejectionOutcome" messageRef="Message_QcRejectionOutcome" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="Event_OrderOrchestrated" name="Order orchestrated">
+      <bpmn:incoming>Flow_QcShippingOutcome_To_End</bpmn:incoming>
+      <bpmn:incoming>Flow_QcRejectionOutcome_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_SendPerformQc" sourceRef="StartEvent_OrderCreated" targetRef="Activity_SendPerformQcCommand" />
+    <bpmn:sequenceFlow id="Flow_SendPerformQc_To_WaitForQcOutcome" sourceRef="Activity_SendPerformQcCommand" targetRef="Gateway_WaitForQcOutcome" />
+    <bpmn:sequenceFlow id="Flow_WaitForQcOutcome_To_Shipping" sourceRef="Gateway_WaitForQcOutcome" targetRef="Event_QcShippingOutcome" />
+    <bpmn:sequenceFlow id="Flow_WaitForQcOutcome_To_Rejection" sourceRef="Gateway_WaitForQcOutcome" targetRef="Event_QcRejectionOutcome" />
+    <bpmn:sequenceFlow id="Flow_QcShippingOutcome_To_End" sourceRef="Event_QcShippingOutcome" targetRef="Event_OrderOrchestrated" />
+    <bpmn:sequenceFlow id="Flow_QcRejectionOutcome_To_End" sourceRef="Event_QcRejectionOutcome" targetRef="Event_OrderOrchestrated" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_OrderOrchestration">
+    <bpmndi:BPMNPlane id="BPMNPlane_OrderOrchestration" bpmnElement="OrderOrchestrationProcess">
+      <bpmndi:BPMNShape id="Shape_StartEvent_OrderCreated" bpmnElement="StartEvent_OrderCreated">
+        <dc:Bounds x="160" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Activity_SendPerformQcCommand" bpmnElement="Activity_SendPerformQcCommand">
+        <dc:Bounds x="260" y="78" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_WaitForQcOutcome" bpmnElement="Gateway_WaitForQcOutcome" isMarkerVisible="true">
+        <dc:Bounds x="425" y="93" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_QcShippingOutcome" bpmnElement="Event_QcShippingOutcome">
+        <dc:Bounds x="542" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_QcRejectionOutcome" bpmnElement="Event_QcRejectionOutcome">
+        <dc:Bounds x="542" y="150" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_OrderOrchestrated" bpmnElement="Event_OrderOrchestrated">
+        <dc:Bounds x="700" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_Start_To_SendPerformQc" bpmnElement="Flow_Start_To_SendPerformQc">
+        <di:waypoint x="196" y="118" />
+        <di:waypoint x="260" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_SendPerformQc_To_WaitForQcOutcome" bpmnElement="Flow_SendPerformQc_To_WaitForQcOutcome">
+        <di:waypoint x="360" y="118" />
+        <di:waypoint x="425" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_WaitForQcOutcome_To_Shipping" bpmnElement="Flow_WaitForQcOutcome_To_Shipping">
+        <di:waypoint x="450" y="93" />
+        <di:waypoint x="450" y="68" />
+        <di:waypoint x="542" y="68" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_WaitForQcOutcome_To_Rejection" bpmnElement="Flow_WaitForQcOutcome_To_Rejection">
+        <di:waypoint x="450" y="143" />
+        <di:waypoint x="450" y="168" />
+        <di:waypoint x="542" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_QcShippingOutcome_To_End" bpmnElement="Flow_QcShippingOutcome_To_End">
+        <di:waypoint x="578" y="68" />
+        <di:waypoint x="640" y="68" />
+        <di:waypoint x="640" y="118" />
+        <di:waypoint x="700" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_QcRejectionOutcome_To_End" bpmnElement="Flow_QcRejectionOutcome_To_End">
+        <di:waypoint x="578" y="168" />
+        <di:waypoint x="640" y="168" />
+        <di:waypoint x="640" y="118" />
+        <di:waypoint x="700" y="118" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -21,14 +21,14 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${passedColorCheck}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="Event_0nvzha9">
-      <bpmn:incoming>Flow_02ip3b5</bpmn:incoming>
+      <bpmn:incoming>Flow_RejectionOutcome_To_End</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:endEvent id="Event_1bqfhsm">
-      <bpmn:incoming>Flow_1nv6c25</bpmn:incoming>
+      <bpmn:incoming>Flow_ShippingOutcome_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1nv6c25" sourceRef="Activity_0c13ean" targetRef="Event_1bqfhsm" />
+    <bpmn:sequenceFlow id="Flow_1nv6c25" sourceRef="Activity_0c13ean" targetRef="Activity_PublishShippingOutcome" />
     <bpmn:sequenceFlow id="Flow_1k9jp1f" sourceRef="Activity_1drtw7z" targetRef="Gateway_1i7gin2" />
-    <bpmn:sequenceFlow id="Flow_02ip3b5" sourceRef="Activity_0dwpaza" targetRef="Event_0nvzha9" />
+    <bpmn:sequenceFlow id="Flow_02ip3b5" sourceRef="Activity_0dwpaza" targetRef="Activity_PublishRejectionOutcome" />
     <bpmn:exclusiveGateway id="Gateway_1knde2s">
       <bpmn:incoming>Flow_11xvwaz</bpmn:incoming>
       <bpmn:incoming>Flow_0vgxl1h</bpmn:incoming>
@@ -102,6 +102,16 @@
       <bpmn:incoming>Flow_0q1zuzk</bpmn:incoming>
       <bpmn:outgoing>Flow_02ip3b5</bpmn:outgoing>
     </bpmn:sendTask>
+    <bpmn:sendTask id="Activity_PublishShippingOutcome" name="Send QC Shipping Outcome Event" camunda:delegateExpression="${PublishQcShippingOutcomeDelegate}">
+      <bpmn:incoming>Flow_1nv6c25</bpmn:incoming>
+      <bpmn:outgoing>Flow_ShippingOutcome_To_End</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="Activity_PublishRejectionOutcome" name="Send QC Rejection Outcome Event" camunda:delegateExpression="${PublishQcRejectionOutcomeDelegate}">
+      <bpmn:incoming>Flow_02ip3b5</bpmn:incoming>
+      <bpmn:outgoing>Flow_RejectionOutcome_To_End</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_ShippingOutcome_To_End" sourceRef="Activity_PublishShippingOutcome" targetRef="Event_1bqfhsm" />
+    <bpmn:sequenceFlow id="Flow_RejectionOutcome_To_End" sourceRef="Activity_PublishRejectionOutcome" targetRef="Event_0nvzha9" />
     <bpmn:sequenceFlow id="Flow_1uy9suv" sourceRef="Activity_1wtp2k8" targetRef="Gateway_1rw5rn1" />
     <bpmn:eventBasedGateway id="Gateway_1oy04fx">
       <bpmn:incoming>Flow_0m21rt0</bpmn:incoming>
@@ -199,7 +209,7 @@
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1rdpkq5" bpmnElement="Event_1bqfhsm">
-        <dc:Bounds x="1482" y="242" width="36" height="36" />
+        <dc:Bounds x="1634" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1knde2s_di" bpmnElement="Gateway_1knde2s" isMarkerVisible="true">
         <dc:Bounds x="1255" y="345" width="50" height="50" />
@@ -237,7 +247,15 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1jm0vm9" bpmnElement="Event_0nvzha9">
-        <dc:Bounds x="1482" y="352" width="36" height="36" />
+        <dc:Bounds x="1634" y="352" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_PublishShippingOutcome_di" bpmnElement="Activity_PublishShippingOutcome">
+        <dc:Bounds x="1485" y="220" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_PublishRejectionOutcome_di" bpmnElement="Activity_PublishRejectionOutcome">
+        <dc:Bounds x="1485" y="330" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0guv598_di" bpmnElement="Event_17dlz0w">
         <dc:Bounds x="842" y="202" width="36" height="36" />
@@ -315,11 +333,19 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_02ip3b5_di" bpmnElement="Flow_02ip3b5">
         <di:waypoint x="1440" y="370" />
-        <di:waypoint x="1482" y="370" />
+        <di:waypoint x="1485" y="370" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1nv6c25_di" bpmnElement="Flow_1nv6c25">
         <di:waypoint x="1440" y="260" />
-        <di:waypoint x="1482" y="260" />
+        <di:waypoint x="1485" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ShippingOutcome_To_End_di" bpmnElement="Flow_ShippingOutcome_To_End">
+        <di:waypoint x="1585" y="260" />
+        <di:waypoint x="1634" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RejectionOutcome_To_End_di" bpmnElement="Flow_RejectionOutcome_To_End">
+        <di:waypoint x="1585" y="370" />
+        <di:waypoint x="1634" y="370" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11xvwaz_di" bpmnElement="Flow_11xvwaz">
         <di:waypoint x="1010" y="285" />
