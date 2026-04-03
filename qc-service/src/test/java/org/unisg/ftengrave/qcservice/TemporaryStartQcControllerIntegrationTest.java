@@ -8,9 +8,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.camunda.bpm.engine.RuntimeService;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.RequestColorDetectionPublisher;
 import org.unisg.ftengrave.qcservice.config.CamundaBusinessKeyConstraintInitializer;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
+import org.unisg.ftengrave.qcservice.port.out.RequestColorDetectionPort;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TemporaryStartQcControllerIntegrationTest {
 
     @MockitoBean
-    private RequestColorDetectionPublisher requestColorDetectionPublisher;
+    private RequestColorDetectionPort requestColorDetectionPort;
 
     @Autowired
     private MockMvc mockMvc;

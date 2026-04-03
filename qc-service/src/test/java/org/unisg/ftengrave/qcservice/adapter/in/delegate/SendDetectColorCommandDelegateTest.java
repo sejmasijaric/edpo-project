@@ -3,27 +3,27 @@ package org.unisg.ftengrave.qcservice.adapter.in.delegate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.unisg.ftengrave.qcservice.adapter.out.kafka.RequestColorDetectionPublisher;
+import org.unisg.ftengrave.qcservice.port.in.RequestColorDetectionUseCase;
 
 class SendDetectColorCommandDelegateTest {
 
     @Test
     void executePublishesColorDetectionRequestEvent() throws Exception {
-        RecordingRequestColorDetectionPublisher publisher = new RecordingRequestColorDetectionPublisher();
-        SendDetectColorCommandDelegate delegate = new SendDetectColorCommandDelegate(publisher);
+        RecordingRequestColorDetectionUseCase useCase = new RecordingRequestColorDetectionUseCase();
+        SendDetectColorCommandDelegate delegate = new SendDetectColorCommandDelegate(useCase);
 
         delegate.execute(null);
 
-        assertThat(publisher.publishCalls).isEqualTo(1);
+        assertThat(useCase.requestCalls).isEqualTo(1);
     }
 
-    private static final class RecordingRequestColorDetectionPublisher implements RequestColorDetectionPublisher {
+    private static final class RecordingRequestColorDetectionUseCase implements RequestColorDetectionUseCase {
 
-        private int publishCalls;
+        private int requestCalls;
 
         @Override
-        public void publish() {
-            publishCalls++;
+        public void requestColorDetection() {
+            requestCalls++;
         }
     }
 }

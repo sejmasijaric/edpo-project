@@ -11,60 +11,54 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.MessageCorrelationService;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.MessageProcessDto;
+import org.unisg.ftengrave.qcservice.port.in.SortingMachineEvent;
+import org.unisg.ftengrave.qcservice.port.out.CorrelateMessagePort;
+import org.unisg.ftengrave.qcservice.port.out.ResolveWaitingMessageBusinessKeyPort;
 
 @ExtendWith(MockitoExtension.class)
 class ItemArrivedAtQcEventServiceTest {
 
     @Mock
-    private WaitingMessageBusinessKeyResolver waitingMessageBusinessKeyResolver;
+    private ResolveWaitingMessageBusinessKeyPort resolveWaitingMessageBusinessKeyPort;
 
     @Mock
-    private MessageCorrelationService messageCorrelationService;
+    private CorrelateMessagePort correlateMessagePort;
 
     private ItemArrivedAtQcEventService service;
 
     @BeforeEach
     void setUp() {
-        service = new ItemArrivedAtQcEventService(waitingMessageBusinessKeyResolver, messageCorrelationService);
+        service = new ItemArrivedAtQcEventService(resolveWaitingMessageBusinessKeyPort, correlateMessagePort);
     }
 
     @Test
     void correlatesItemArrivedAtQcForWaitingProcess() {
-        when(waitingMessageBusinessKeyResolver.resolve(ItemArrivedAtQcEventService.ITEM_ARRIVED_AT_QC_MESSAGE))
+        when(resolveWaitingMessageBusinessKeyPort.resolve(ItemArrivedAtQcEventService.ITEM_ARRIVED_AT_QC_MESSAGE))
                 .thenReturn("item-42");
 
-        service.handle(new SortingMachineEventDto("item-arrived-at-qc"));
+        service.handle(new SortingMachineEvent("item-arrived-at-qc", null));
 
-        CamundaMessageDto expectedMessage = CamundaMessageDto.builder()
-                .dto(MessageProcessDto.builder()
-                        .itemIdentifier("item-42")
-                        .build())
-                .build();
-
-        verify(messageCorrelationService).correlateMessage(
-                eq(expectedMessage),
-                eq(ItemArrivedAtQcEventService.ITEM_ARRIVED_AT_QC_MESSAGE));
+        verify(correlateMessagePort).correlateMessage(
+                eq(ItemArrivedAtQcEventService.ITEM_ARRIVED_AT_QC_MESSAGE),
+                eq("item-42"),
+                eq(java.util.Map.of("itemIdentifier", "item-42")));
     }
 
     @Test
     void ignoresUnrelatedSorterEvents() {
-        service.handle(new SortingMachineEventDto("color-detected", "blue"));
+        service.handle(new SortingMachineEvent("color-detected", "blue"));
 
-        verify(messageCorrelationService, never()).correlateMessage(any(), any());
-        verify(waitingMessageBusinessKeyResolver, never()).resolve(any());
+        verify(correlateMessagePort, never()).correlateMessage(any(), any(), any());
+        verify(resolveWaitingMessageBusinessKeyPort, never()).resolve(any());
     }
 
     @Test
     void ignoresItemArrivedAtQcWhenNoProcessWaitsForMessage() {
-        when(waitingMessageBusinessKeyResolver.resolve(ItemArrivedAtQcEventService.ITEM_ARRIVED_AT_QC_MESSAGE))
+        when(resolveWaitingMessageBusinessKeyPort.resolve(ItemArrivedAtQcEventService.ITEM_ARRIVED_AT_QC_MESSAGE))
                 .thenReturn(null);
 
-        service.handle(new SortingMachineEventDto("item-arrived-at-qc"));
+        service.handle(new SortingMachineEvent("item-arrived-at-qc", null));
 
-        verify(messageCorrelationService, never()).correlateMessage(any(), any());
+        verify(correlateMessagePort, never()).correlateMessage(any(), any(), any());
     }
 }

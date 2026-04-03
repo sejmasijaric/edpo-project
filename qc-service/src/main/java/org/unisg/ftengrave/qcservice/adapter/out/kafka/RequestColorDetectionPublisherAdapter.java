@@ -6,9 +6,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
+import org.unisg.ftengrave.qcservice.port.out.RequestColorDetectionPort;
 
 @Component
-public class RequestColorDetectionPublisherAdapter implements RequestColorDetectionPublisher {
+public class RequestColorDetectionPublisherAdapter implements RequestColorDetectionPort {
 
     private final KafkaOperations<String, SortingMachineCommandDto> kafkaOperations;
     private final String sortingMachineTopic;

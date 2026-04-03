@@ -10,8 +10,8 @@ import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
 import org.camunda.bpm.engine.runtime.MessageCorrelationResult;
 import org.springframework.stereotype.Component;
 import org.unisg.ftengrave.qcservice.DuplicateBusinessKeyException;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
 import org.unisg.ftengrave.qcservice.config.CamundaBusinessKeyConstraintInitializer;
+import org.unisg.ftengrave.qcservice.port.out.CorrelateMessagePort;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,22 +21,22 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class MessageCorrelationService {
+public class MessageCorrelationService implements CorrelateMessagePort {
 
     private final RuntimeService runtimeService;
     private final ObjectMapper objectMapper;
 
-    public MessageCorrelationResult correlateMessage(CamundaMessageDto camundaMessageDto, String messageName) {
-        Map<String, Object> variables = extractVariables(camundaMessageDto);
-        String itemIdentifier = extractItemIdentifier(variables);
-
+    @Override
+    public MessageCorrelationResult correlateMessage(String messageName, String itemIdentifier, Map<String, Object> variables) {
+        validateItemIdentifier(itemIdentifier);
+        Map<String, Object> sanitizedVariables = sanitizeVariables(variables);
         try {
             log.info("Consuming message {}", messageName);
 
             MessageCorrelationBuilder messageCorrelationBuilder = runtimeService.createMessageCorrelation(messageName);
 
-            if (!variables.isEmpty()) {
-                messageCorrelationBuilder.setVariables(variables);
+            if (!sanitizedVariables.isEmpty()) {
+                messageCorrelationBuilder.setVariables(sanitizedVariables);
             }
 
             MessageCorrelationResult messageResult = messageCorrelationBuilder.processInstanceBusinessKey(itemIdentifier)
@@ -69,16 +69,6 @@ public class MessageCorrelationService {
             current = current.getCause();
         }
         return false;
-    }
-
-    private Map<String, Object> extractVariables(CamundaMessageDto camundaMessageDto) {
-        if (camundaMessageDto == null || camundaMessageDto.getDto() == null) {
-            return Map.of();
-        }
-
-        Map<String, Object> rawVariables = objectMapper.convertValue(camundaMessageDto.getDto(), objectMapper.getTypeFactory()
-                .constructMapType(Map.class, String.class, Object.class));
-        return sanitizeVariables(rawVariables);
     }
 
     private Map<String, Object> sanitizeVariables(Map<String, Object> rawVariables) {
@@ -116,6 +106,10 @@ public class MessageCorrelationService {
             return sanitizeNestedMap(nestedMap, path, omittedPaths);
         }
 
+        if (value instanceof Enum<?> enumValue) {
+            return enumValue.name();
+        }
+
         return value;
     }
 
@@ -130,11 +124,9 @@ public class MessageCorrelationService {
         return sanitizeMap(convertedMap, path, omittedPaths);
     }
 
-    private String extractItemIdentifier(Map<String, Object> variables) {
-        Object itemIdentifier = variables.get("itemIdentifier");
-        if (!(itemIdentifier instanceof String identifier) || identifier.isBlank()) {
+    private void validateItemIdentifier(String itemIdentifier) {
+        if (itemIdentifier == null || itemIdentifier.isBlank()) {
             throw new IllegalArgumentException("Message payload must contain a non-blank itemIdentifier");
         }
-        return identifier;
     }
 }

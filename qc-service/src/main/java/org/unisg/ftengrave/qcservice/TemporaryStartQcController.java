@@ -1,38 +1,25 @@
 package org.unisg.ftengrave.qcservice;
 
 import lombok.RequiredArgsConstructor;
-import org.camunda.bpm.engine.runtime.MessageCorrelationResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.MessageCorrelationService;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.MessageProcessDto;
 import org.unisg.ftengrave.qcservice.domain.ItemColor;
+import org.unisg.ftengrave.qcservice.port.in.StartQcUseCase;
 
 @RestController
 @RequiredArgsConstructor
 public class TemporaryStartQcController {
 
-    private static final String START_QC_MESSAGE = "StartQcMessage";
-
-    private final MessageCorrelationService messageCorrelationService;
+    private final StartQcUseCase startQcUseCase;
 
     @PostMapping("/temporary/start-qc/{itemIdentifier}")
     public ResponseEntity<Void> startQc(@PathVariable String itemIdentifier, @RequestParam ItemColor targetColor) {
         try {
-            CamundaMessageDto message = CamundaMessageDto.builder()
-                    .dto(MessageProcessDto.builder()
-                            .itemIdentifier(itemIdentifier)
-                            .targetColor(targetColor)
-                            .build())
-                    .build();
-
-            MessageCorrelationResult result = messageCorrelationService.correlateMessage(message, START_QC_MESSAGE);
-            return result != null
+            return startQcUseCase.startQc(itemIdentifier, targetColor)
                     ? ResponseEntity.accepted().build()
                     : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (DuplicateBusinessKeyException exception) {

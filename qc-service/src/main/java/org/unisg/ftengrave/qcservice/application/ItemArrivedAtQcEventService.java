@@ -3,49 +3,49 @@ package org.unisg.ftengrave.qcservice.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.unisg.ftengrave.qcservice.adapter.in.kafka.dto.SortingMachineEventDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.MessageCorrelationService;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.CamundaMessageDto;
-import org.unisg.ftengrave.qcservice.adapter.out.bpmn_messaging.dto.MessageProcessDto;
+import org.unisg.ftengrave.qcservice.port.in.HandleItemArrivedAtQcEventUseCase;
+import org.unisg.ftengrave.qcservice.port.in.SortingMachineEvent;
+import org.unisg.ftengrave.qcservice.port.out.CorrelateMessagePort;
+import org.unisg.ftengrave.qcservice.port.out.ResolveWaitingMessageBusinessKeyPort;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ItemArrivedAtQcEventService {
+public class ItemArrivedAtQcEventService implements HandleItemArrivedAtQcEventUseCase {
 
     static final String ITEM_ARRIVED_AT_QC_MESSAGE = "ItemArrivedAtQC";
     private static final String ITEM_ARRIVED_AT_QC_EVENT = "item-arrived-at-qc";
 
-    private final WaitingMessageBusinessKeyResolver waitingMessageBusinessKeyResolver;
-    private final MessageCorrelationService messageCorrelationService;
+    private final ResolveWaitingMessageBusinessKeyPort resolveWaitingMessageBusinessKeyPort;
+    private final CorrelateMessagePort correlateMessagePort;
 
-    public void handle(SortingMachineEventDto event) {
+    @Override
+    public void handle(SortingMachineEvent event) {
         if (!isItemArrivedAtQcEvent(event)) {
             return;
         }
 
-        String itemIdentifier = waitingMessageBusinessKeyResolver.resolve(ITEM_ARRIVED_AT_QC_MESSAGE);
+        String itemIdentifier = resolveWaitingMessageBusinessKeyPort.resolve(ITEM_ARRIVED_AT_QC_MESSAGE);
         if (itemIdentifier == null) {
             return;
         }
 
-        CamundaMessageDto message = CamundaMessageDto.builder()
-                .dto(MessageProcessDto.builder()
-                        .itemIdentifier(itemIdentifier)
-                        .build())
-                .build();
-
-        messageCorrelationService.correlateMessage(message, ITEM_ARRIVED_AT_QC_MESSAGE);
+        correlateMessagePort.correlateMessage(
+                ITEM_ARRIVED_AT_QC_MESSAGE,
+                itemIdentifier,
+                Map.of("itemIdentifier", itemIdentifier));
     }
 
-    private boolean isItemArrivedAtQcEvent(SortingMachineEventDto event) {
-        if (event == null || event.getEventType() == null) {
+    private boolean isItemArrivedAtQcEvent(SortingMachineEvent event) {
+        if (event == null || event.eventType() == null) {
             log.info("Ignoring sorting-machine event without eventType");
             return false;
         }
 
-        if (!ITEM_ARRIVED_AT_QC_EVENT.equals(event.getEventType())) {
-            log.info("Ignoring unsupported sorting-machine event {}", event.getEventType());
+        if (!ITEM_ARRIVED_AT_QC_EVENT.equals(event.eventType())) {
+            log.info("Ignoring unsupported sorting-machine event {}", event.eventType());
             return false;
         }
 
