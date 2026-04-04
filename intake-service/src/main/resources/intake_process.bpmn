@@ -6,32 +6,57 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition_StartIntake" messageRef="Message_StartIntake" />
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_Start_To_ItemArrived" sourceRef="StartEvent_ItemIntakeRequested" targetRef="Event_ItemArrivedAtIntake" />
+    <bpmn:sequenceFlow id="Flow_ItemArrived_To_MoveCommand" sourceRef="Event_ItemArrivedAtIntake" targetRef="Task_SendMoveToEngraverCommand" />
+    <bpmn:sendTask id="Task_SendMoveToEngraverCommand" name="Send VGR Move to Engraver Command" camunda:delegateExpression="${SendMoveItemFromInputToEngraverCommandDelegate}">
+      <bpmn:incoming>Flow_ItemArrived_To_MoveCommand</bpmn:incoming>
+      <bpmn:outgoing>Flow_1eqmqll</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_IntakeCompleted" name="Item Transported to Oven">
+      <bpmn:incoming>Flow_0b78dnt</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:subProcess id="Activity_1s0cue0" name="Observe VGR Transport">
+      <bpmn:incoming>Flow_1eqmqll</bpmn:incoming>
+      <bpmn:outgoing>Flow_0b78dnt</bpmn:outgoing>
+      <bpmn:startEvent id="Event_0mku6v1">
+        <bpmn:outgoing>Flow_0ahu1ay</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:intermediateCatchEvent id="Event_ItemLeftIntake" name="Item Left Intake Event">
+        <bpmn:incoming>Flow_008z2xs</bpmn:incoming>
+        <bpmn:outgoing>Flow_1altwdy</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_ItemLeftIntake" messageRef="Message_ItemLeftIntake" />
+      </bpmn:intermediateCatchEvent>
+      <bpmn:intermediateCatchEvent id="Event_ItemArrivedAtEngraver" name="Item Arrived at Engraver Event">
+        <bpmn:incoming>Flow_1ooggvl</bpmn:incoming>
+        <bpmn:outgoing>Flow_03fn0aa</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedAtEngraver" messageRef="Message_ItemArrivedAtEngraver" />
+      </bpmn:intermediateCatchEvent>
+      <bpmn:sequenceFlow id="Flow_008z2xs" sourceRef="Gateway_0qielxx" targetRef="Event_ItemLeftIntake" />
+      <bpmn:sequenceFlow id="Flow_1ooggvl" sourceRef="Gateway_0qielxx" targetRef="Event_ItemArrivedAtEngraver" />
+      <bpmn:sequenceFlow id="Flow_1altwdy" sourceRef="Event_ItemLeftIntake" targetRef="Gateway_1embq03" />
+      <bpmn:parallelGateway id="Gateway_0qielxx">
+        <bpmn:incoming>Flow_0ahu1ay</bpmn:incoming>
+        <bpmn:outgoing>Flow_008z2xs</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1ooggvl</bpmn:outgoing>
+      </bpmn:parallelGateway>
+      <bpmn:parallelGateway id="Gateway_1embq03">
+        <bpmn:incoming>Flow_1altwdy</bpmn:incoming>
+        <bpmn:incoming>Flow_03fn0aa</bpmn:incoming>
+        <bpmn:outgoing>Flow_1akbs92</bpmn:outgoing>
+      </bpmn:parallelGateway>
+      <bpmn:sequenceFlow id="Flow_03fn0aa" sourceRef="Event_ItemArrivedAtEngraver" targetRef="Gateway_1embq03" />
+      <bpmn:endEvent id="Event_1etyiit" name="VGR Transport Successful">
+        <bpmn:incoming>Flow_1akbs92</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1akbs92" sourceRef="Gateway_1embq03" targetRef="Event_1etyiit" />
+      <bpmn:sequenceFlow id="Flow_0ahu1ay" sourceRef="Event_0mku6v1" targetRef="Gateway_0qielxx" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1eqmqll" sourceRef="Task_SendMoveToEngraverCommand" targetRef="Activity_1s0cue0" />
+    <bpmn:sequenceFlow id="Flow_0b78dnt" sourceRef="Activity_1s0cue0" targetRef="EndEvent_IntakeCompleted" />
     <bpmn:intermediateCatchEvent id="Event_ItemArrivedAtIntake" name="Item Arrived at Intake Event">
       <bpmn:incoming>Flow_Start_To_ItemArrived</bpmn:incoming>
       <bpmn:outgoing>Flow_ItemArrived_To_MoveCommand</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedAtIntake" messageRef="Message_ItemArrivedAtIntake" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:sequenceFlow id="Flow_ItemArrived_To_MoveCommand" sourceRef="Event_ItemArrivedAtIntake" targetRef="Task_SendMoveToEngraverCommand" />
-    <bpmn:sendTask id="Task_SendMoveToEngraverCommand" name="Send VGR Move to Engraver Command" camunda:delegateExpression="${SendMoveItemFromInputToEngraverCommandDelegate}">
-      <bpmn:incoming>Flow_ItemArrived_To_MoveCommand</bpmn:incoming>
-      <bpmn:outgoing>Flow_MoveCommand_To_ItemLeft</bpmn:outgoing>
-    </bpmn:sendTask>
-    <bpmn:sequenceFlow id="Flow_MoveCommand_To_ItemLeft" sourceRef="Task_SendMoveToEngraverCommand" targetRef="Event_ItemLeftIntake" />
-    <bpmn:intermediateCatchEvent id="Event_ItemLeftIntake" name="Item Left Intake Event">
-      <bpmn:incoming>Flow_MoveCommand_To_ItemLeft</bpmn:incoming>
-      <bpmn:outgoing>Flow_ItemLeft_To_ItemArrivedEngraver</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_ItemLeftIntake" messageRef="Message_ItemLeftIntake" />
-    </bpmn:intermediateCatchEvent>
-    <bpmn:sequenceFlow id="Flow_ItemLeft_To_ItemArrivedEngraver" sourceRef="Event_ItemLeftIntake" targetRef="Event_ItemArrivedAtEngraver" />
-    <bpmn:intermediateCatchEvent id="Event_ItemArrivedAtEngraver" name="Item Arrived at Engraver Event">
-      <bpmn:incoming>Flow_ItemLeft_To_ItemArrivedEngraver</bpmn:incoming>
-      <bpmn:outgoing>Flow_ItemArrivedEngraver_To_End</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedAtEngraver" messageRef="Message_ItemArrivedAtEngraver" />
-    </bpmn:intermediateCatchEvent>
-    <bpmn:sequenceFlow id="Flow_ItemArrivedEngraver_To_End" sourceRef="Event_ItemArrivedAtEngraver" targetRef="EndEvent_IntakeCompleted" />
-    <bpmn:endEvent id="EndEvent_IntakeCompleted">
-      <bpmn:incoming>Flow_ItemArrivedEngraver_To_End</bpmn:incoming>
-    </bpmn:endEvent>
   </bpmn:process>
   <bpmn:message id="Message_StartIntake" name="StartIntakeMessage" />
   <bpmn:message id="Message_ItemArrivedAtIntake" name="ItemArrivedAtIntakeMessage" />
@@ -40,55 +65,101 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_intake_process">
     <bpmndi:BPMNPlane id="BPMNPlane_intake_process" bpmnElement="intake_process">
       <bpmndi:BPMNShape id="StartEvent_ItemIntakeRequested_di" bpmnElement="StartEvent_ItemIntakeRequested">
-        <dc:Bounds x="160" y="117" width="36" height="36" />
+        <dc:Bounds x="162" y="167" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="151" y="160" width="55" height="27" />
+          <dc:Bounds x="153" y="210" width="55" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_ItemArrivedAtIntake_di" bpmnElement="Event_ItemArrivedAtIntake">
-        <dc:Bounds x="280" y="117" width="36" height="36" />
+        <dc:Bounds x="282" y="167" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="263" y="160" width="71" height="27" />
+          <dc:Bounds x="265" y="210" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendMoveToEngraverCommand_di" bpmnElement="Task_SendMoveToEngraverCommand">
+        <dc:Bounds x="390" y="145" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IntakeCompleted_di" bpmnElement="EndEvent_IntakeCompleted">
+        <dc:Bounds x="1162" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1138" y="210" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1s0cue0_di" bpmnElement="Activity_1s0cue0" isExpanded="true">
+        <dc:Bounds x="620" y="85" width="430" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0mku6v1_di" bpmnElement="Event_0mku6v1">
+        <dc:Bounds x="660" y="167" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1bgfqf1_di" bpmnElement="Gateway_0qielxx">
+        <dc:Bounds x="735" y="160" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_02fbefq_di" bpmnElement="Gateway_1embq03">
+        <dc:Bounds x="885" y="160" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1etyiit_di" bpmnElement="Event_1etyiit">
+        <dc:Bounds x="972" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="953" y="210" width="74" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_ItemLeftIntake_di" bpmnElement="Event_ItemLeftIntake">
-        <dc:Bounds x="580" y="117" width="36" height="36" />
+        <dc:Bounds x="822" y="117" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="561" y="160" width="76" height="27" />
+          <dc:Bounds x="803" y="160" width="76" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_ItemArrivedAtEngraver_di" bpmnElement="Event_ItemArrivedAtEngraver">
-        <dc:Bounds x="700" y="117" width="36" height="36" />
+        <dc:Bounds x="822" y="217" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="680" y="160" width="76" height="27" />
+          <dc:Bounds x="802" y="260" width="76" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_IntakeCompleted_di" bpmnElement="EndEvent_IntakeCompleted">
-        <dc:Bounds x="820" y="117" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_SendMoveToEngraverCommand_di" bpmnElement="Task_SendMoveToEngraverCommand">
-        <dc:Bounds x="390" y="95" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ahu1ay_di" bpmnElement="Flow_0ahu1ay">
+        <di:waypoint x="696" y="185" />
+        <di:waypoint x="735" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_008z2xs_di" bpmnElement="Flow_008z2xs">
+        <di:waypoint x="760" y="160" />
+        <di:waypoint x="760" y="135" />
+        <di:waypoint x="822" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ooggvl_di" bpmnElement="Flow_1ooggvl">
+        <di:waypoint x="760" y="210" />
+        <di:waypoint x="760" y="235" />
+        <di:waypoint x="822" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1altwdy_di" bpmnElement="Flow_1altwdy">
+        <di:waypoint x="858" y="135" />
+        <di:waypoint x="910" y="135" />
+        <di:waypoint x="910" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03fn0aa_di" bpmnElement="Flow_03fn0aa">
+        <di:waypoint x="858" y="235" />
+        <di:waypoint x="910" y="235" />
+        <di:waypoint x="910" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1akbs92_di" bpmnElement="Flow_1akbs92">
+        <di:waypoint x="935" y="185" />
+        <di:waypoint x="972" y="185" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_Start_To_ItemArrived_di" bpmnElement="Flow_Start_To_ItemArrived">
-        <di:waypoint x="196" y="135" />
-        <di:waypoint x="280" y="135" />
+        <di:waypoint x="198" y="185" />
+        <di:waypoint x="282" y="185" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ItemArrived_To_MoveCommand_di" bpmnElement="Flow_ItemArrived_To_MoveCommand">
-        <di:waypoint x="316" y="135" />
-        <di:waypoint x="390" y="135" />
+        <di:waypoint x="318" y="185" />
+        <di:waypoint x="390" y="185" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_MoveCommand_To_ItemLeft_di" bpmnElement="Flow_MoveCommand_To_ItemLeft">
-        <di:waypoint x="490" y="135" />
-        <di:waypoint x="580" y="135" />
+      <bpmndi:BPMNEdge id="Flow_1eqmqll_di" bpmnElement="Flow_1eqmqll">
+        <di:waypoint x="490" y="185" />
+        <di:waypoint x="620" y="185" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ItemLeft_To_ItemArrivedEngraver_di" bpmnElement="Flow_ItemLeft_To_ItemArrivedEngraver">
-        <di:waypoint x="616" y="135" />
-        <di:waypoint x="700" y="135" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ItemArrivedEngraver_To_End_di" bpmnElement="Flow_ItemArrivedEngraver_To_End">
-        <di:waypoint x="736" y="135" />
-        <di:waypoint x="820" y="135" />
+      <bpmndi:BPMNEdge id="Flow_0b78dnt_di" bpmnElement="Flow_0b78dnt">
+        <di:waypoint x="1050" y="185" />
+        <di:waypoint x="1162" y="185" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
