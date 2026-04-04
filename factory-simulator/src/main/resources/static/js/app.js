@@ -73,10 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const addItemForm = document.getElementById('add-item-form');
   const addItemSink = document.getElementById('add-item-sink');
   const factoryCanvas = document.querySelector('.factory-canvas');
+  const simulateVgrFailure = document.getElementById('simulate-vgr-failure');
   let loadStateInProgress = false;
   const selectedTargets = new Map();
 
-  if (!itemList || !status || !addItemForm || !addItemSink || !factoryCanvas) {
+  if (!itemList || !status || !addItemForm || !addItemSink || !factoryCanvas || !simulateVgrFailure) {
     return;
   }
 
@@ -139,13 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const previousAddItemSinkValue = addItemSink.value;
 
-      const [itemsResponse, sinksResponse, vgrStatusResponse, wtStatusResponse, smStatusResponse, ovStatusResponse] = await Promise.all([
+      const [itemsResponse, sinksResponse, vgrStatusResponse, wtStatusResponse, smStatusResponse, ovStatusResponse, vgrFailureResponse] = await Promise.all([
         fetch('/api/items'),
         fetch('/api/sinks'),
         fetch('/api/vgr/status'),
         fetch('/api/wt/status'),
         fetch('/api/sm/status'),
-        fetch('/api/ov/status')
+        fetch('/api/ov/status'),
+        fetch('/api/vgr/failure-simulation')
       ]);
 
       if (!itemsResponse.ok) {
@@ -166,6 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!ovStatusResponse.ok) {
         throw new Error(await parseError(ovStatusResponse));
       }
+      if (!vgrFailureResponse.ok) {
+        throw new Error(await parseError(vgrFailureResponse));
+      }
 
 
       const items = await itemsResponse.json();
@@ -174,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const wtStatus = await wtStatusResponse.json();
       const smStatus = await smStatusResponse.json();
       const ovStatus = await ovStatusResponse.json();
+      const vgrFailureSimulation = await vgrFailureResponse.json();
 
       addItemSink.innerHTML = sinks
           .map((sink) => {
@@ -209,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       syncMachineIndicator(wtStatus);
       syncMachineIndicator(smStatus);
       syncMachineIndicator(ovStatus);
+      simulateVgrFailure.checked = Boolean(vgrFailureSimulation.enabled);
 
       if (!silent) {
         status.textContent = successMessage
@@ -327,6 +334,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     }, 0);
+  });
+
+  simulateVgrFailure.addEventListener('change', async () => {
+    const enabled = simulateVgrFailure.checked;
+
+    try {
+      simulateVgrFailure.disabled = true;
+      status.textContent = `${enabled ? 'Enabling' : 'Disabling'} vacuum gripper failure simulation…`;
+
+      const response = await fetch(`/api/vgr/failure-simulation?enabled=${encodeURIComponent(enabled)}`, {
+        method: 'POST'
+      });
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      await loadState({
+        message: 'Refreshing simulator state…',
+        successMessage: `Vacuum gripper failure simulation ${enabled ? 'enabled' : 'disabled'}.`
+      });
+    } catch (error) {
+      simulateVgrFailure.checked = !enabled;
+      status.textContent = error.message;
+    } finally {
+      simulateVgrFailure.disabled = false;
+    }
   });
 
   window.setInterval(() => {

@@ -44,6 +44,6 @@ class OvenMqttPayloadFactoryTest {
   private OvenService createOvenService() {
     FactorySimulationProperties properties = new FactorySimulationProperties();
     properties.setOvenBurnDuration(Duration.ZERO);
-    return new OvenService(properties, "ov_1", 500, 100);
+    return new OvenService(factorySimulatorService, properties, "ov_1", 500, 100);
   }
 }

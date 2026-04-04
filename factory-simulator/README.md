@@ -8,6 +8,7 @@ Standalone Spring Boot application for simulating sinks and items in a smart fac
 - Models items with an ID and color
 - Supports listing, deleting, and moving items between sinks through an HTTP API
 - Supports a vacuum gripper endpoint that transports items between machine-specific sink aliases
+- Supports simulator-side controls for vacuum gripper failure injection
 - Publishes sorter, vacuum gripper, oven, milling machine, and workstation transport MQTT snapshots every 2 seconds so the integration layer can react to sensor changes
 - Renders a web UI with sinks positioned on top of a factory layout and an item-management control panel
 
@@ -27,6 +28,13 @@ The simulator exposes `GET /vgr/pick_up_and_transport?machine=vgr_1&start=sink_2
 The simulator also exposes `GET /wt/pick_up_and_transport?machine=wt_1&start=milling_machine&end=oven`.
 
 The endpoint blocks until both modeled movement phases have finished. The delay between phases is configured via `factory.simulation.movement-delay`.
+The web UI exposes a `Simulate Vacuum Gripper Failure` toggle that makes `vgr_1` skip the sink-to-sink transfers while the task still runs.
+
+## Oven
+
+The simulator exposes `GET /ov/burn?machine=ov_1`.
+
+During `burn`, the item is moved from `VGR-oven` into the internal `VGR-burn` sink and returned to `VGR-oven` after the burn completes.
 
 ## Sorter
 
