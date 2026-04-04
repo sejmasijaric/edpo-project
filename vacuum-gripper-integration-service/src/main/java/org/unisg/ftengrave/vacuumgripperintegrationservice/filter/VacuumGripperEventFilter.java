@@ -12,8 +12,8 @@ import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 public class VacuumGripperEventFilter implements MqttEventFilter<VacuumGripperEventDto> {
 
   private static final int LIGHT_BARRIER_INTERRUPTED = 0;
-  private static final String ITEM_ARRIVED_AT_INPUT = "item-arrived-at-input";
-  private static final String ITEM_LEFT_INPUT = "item-left-input";
+  private static final String ITEM_ARRIVED_AT_INPUT = "item-arrived-at-intake";
+  private static final String ITEM_LEFT_INPUT = "item-left-intake";
   private static final String ITEM_ARRIVED_AT_OUTPUT = "item-arrived-at-output";
   private static final String ITEM_LEFT_OUTPUT = "item-left-output";
 
