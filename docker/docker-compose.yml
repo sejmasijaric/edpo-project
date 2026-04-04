@@ -70,6 +70,23 @@ services:
     volumes:
       - order-orchestrator-data:/app/data
 
+  intake-service:
+    build:
+      context: ..
+      dockerfile: intake-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8103:8103"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      KAFKA_TOPIC_ENGRAVER: engraver
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
+    volumes:
+      - intake-service-data:/app/data
+
   # --- Begin Debugging ---
   kafka-inspector-service:
     build:
@@ -183,3 +200,4 @@ volumes:
   demo-service-data:
   qc-service-data:
   order-orchestrator-data:
+  intake-service-data:

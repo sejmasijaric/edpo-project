@@ -1,0 +1,32 @@
+server:
+  port: 8103
+
+spring:
+  application:
+    name: intake-service
+  datasource:
+    url: jdbc:h2:file:./data/camunda-h2-database
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  group-id: ${KAFKA_GROUP_ID:intake-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.intakeservice}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    vacuum-gripper: ${KAFKA_TOPIC_VACUUM_GRIPPER:vacuum-gripper}
+    engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
+
+integration:
+  vacuum-gripper:
+    command-types:
+      move-to-engraver: ${VACUUM_GRIPPER_COMMAND_TYPE_MOVE_TO_ENGRAVER:move-item-from-input-to-engraver-command}
+
+camunda.bpm:
+  admin-user:
+    id: demo
+    password: demo
+  filter.create: All Tasks
+  generic-properties:
+    properties:
+      historyTimeToLive: P1D
