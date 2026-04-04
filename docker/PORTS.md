@@ -11,6 +11,7 @@ This file documents the ports currently used or reserved by services in this rep
 | `order-orchestrator` | Docker Compose | `8101` | `8101` | Embedded Camunda engine for global order orchestration BPMN models |
 | `kafka-inspector-service` | Docker Compose | `8102` | `8102` | Lightweight Kafka listener and JSON publisher endpoint |
 | `intake-service` | Docker Compose | `8103` | `8103` | Embedded Camunda engine for intake BPMN models |
+| `manufacturing-service` | Docker Compose | `8104` | `8104` | Embedded Camunda engine for manufacturing BPMN models |
 | `sorter-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `vacuum-gripper-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `engraver-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
@@ -29,7 +30,7 @@ The host port range `8100-8109` is intentionally reserved for service applicatio
 | `8101` | `order-orchestrator` |
 | `8102` | `kafka-inspector-service` |
 | `8103` | `intake-service` |
-| `8104` | Reserved for future service |
+| `8104` | `manufacturing-service` |
 | `8105` | Reserved for future service |
 | `8106` | Reserved for future service |
 | `8107` | Reserved for future service |

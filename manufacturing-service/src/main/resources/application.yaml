@@ -1,0 +1,39 @@
+server:
+  port: 8104
+
+spring:
+  application:
+    name: manufacturing-service
+  datasource:
+    url: jdbc:h2:file:./data/camunda-h2-database
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  group-id: ${KAFKA_GROUP_ID:manufacturing-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.manufacturingservice}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
+    workstation-transport: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT:workstation-transport}
+    polishing-machine: ${KAFKA_TOPIC_POLISHING_MACHINE:polishing-machine}
+
+integration:
+  engraver:
+    command-types:
+      run-engraving: ${ENGRAVER_COMMAND_TYPE_RUN_ENGRAVING:run-engraving-command}
+  workstation-transport:
+    command-types:
+      move-to-polishing-machine: ${WORKSTATION_TRANSPORT_COMMAND_TYPE_MOVE_TO_POLISHING_MACHINE:move-item-from-engraver-to-polishing-machine-command}
+  polishing-machine:
+    command-types:
+      run-polishing: ${POLISHING_MACHINE_COMMAND_TYPE_RUN_POLISHING:run-polishing-command}
+
+camunda.bpm:
+  admin-user:
+    id: demo
+    password: demo
+  filter.create: All Tasks
+  generic-properties:
+    properties:
+      historyTimeToLive: P1D

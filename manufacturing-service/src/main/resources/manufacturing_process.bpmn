@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_ManufacturingService" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0">
+  <bpmn:process id="manufacturing_process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_ItemProductionRequested" name="Item Production Requested">
+      <bpmn:outgoing>Flow_Start_To_RunEngraving</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_StartProduction" messageRef="Message_StartProduction" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_RunEngraving" sourceRef="StartEvent_ItemProductionRequested" targetRef="Task_SendEngraveCommand" />
+    <bpmn:sendTask id="Task_SendEngraveCommand" name="Send EGR Engrave Command" camunda:delegateExpression="${SendRunEngravingCommandDelegate}">
+      <bpmn:incoming>Flow_Start_To_RunEngraving</bpmn:incoming>
+      <bpmn:outgoing>Flow_RunEngraving_To_LeftSink</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_RunEngraving_To_LeftSink" sourceRef="Task_SendEngraveCommand" targetRef="Event_ItemLeftEngraverSink" />
+    <bpmn:intermediateCatchEvent id="Event_ItemLeftEngraverSink" name="Item Left Engraver Sink Event">
+      <bpmn:incoming>Flow_RunEngraving_To_LeftSink</bpmn:incoming>
+      <bpmn:outgoing>Flow_LeftSink_To_ArrivedSink</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_ItemLeftEngraverSink" messageRef="Message_ItemLeftEngraverSink" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_LeftSink_To_ArrivedSink" sourceRef="Event_ItemLeftEngraverSink" targetRef="Event_ItemArrivedEngraverSink" />
+    <bpmn:intermediateCatchEvent id="Event_ItemArrivedEngraverSink" name="Item Arrived at Engraver Sink Event">
+      <bpmn:incoming>Flow_LeftSink_To_ArrivedSink</bpmn:incoming>
+      <bpmn:outgoing>Flow_ArrivedSink_To_MoveWt</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedEngraverSink" messageRef="Message_ItemArrivedEngraverSink" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_ArrivedSink_To_MoveWt" sourceRef="Event_ItemArrivedEngraverSink" targetRef="Task_SendWtMoveCommand" />
+    <bpmn:sendTask id="Task_SendWtMoveCommand" name="Send WT Move to PM Command" camunda:delegateExpression="${SendMoveItemFromEngraverToPolishingMachineCommandDelegate}">
+      <bpmn:incoming>Flow_ArrivedSink_To_MoveWt</bpmn:incoming>
+      <bpmn:outgoing>Flow_WtMove_To_MoveCompleted</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_WtMove_To_MoveCompleted" sourceRef="Task_SendWtMoveCommand" targetRef="Event_WtCompletedMotion" />
+    <bpmn:intermediateCatchEvent id="Event_WtCompletedMotion" name="WT Completed Motion Event">
+      <bpmn:incoming>Flow_WtMove_To_MoveCompleted</bpmn:incoming>
+      <bpmn:outgoing>Flow_MoveCompleted_To_RunPolishing</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_WtMoveCompleted" messageRef="Message_WtMoveCompleted" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_MoveCompleted_To_RunPolishing" sourceRef="Event_WtCompletedMotion" targetRef="Task_SendPolishCommand" />
+    <bpmn:sendTask id="Task_SendPolishCommand" name="Send PM Polish Command" camunda:delegateExpression="${SendRunPolishingCommandDelegate}">
+      <bpmn:incoming>Flow_MoveCompleted_To_RunPolishing</bpmn:incoming>
+      <bpmn:outgoing>Flow_RunPolishing_To_OutputArrived</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_RunPolishing_To_OutputArrived" sourceRef="Task_SendPolishCommand" targetRef="Event_ItemArrivedPolishingOutput" />
+    <bpmn:intermediateCatchEvent id="Event_ItemArrivedPolishingOutput" name="Item Arrived at Polishing Machine Output Event">
+      <bpmn:incoming>Flow_RunPolishing_To_OutputArrived</bpmn:incoming>
+      <bpmn:outgoing>Flow_OutputArrived_To_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedPolishingOutput" messageRef="Message_ItemArrivedPolishingOutput" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_OutputArrived_To_End" sourceRef="Event_ItemArrivedPolishingOutput" targetRef="EndEvent_ManufacturingCompleted" />
+    <bpmn:endEvent id="EndEvent_ManufacturingCompleted">
+      <bpmn:incoming>Flow_OutputArrived_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_StartProduction" name="StartProductionMessage" />
+  <bpmn:message id="Message_ItemLeftEngraverSink" name="ItemLeftEngraverSinkMessage" />
+  <bpmn:message id="Message_ItemArrivedEngraverSink" name="ItemArrivedEngraverSinkMessage" />
+  <bpmn:message id="Message_WtMoveCompleted" name="WtMoveCompletedMessage" />
+  <bpmn:message id="Message_ItemArrivedPolishingOutput" name="ItemArrivedPolishingOutputMessage" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_manufacturing_process">
+    <bpmndi:BPMNPlane id="BPMNPlane_manufacturing_process" bpmnElement="manufacturing_process">
+      <bpmndi:BPMNShape id="StartEvent_ItemProductionRequested_di" bpmnElement="StartEvent_ItemProductionRequested">
+        <dc:Bounds x="180" y="117" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="159" y="160" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendEngraveCommand_di" bpmnElement="Task_SendEngraveCommand">
+        <dc:Bounds x="300" y="95" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ItemLeftEngraverSink_di" bpmnElement="Event_ItemLeftEngraverSink">
+        <dc:Bounds x="510" y="117" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="493" y="160" width="70" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ItemArrivedEngraverSink_di" bpmnElement="Event_ItemArrivedEngraverSink">
+        <dc:Bounds x="630" y="117" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="613" y="160" width="71" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendWtMoveCommand_di" bpmnElement="Task_SendWtMoveCommand">
+        <dc:Bounds x="740" y="95" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_WtCompletedMotion_di" bpmnElement="Event_WtCompletedMotion">
+        <dc:Bounds x="950" y="117" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="932" y="160" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendPolishCommand_di" bpmnElement="Task_SendPolishCommand">
+        <dc:Bounds x="1060" y="95" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ItemArrivedPolishingOutput_di" bpmnElement="Event_ItemArrivedPolishingOutput">
+        <dc:Bounds x="1270" y="117" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1243" y="160" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_ManufacturingCompleted_di" bpmnElement="EndEvent_ManufacturingCompleted">
+        <dc:Bounds x="1380" y="117" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_RunEngraving_di" bpmnElement="Flow_Start_To_RunEngraving">
+        <di:waypoint x="216" y="135" />
+        <di:waypoint x="300" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RunEngraving_To_LeftSink_di" bpmnElement="Flow_RunEngraving_To_LeftSink">
+        <di:waypoint x="400" y="135" />
+        <di:waypoint x="510" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LeftSink_To_ArrivedSink_di" bpmnElement="Flow_LeftSink_To_ArrivedSink">
+        <di:waypoint x="546" y="135" />
+        <di:waypoint x="630" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ArrivedSink_To_MoveWt_di" bpmnElement="Flow_ArrivedSink_To_MoveWt">
+        <di:waypoint x="666" y="135" />
+        <di:waypoint x="740" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_WtMove_To_MoveCompleted_di" bpmnElement="Flow_WtMove_To_MoveCompleted">
+        <di:waypoint x="840" y="135" />
+        <di:waypoint x="950" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_MoveCompleted_To_RunPolishing_di" bpmnElement="Flow_MoveCompleted_To_RunPolishing">
+        <di:waypoint x="986" y="135" />
+        <di:waypoint x="1060" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RunPolishing_To_OutputArrived_di" bpmnElement="Flow_RunPolishing_To_OutputArrived">
+        <di:waypoint x="1160" y="135" />
+        <di:waypoint x="1270" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OutputArrived_To_End_di" bpmnElement="Flow_OutputArrived_To_End">
+        <di:waypoint x="1306" y="135" />
+        <di:waypoint x="1380" y="135" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
