@@ -59,6 +59,7 @@ class FactoryApiControllerTest {
         880,
         410);
     OvenService ovenService = new OvenService(
+        factorySimulatorService,
         properties,
         "ov_1",
         500,
@@ -90,6 +91,31 @@ class FactoryApiControllerTest {
               "phase":"Idle",
               "x":530,
               "y":360
+            }
+            """));
+  }
+
+  @Test
+  void returnsVacuumGripperFailureSimulationState() throws Exception {
+    mockMvc.perform(get("/api/vgr/failure-simulation"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "enabled": false
+            }
+            """));
+  }
+
+  @Test
+  void updatesVacuumGripperFailureSimulationState() throws Exception {
+    mockMvc.perform(post("/api/vgr/failure-simulation").param("enabled", "true"))
+        .andExpect(status().isNoContent());
+
+    mockMvc.perform(get("/api/vgr/failure-simulation"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("""
+            {
+              "enabled": true
             }
             """));
   }
@@ -154,6 +180,7 @@ class FactoryApiControllerTest {
               {"id":"SINK-S3","x":780,"y":540,"item":null},
               {"id":"SM-I","x":850,"y":330,"item":null},
               {"id":"SM-Hold","x":880,"y":470,"item":null},
+              {"id":"VGR-burn","x":360,"y":180,"item":null},
               {"id":"VGR-Hold","x":530,"y":420,"item":null},
               {"id":"VGR-oven","x":500,"y":180,"item":null},
               {"id":"WT-Hold","x":620,"y":180,"item":null}

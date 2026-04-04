@@ -8,16 +8,22 @@ import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
 
 public class OvenService {
 
+  static final String OVEN_INPUT_SINK_ID = "VGR-oven";
+  static final String OVEN_BURN_SINK_ID = "VGR-burn";
+
+  private final FactorySimulatorService factorySimulatorService;
   private final OvenMachine machine;
   private final Duration defaultBurnDuration;
   private final AtomicReference<MachineStatus> status;
   private final AtomicReference<OvenTaskState> mqttStatus;
 
   public OvenService(
+      FactorySimulatorService factorySimulatorService,
       FactorySimulationProperties properties,
       String machineName,
       int statusCardX,
       int statusCardY) {
+    this.factorySimulatorService = factorySimulatorService;
     this.machine = new OvenMachine(machineName, statusCardX, statusCardY);
     this.defaultBurnDuration = properties.getOvenBurnDuration();
     this.status = new AtomicReference<>(this.machine.idleStatus());
@@ -29,12 +35,19 @@ public class OvenService {
 
     Duration burnDuration = resolveBurnDuration(timeInSeconds);
     LocalDateTime startTime = LocalDateTime.now();
+    boolean itemInOvenInput = factorySimulatorService.getSink(OVEN_INPUT_SINK_ID).item() != null;
 
     try {
+      if (itemInOvenInput) {
+        factorySimulatorService.moveItemBetweenSinks(OVEN_INPUT_SINK_ID, OVEN_BURN_SINK_ID, false);
+      }
       mqttStatus.set(OvenTaskState.started("burn"));
       status.set(this.machine.status("burn"));
       waitForBurn(burnDuration);
     } finally {
+      if (itemInOvenInput) {
+        factorySimulatorService.moveItemBetweenSinks(OVEN_BURN_SINK_ID, OVEN_INPUT_SINK_ID, true);
+      }
       status.set(this.machine.idleStatus());
       mqttStatus.set(OvenTaskState.idle());
     }

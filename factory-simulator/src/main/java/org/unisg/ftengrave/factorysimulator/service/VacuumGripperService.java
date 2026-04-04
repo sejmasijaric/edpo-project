@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
 
@@ -14,6 +15,7 @@ public class VacuumGripperService {
   private final VacuumGripperMachine machine;
   private final AtomicReference<MachineStatus> status;
   private final AtomicReference<VacuumGripperTaskState> mqttStatus;
+  private final AtomicBoolean movementFailureSimulationEnabled;
 
   public VacuumGripperService(
       FactorySimulatorService factorySimulatorService,
@@ -33,6 +35,7 @@ public class VacuumGripperService {
         Map.copyOf(requestToFactorySinkMapping));
     this.status = new AtomicReference<>(this.machine.idleStatus());
     this.mqttStatus = new AtomicReference<>(VacuumGripperTaskState.idle());
+    this.movementFailureSimulationEnabled = new AtomicBoolean(false);
   }
 
   public VacuumGripperExecution pickUpAndTransport(String machine, String start, String end) {
@@ -48,11 +51,15 @@ public class VacuumGripperService {
       mqttStatus.set(VacuumGripperTaskState.started("pick_up_and_transport"));
       status.set(this.machine.status("Moving to pickup"));
       waitBetweenMovements();
-      factorySimulatorService.moveItemBetweenSinks(mappedStart, this.machine.holdSink(), true);
+      if (!movementFailureSimulationEnabled.get()) {
+        factorySimulatorService.moveItemBetweenSinks(mappedStart, this.machine.holdSink(), true);
+      }
 
       status.set(this.machine.status("Moving to drop-off"));
       waitBetweenMovements();
-      factorySimulatorService.tryMoveItemBetweenSinks(this.machine.holdSink(), mappedEnd, true);
+      if (!movementFailureSimulationEnabled.get()) {
+        factorySimulatorService.tryMoveItemBetweenSinks(this.machine.holdSink(), mappedEnd, true);
+      }
     } finally {
       status.set(this.machine.idleStatus());
       mqttStatus.set(VacuumGripperTaskState.idle());
@@ -68,6 +75,14 @@ public class VacuumGripperService {
 
   public VacuumGripperMqttStatus getMqttStatus() {
     return mqttStatus.get().snapshot();
+  }
+
+  public boolean isMovementFailureSimulationEnabled() {
+    return movementFailureSimulationEnabled.get();
+  }
+
+  public void setMovementFailureSimulationEnabled(boolean enabled) {
+    movementFailureSimulationEnabled.set(enabled);
   }
 
   private void waitBetweenMovements() {

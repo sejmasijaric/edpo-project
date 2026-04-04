@@ -12,7 +12,7 @@
   <section class="factory-section">
     <div class="section-header">
       <h1>Factory Simulator</h1>
-      <p>Sink positions are rendered on top of the factory layout image.</p>
+      <p>Factory State Visualization</p>
     </div>
 
     <div class="factory-canvas" th:style="'width:' + ${factoryWidth} + 'px;height:' + ${factoryHeight} + 'px;'">
@@ -61,8 +61,14 @@
   </section>
 
   <aside class="controls-panel">
-    <h2>Item Management</h2>
-    <p>Review each item, delete it, or move it directly to another sink.</p>
+    <h2>Simulation Controls</h2>
+    <section class="control-group" aria-labelledby="simulation-controls-title">
+      <h3 id="simulation-controls-title">Simulation Controls</h3>
+      <label class="toggle-control" for="simulate-vgr-failure">
+        <span>Simulate Vacuum Gripper Failure</span>
+        <input id="simulate-vgr-failure" type="checkbox">
+      </label>
+    </section>
     <form class="add-item-form" id="add-item-form">
       <h3>Add Item</h3>
       <label>
@@ -84,6 +90,7 @@
       <button type="submit">Add Item</button>
     </form>
     <div class="controls-status" id="controls-status">Loading current simulator state…</div>
+    <h2>Item List</h2>
     <div class="item-list" id="item-list" aria-live="polite"></div>
   </aside>
 </main>

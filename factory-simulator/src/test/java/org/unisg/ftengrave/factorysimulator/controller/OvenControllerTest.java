@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.unisg.ftengrave.factorysimulator.service.FactorySimulationProperties;
+import org.unisg.ftengrave.factorysimulator.service.FactorySimulatorService;
 import org.unisg.ftengrave.factorysimulator.service.OvenService;
 
 class OvenControllerTest {
@@ -23,6 +24,7 @@ class OvenControllerTest {
 
     mockMvc = MockMvcBuilders.standaloneSetup(
         new OvenController(new OvenService(
+            new FactorySimulatorService(),
             properties,
             "ov_1",
             500,

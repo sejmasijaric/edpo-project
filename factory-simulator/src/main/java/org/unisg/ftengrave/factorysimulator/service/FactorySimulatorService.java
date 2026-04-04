@@ -145,6 +145,7 @@ public class FactorySimulatorService {
     sinks.put("VGR-Hold", new Sink("VGR-Hold", 530, 420, null));
 
     sinks.put("VGR-oven", new Sink("VGR-oven", 500, 180, null));
+    sinks.put("VGR-burn", new Sink("OV-burn", 500, 30, null));
 
     sinks.put("WT-Hold", new Sink("WT-Hold", 620, 180, null));
 

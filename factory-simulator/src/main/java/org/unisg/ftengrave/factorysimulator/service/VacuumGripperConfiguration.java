@@ -80,8 +80,11 @@ public class VacuumGripperConfiguration {
   }
 
   @Bean("ovenService")
-  public OvenService ovenService(FactorySimulationProperties properties) {
+  public OvenService ovenService(
+      FactorySimulatorService factorySimulatorService,
+      FactorySimulationProperties properties) {
     return new OvenService(
+        factorySimulatorService,
         properties,
         "ov_1",
         500,
