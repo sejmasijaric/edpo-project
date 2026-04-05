@@ -1,0 +1,40 @@
+server:
+  port: 8100
+
+spring:
+  application:
+    name: qc-service
+  datasource:
+    url: jdbc:h2:file:./data/camunda-h2-database
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  group-id: ${KAFKA_GROUP_ID:qc-service}
+  trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.in.kafka.dto,org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
+
+integration:
+  sorter:
+    command-types:
+      color-detection: ${SORTER_COMMAND_TYPE_COLOR_DETECTION:request-color-detection}
+      rejection: ${SORTER_COMMAND_TYPE_REJECTION:request-sort-to-reject}
+      retry: ${SORTER_COMMAND_TYPE_RETRY:request-sort-to-retry}
+      shipping: ${SORTER_COMMAND_TYPE_SHIPPING:request-sort-to-shipping}
+
+camunda.bpm:
+  admin-user:
+    id: demo
+    password: demo
+  filter.create: All Tasks
+  generic-properties:
+    properties:
+      historyTimeToLive: P1D
+
+mqtt:
+  broker:
+    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
+  topic: FTFactory/SM_1

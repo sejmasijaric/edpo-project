@@ -8,8 +8,10 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.unisg.ftengrave.factorysimulator.domain.Item;
 import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
+import org.unisg.ftengrave.factorysimulator.mqtt.SorterColorDetectionMqttPublisher;
 
 class OneWayPointToPointTransportServiceTest {
 
@@ -25,6 +27,8 @@ class OneWayPointToPointTransportServiceTest {
 
     assertTrue(!response.processTime().isNegative());
     assertEquals("Belt off", service.getStatus().phase());
+    assertEquals("", service.getMqttStatus().currentTask());
+    assertEquals(0.0d, service.getMqttStatus().currentTaskDurationSeconds());
     assertNull(sink(factorySimulatorService, "SM-I").item());
     assertNull(sink(factorySimulatorService, "SM-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-S1").item().id());
@@ -108,9 +112,85 @@ class OneWayPointToPointTransportServiceTest {
     assertEquals("Belt off", service.getStatus().phase());
   }
 
+  @Test
+  void detectColorReturnsTheInputItemColorWithoutMovingIt() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SM-I");
+
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("red", response.detectedColor());
+    assertEquals("ITEM-1001", sink(factorySimulatorService, "SM-I").item().id());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
+  }
+
+  @Test
+  void detectColorMovesAnItemFromThePreviousSinkToInputAndReturnsItsColor() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.White, "MM-ejection");
+    RecordingSorterColorDetectionMqttPublisher mqttPublisher =
+        new RecordingSorterColorDetectionMqttPublisher(factorySimulatorService);
+
+    OneWayPointToPointTransportService service =
+        sorterService(factorySimulatorService, Duration.ZERO, mqttPublisher);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("white", response.detectedColor());
+    assertEquals(1, mqttPublisher.publishCalls);
+    assertEquals("ITEM-1001", mqttPublisher.detectedItemId);
+    assertEquals("ITEM-1001", mqttPublisher.mmEjectionItemIdAtPublish);
+    assertNull(mqttPublisher.smInputItemIdAtPublish);
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
+    assertEquals("ITEM-1001", sink(factorySimulatorService, "SM-I").item().id());
+  }
+
+  @Test
+  void detectColorReturnsNoneWhenNoItemWasMovedOrDetected() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+
+    OneWayPointToPointTransportService service = sorterService(factorySimulatorService, Duration.ZERO);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("none", response.detectedColor());
+    assertNull(sink(factorySimulatorService, "SM-I").item());
+    assertNull(sink(factorySimulatorService, "MM-ejection").item());
+  }
+
+  @Test
+  void detectColorDoesNotPublishWhenNoPreviousSinkItemExists() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SM-I");
+    RecordingSorterColorDetectionMqttPublisher mqttPublisher =
+        new RecordingSorterColorDetectionMqttPublisher(factorySimulatorService);
+
+    OneWayPointToPointTransportService service =
+        sorterService(factorySimulatorService, Duration.ZERO, mqttPublisher);
+
+    OneWayPointToPointTransportService.OneWayTransportExecution response =
+        service.detectColor("sm_1");
+
+    assertEquals("red", response.detectedColor());
+    assertEquals(0, mqttPublisher.publishCalls);
+  }
+
   private OneWayPointToPointTransportService sorterService(
       FactorySimulatorService factorySimulatorService,
       Duration movementDelay) {
+    return sorterService(factorySimulatorService, movementDelay, item -> {
+    });
+  }
+
+  private OneWayPointToPointTransportService sorterService(
+      FactorySimulatorService factorySimulatorService,
+      Duration movementDelay,
+      SorterColorDetectionMqttPublisher sorterColorDetectionMqttPublisher) {
     FactorySimulationProperties properties = new FactorySimulationProperties();
     properties.setMovementDelay(movementDelay);
     return new OneWayPointToPointTransportService(
@@ -122,7 +202,8 @@ class OneWayPointToPointTransportServiceTest {
         java.util.List.of("MM-ejection"),
         "SM-Hold",
         880,
-        410);
+        410,
+        sorterColorDetectionMqttPublisher);
   }
 
   private Sink sink(FactorySimulatorService service, String sinkId) {
@@ -130,5 +211,30 @@ class OneWayPointToPointTransportServiceTest {
         .filter(sink -> sink.id().equals(sinkId))
         .findFirst()
         .orElseThrow();
+  }
+
+  private static final class RecordingSorterColorDetectionMqttPublisher
+      implements SorterColorDetectionMqttPublisher {
+
+    private final FactorySimulatorService factorySimulatorService;
+    private int publishCalls;
+    private String detectedItemId;
+    private String mmEjectionItemIdAtPublish;
+    private String smInputItemIdAtPublish;
+
+    private RecordingSorterColorDetectionMqttPublisher(
+        FactorySimulatorService factorySimulatorService) {
+      this.factorySimulatorService = factorySimulatorService;
+    }
+
+    @Override
+    public void publishDetectedColor(Item item) {
+      publishCalls++;
+      detectedItemId = item.id();
+      Item mmEjectionItem = factorySimulatorService.getSink("MM-ejection").item();
+      Item smInputItem = factorySimulatorService.getSink("SM-I").item();
+      mmEjectionItemIdAtPublish = mmEjectionItem == null ? null : mmEjectionItem.id();
+      smInputItemIdAtPublish = smInputItem == null ? null : smInputItem.id();
+    }
   }
 }

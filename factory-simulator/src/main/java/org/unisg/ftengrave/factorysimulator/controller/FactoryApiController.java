@@ -59,6 +59,17 @@ public class FactoryApiController {
     return vgrService.getStatus();
   }
 
+  @GetMapping("/vgr/failure-simulation")
+  public FailureSimulationResponse getVacuumGripperFailureSimulation() {
+    return new FailureSimulationResponse(vgrService.isMovementFailureSimulationEnabled());
+  }
+
+  @PostMapping("/vgr/failure-simulation")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void setVacuumGripperFailureSimulation(@RequestParam boolean enabled) {
+    vgrService.setMovementFailureSimulationEnabled(enabled);
+  }
+
   @GetMapping("/wt/status")
   public MachineStatus getWorkstationTransportStatus() {
     return wtService.getStatus();
@@ -105,5 +116,8 @@ public class FactoryApiController {
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public String handleNotFound(RuntimeException exception) {
     return exception.getMessage();
+  }
+
+  public record FailureSimulationResponse(boolean enabled) {
   }
 }

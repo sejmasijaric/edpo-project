@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.unisg.ftengrave.factorysimulator.mqtt.SorterColorDetectionMqttPublisher;
 
 @Configuration
 public class VacuumGripperConfiguration {
@@ -21,7 +22,7 @@ public class VacuumGripperConfiguration {
         360,
         createSinkMapping(
             "oven", "VGR-oven",
-            "start", "SINK-I1",
+            "delivery_pick_up_station", "SINK-I1",
             "end", "SINK-I2",
             "sink_1", "SINK-S1",
             "sink_2", "SINK-S2",
@@ -47,7 +48,8 @@ public class VacuumGripperConfiguration {
   @Bean("sorterService")
   public OneWayPointToPointTransportService sorterService(
       FactorySimulatorService factorySimulatorService,
-      FactorySimulationProperties properties) {
+      FactorySimulationProperties properties,
+      SorterColorDetectionMqttPublisher sorterColorDetectionMqttPublisher) {
     return new OneWayPointToPointTransportService(
         factorySimulatorService,
         properties,
@@ -57,7 +59,8 @@ public class VacuumGripperConfiguration {
         java.util.List.of("MM-ejection"),
         "SM-Hold",
         880,
-        410);
+        410,
+        sorterColorDetectionMqttPublisher);
   }
 
   @Bean("millingMachineService")
@@ -77,8 +80,11 @@ public class VacuumGripperConfiguration {
   }
 
   @Bean("ovenService")
-  public OvenService ovenService(FactorySimulationProperties properties) {
+  public OvenService ovenService(
+      FactorySimulatorService factorySimulatorService,
+      FactorySimulationProperties properties) {
     return new OvenService(
+        factorySimulatorService,
         properties,
         "ov_1",
         500,

@@ -77,6 +77,8 @@ class VacuumGripperServiceTest {
         service.pickUpAndTransport("vgr_1", "start", "end");
 
     assertTrue(!response.processTime().isNegative());
+    assertEquals("", service.getMqttStatus().currentTask());
+    assertEquals(0.0d, service.getMqttStatus().currentTaskDurationSeconds());
     assertNull(sink(factorySimulatorService, "VGR-Hold").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-I2").item().id());
   }
@@ -139,6 +141,37 @@ class VacuumGripperServiceTest {
     assertNull(sink(factorySimulatorService, "SINK-I1").item());
     assertEquals("ITEM-1001", sink(factorySimulatorService, "VGR-Hold").item().id());
     assertEquals("ITEM-1002", sink(factorySimulatorService, "SINK-I2").item().id());
+  }
+
+  @Test
+  void skipsSinkTransfersWhenMovementFailureSimulationIsEnabled() {
+    FactorySimulatorService factorySimulatorService = new FactorySimulatorService();
+    factorySimulatorService.addItem("ITEM-1001", ItemColor.Red, "SINK-I1");
+
+    FactorySimulationProperties properties = new FactorySimulationProperties();
+    properties.setMovementDelay(Duration.ZERO);
+
+    VacuumGripperService service = new VacuumGripperService(
+        factorySimulatorService,
+        properties,
+        "vgr_1",
+        "VGR-Hold",
+        530,
+        360,
+        java.util.Map.of(
+            "oven", "VGR-oven",
+            "start", "SINK-I1",
+            "end", "SINK-I2",
+            "sink_1", "SINK-S1",
+            "sink_2", "SINK-S2",
+            "sink_3", "SINK-S3"));
+    service.setMovementFailureSimulationEnabled(true);
+
+    service.pickUpAndTransport("vgr_1", "start", "end");
+
+    assertEquals("ITEM-1001", sink(factorySimulatorService, "SINK-I1").item().id());
+    assertNull(sink(factorySimulatorService, "VGR-Hold").item());
+    assertNull(sink(factorySimulatorService, "SINK-I2").item());
   }
 
   private Sink sink(FactorySimulatorService service, String sinkId) {

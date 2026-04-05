@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -11,10 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.unisg.ftengrave.factorysimulator.domain.ItemColor;
 import org.unisg.ftengrave.factorysimulator.domain.ManagedItem;
 import org.unisg.ftengrave.factorysimulator.domain.Sink;
+import org.springframework.context.ApplicationEventPublisher;
 
 class FactorySimulatorServiceTest {
 
-  private final FactorySimulatorService service = new FactorySimulatorService();
+  private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+  private final FactorySimulatorService service = new FactorySimulatorService(eventPublisher);
 
   @Test
   void listsItemsWithTheirCurrentSink() {
@@ -66,6 +72,7 @@ class FactorySimulatorServiceTest {
 
     assertNull(sink("SINK-I1").item());
     assertEquals("ITEM-1001", sink("SINK-S1").item().id());
+    verify(eventPublisher).publishEvent(new SinkItemRemovedEvent("SINK-I1"));
   }
 
   @Test
@@ -89,6 +96,7 @@ class FactorySimulatorServiceTest {
     assertEquals(false, moved);
     assertEquals("ITEM-1001", sink("VGR-Hold").item().id());
     assertEquals("ITEM-1002", sink("SINK-I2").item().id());
+    verify(eventPublisher, never()).publishEvent(any());
   }
 
   @Test
@@ -112,6 +120,25 @@ class FactorySimulatorServiceTest {
 
     assertNull(sink("SINK-I1").item());
     assertNull(sink("VGR-Hold").item());
+    verify(eventPublisher, never()).publishEvent(any());
+  }
+
+  @Test
+  void publishesTheRemovalEventBeforeAddingTheItemToTheTargetSink() {
+    RecordingEventPublisher recordingPublisher = new RecordingEventPublisher();
+    FactorySimulatorService service = new FactorySimulatorService(recordingPublisher);
+    recordingPublisher.bind(service);
+    service.addItem("ITEM-1001", ItemColor.Red, "SINK-I1");
+
+    service.moveItemBetweenSinks("SINK-I1", "SINK-S1", false);
+
+    assertEquals(1, recordingPublisher.events().size());
+    assertEquals(
+        new Sink("SINK-I1", 530, 550, null),
+        recordingPublisher.sourceSnapshot());
+    assertEquals(
+        new Sink("SINK-S1", 780, 400, null),
+        recordingPublisher.targetSnapshot());
   }
 
   @Test
@@ -127,5 +154,36 @@ class FactorySimulatorServiceTest {
         .filter(sink -> sink.id().equals(sinkId))
         .findFirst()
         .orElseThrow();
+  }
+
+  private static final class RecordingEventPublisher implements ApplicationEventPublisher {
+
+    private FactorySimulatorService service;
+    private final java.util.List<Object> events = new java.util.ArrayList<>();
+    private Sink sourceSnapshot;
+    private Sink targetSnapshot;
+
+    private void bind(FactorySimulatorService service) {
+      this.service = service;
+    }
+
+    @Override
+    public void publishEvent(Object event) {
+      events.add(event);
+      sourceSnapshot = service.getSink("SINK-I1");
+      targetSnapshot = service.getSink("SINK-S1");
+    }
+
+    private java.util.List<Object> events() {
+      return events;
+    }
+
+    private Sink sourceSnapshot() {
+      return sourceSnapshot;
+    }
+
+    private Sink targetSnapshot() {
+      return targetSnapshot;
+    }
   }
 }

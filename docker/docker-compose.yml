@@ -12,24 +12,212 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  demo-service:
+  # --- Used for testing Only --- (if there is extra time make these build conditionally)
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  factory-simulator:
     build:
-      context: ../demo-service
+      context: ../factory-simulator
       dockerfile: Dockerfile
+    depends_on:
+      - mqtt-broker
+    ports:
+      - "8081:8081"
+    environment:
+      FACTORY_MQTT_BROKER_URL: tcp://mqtt-broker:1883
+      FACTORY_MQTT_TOPIC: FTFactory/SM_1
+      FACTORY_MQTT_PUBLISH_INTERVAL: 2s
+  # --- END Used for testing Only ---
+
+  qc-service:
+    build:
+      context: ..
+      dockerfile: qc-service/Dockerfile
     depends_on:
       - kafka
     ports:
-      - "8080:8080"
+      - "8100:8100"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
+      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
-      - demo-service-data:/app/data
+      - qc-service-data:/app/data
+
+  order-orchestrator:
+    build:
+      context: ..
+      dockerfile: order-orchestrator/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8101:8101"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
+    volumes:
+      - order-orchestrator-data:/app/data
+
+  intake-service:
+    build:
+      context: ..
+      dockerfile: intake-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8103:8103"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
+      KAFKA_TOPIC_USER_TASK_MANAGEMENT: user-task-management
+      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      KAFKA_TOPIC_ENGRAVER: engraver
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
+    volumes:
+      - intake-service-data:/app/data
+
+  manufacturing-service:
+    build:
+      context: ..
+      dockerfile: manufacturing-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8104:8104"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
+      KAFKA_TOPIC_ENGRAVER: engraver
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
+      KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
+    volumes:
+      - manufacturing-service-data:/app/data
+
+  # --- Begin Debugging ---
+  kafka-inspector-service:
+    build:
+      context: ..
+      dockerfile: kafka-inspector-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8102:8102"
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_SUBSCRIBE: user-task-management
+      KAFKA_TOPIC_PUBLISH: user-task-management
+      KAFKA_TOPIC_COMMAND_PUBLISH: user-task-management
+  # --- END Debugging ---
+
+  sorter-integration-service:
+    build:
+      context: ..
+      dockerfile: sorter-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      MQTT_TOPIC: FTFactory/SM_1
+      # MQTT_BROKER_URL: tcp://192.168.0.21:1883 # Production
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      # SORTER_HOST: 192.168.0.21 # Production
+      SORTER_HOST: factory-simulator # Simulation
+      # SORTER_PORT: 5000 # Production
+      SORTER_PORT: 8081 # Simulation
+
+  vacuum-gripper-integration-service:
+    build:
+      context: ..
+      dockerfile: vacuum-gripper-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      MQTT_TOPIC: FTFactory/VGR_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      VACUUM_GRIPPER_HOST: factory-simulator # Simulation
+      VACUUM_GRIPPER_PORT: 8081 # Simulation
+
+  engraver-integration-service:
+    build:
+      context: ..
+      dockerfile: engraver-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_ENGRAVER: engraver
+      MQTT_TOPIC: FTFactory/OV_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      ENGRAVER_HOST: factory-simulator # Simulation
+      ENGRAVER_PORT: 8081 # Simulation
+
+  polishing-machine-integration-service:
+    build:
+      context: ..
+      dockerfile: polishing-machine-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
+      MQTT_TOPIC: FTFactory/MM_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      POLISHING_MACHINE_HOST: factory-simulator # Simulation
+      POLISHING_MACHINE_PORT: 8081 # Simulation
+
+  workstation-transport-integration-service:
+    build:
+      context: ..
+      dockerfile: workstation-transport-integration-service/Dockerfile
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
+      MQTT_TOPIC: FTFactory/WT_1
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
+      WORKSTATION_TRANSPORT_HOST: factory-simulator # Simulation
+      WORKSTATION_TRANSPORT_PORT: 8081 # Simulation
 
   frontend-service:
     build:
@@ -40,3 +228,7 @@ services:
 
 volumes:
   demo-service-data:
+  qc-service-data:
+  order-orchestrator-data:
+  intake-service-data:
+  manufacturing-service-data:

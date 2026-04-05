@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_IntakeService" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0">
+  <bpmn:process id="intake_process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_ItemIntakeRequested" name="Item Intake Requested">
+      <bpmn:outgoing>Flow_Start_To_InsertItemIntoIntake</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_StartIntake" messageRef="Message_StartIntake" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_InsertItemIntoIntake" sourceRef="StartEvent_ItemIntakeRequested" targetRef="Task_InsertItemIntoIntake" />
+    <bpmn:sequenceFlow id="Flow_InsertItemIntoIntake_To_ItemArrived" sourceRef="Task_InsertItemIntoIntake" targetRef="Event_ItemArrivedAtIntake" />
+    <bpmn:sendTask id="Task_InsertItemIntoIntake" name="Send Insert Item Into Intake Command" camunda:delegateExpression="${PublishInsertItemIntoIntakeCommandDelegate}">
+      <bpmn:incoming>Flow_Start_To_InsertItemIntoIntake</bpmn:incoming>
+      <bpmn:outgoing>Flow_InsertItemIntoIntake_To_ItemArrived</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_ItemArrived_To_MoveCommand" sourceRef="Event_ItemArrivedAtIntake" targetRef="Gateway_09ko9q9" />
+    <bpmn:sendTask id="Task_SendMoveToEngraverCommand" name="Send VGR Move to Engraver Command" camunda:delegateExpression="${SendMoveItemFromInputToEngraverCommandDelegate}">
+      <bpmn:incoming>Flow_0icmfwn</bpmn:incoming>
+      <bpmn:outgoing>Flow_1eqmqll</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="Task_PublishIntakeCompletedOutcome" name="Send Intake Completed Outcome Event" camunda:delegateExpression="${PublishIntakeCompletedOutcomeDelegate}">
+      <bpmn:incoming>Flow_0b78dnt</bpmn:incoming>
+      <bpmn:outgoing>Flow_1wtfhcr</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_IntakeCompleted" name="Item Transported to Oven">
+      <bpmn:incoming>Flow_1wtfhcr</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:subProcess id="Activity_1s0cue0" name="Observe VGR Transport">
+      <bpmn:incoming>Flow_1eqmqll</bpmn:incoming>
+      <bpmn:outgoing>Flow_0b78dnt</bpmn:outgoing>
+      <bpmn:startEvent id="Event_0mku6v1">
+        <bpmn:outgoing>Flow_0ahu1ay</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:intermediateCatchEvent id="Event_ItemLeftIntake" name="Item Left Intake Event">
+        <bpmn:incoming>Flow_008z2xs</bpmn:incoming>
+        <bpmn:outgoing>Flow_1altwdy</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_ItemLeftIntake" messageRef="Message_ItemLeftIntake" />
+      </bpmn:intermediateCatchEvent>
+      <bpmn:intermediateCatchEvent id="Event_ItemArrivedAtEngraver" name="Item Arrived at Engraver Event">
+        <bpmn:incoming>Flow_1ooggvl</bpmn:incoming>
+        <bpmn:outgoing>Flow_03fn0aa</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedAtEngraver" messageRef="Message_ItemArrivedAtEngraver" />
+      </bpmn:intermediateCatchEvent>
+      <bpmn:sequenceFlow id="Flow_008z2xs" sourceRef="Gateway_0qielxx" targetRef="Event_ItemLeftIntake" />
+      <bpmn:sequenceFlow id="Flow_1ooggvl" sourceRef="Gateway_0qielxx" targetRef="Event_ItemArrivedAtEngraver" />
+      <bpmn:sequenceFlow id="Flow_1altwdy" sourceRef="Event_ItemLeftIntake" targetRef="Gateway_1embq03" />
+      <bpmn:parallelGateway id="Gateway_0qielxx">
+        <bpmn:incoming>Flow_0ahu1ay</bpmn:incoming>
+        <bpmn:outgoing>Flow_008z2xs</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1ooggvl</bpmn:outgoing>
+      </bpmn:parallelGateway>
+      <bpmn:parallelGateway id="Gateway_1embq03">
+        <bpmn:incoming>Flow_1altwdy</bpmn:incoming>
+        <bpmn:incoming>Flow_03fn0aa</bpmn:incoming>
+        <bpmn:outgoing>Flow_1akbs92</bpmn:outgoing>
+      </bpmn:parallelGateway>
+      <bpmn:sequenceFlow id="Flow_03fn0aa" sourceRef="Event_ItemArrivedAtEngraver" targetRef="Gateway_1embq03" />
+      <bpmn:endEvent id="Event_1etyiit" name="VGR Transport Successful">
+        <bpmn:incoming>Flow_1akbs92</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1akbs92" sourceRef="Gateway_1embq03" targetRef="Event_1etyiit" />
+      <bpmn:sequenceFlow id="Flow_0ahu1ay" sourceRef="Event_0mku6v1" targetRef="Gateway_0qielxx" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1eqmqll" sourceRef="Task_SendMoveToEngraverCommand" targetRef="Activity_1s0cue0" />
+    <bpmn:sequenceFlow id="Flow_0b78dnt" sourceRef="Activity_1s0cue0" targetRef="Task_PublishIntakeCompletedOutcome" />
+    <bpmn:sequenceFlow id="Flow_1wtfhcr" sourceRef="Task_PublishIntakeCompletedOutcome" targetRef="EndEvent_IntakeCompleted" />
+    <bpmn:intermediateCatchEvent id="Event_ItemArrivedAtIntake" name="Item Arrived at Intake Event">
+      <bpmn:incoming>Flow_InsertItemIntoIntake_To_ItemArrived</bpmn:incoming>
+      <bpmn:outgoing>Flow_ItemArrived_To_MoveCommand</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_ItemArrivedAtIntake" messageRef="Message_ItemArrivedAtIntake" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:boundaryEvent id="Event_1nu01n6" name="Timeout" attachedToRef="Activity_1s0cue0">
+      <bpmn:outgoing>Flow_0y3vgeh</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0a23cye">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT60S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:exclusiveGateway id="Gateway_11lryh0" name="Item left intake?">
+      <bpmn:incoming>Flow_0y3vgeh</bpmn:incoming>
+      <bpmn:outgoing>Flow_03nh228</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1r2prj1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0y3vgeh" sourceRef="Event_1nu01n6" targetRef="Gateway_11lryh0" />
+    <bpmn:exclusiveGateway id="Gateway_09ko9q9">
+      <bpmn:incoming>Flow_ItemArrived_To_MoveCommand</bpmn:incoming>
+      <bpmn:incoming>Flow_1y4oeoy</bpmn:incoming>
+      <bpmn:outgoing>Flow_0icmfwn</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0icmfwn" sourceRef="Gateway_09ko9q9" targetRef="Task_SendMoveToEngraverCommand" />
+    <bpmn:sequenceFlow id="Flow_03nh228" name="No: re-try" sourceRef="Gateway_11lryh0" targetRef="Gateway_1b06ela">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!itemLeftIntake}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:exclusiveGateway id="Gateway_1b06ela">
+      <bpmn:incoming>Flow_03nh228</bpmn:incoming>
+      <bpmn:incoming>Flow_0xt9ko7</bpmn:incoming>
+      <bpmn:outgoing>Flow_1y4oeoy</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1y4oeoy" sourceRef="Gateway_1b06ela" targetRef="Gateway_09ko9q9" />
+    <bpmn:userTask id="Activity_1w50q61" name="Resolve Issue and Replace Item">
+      <bpmn:documentation>Resolve VGR issue and replace item in intake sink.</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:formData />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1r2prj1</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xt9ko7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1r2prj1" name="Yes: manual resolution" sourceRef="Gateway_11lryh0" targetRef="Activity_1w50q61">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${itemLeftIntake}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0xt9ko7" name="re-try" sourceRef="Activity_1w50q61" targetRef="Gateway_1b06ela" />
+  </bpmn:process>
+  <bpmn:message id="Message_StartIntake" name="StartIntakeMessage" />
+  <bpmn:message id="Message_ItemArrivedAtIntake" name="ItemArrivedAtIntakeMessage" />
+  <bpmn:message id="Message_ItemLeftIntake" name="ItemLeftIntakeMessage" />
+  <bpmn:message id="Message_ItemArrivedAtEngraver" name="ItemArrivedAtEngraverMessage" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_intake_process">
+    <bpmndi:BPMNPlane id="BPMNPlane_intake_process" bpmnElement="intake_process">
+      <bpmndi:BPMNShape id="Task_SendMoveToEngraverCommand_di" bpmnElement="Task_SendMoveToEngraverCommand">
+        <dc:Bounds x="590" y="145" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ItemArrivedAtIntake_di" bpmnElement="Event_ItemArrivedAtIntake">
+        <dc:Bounds x="402" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="385" y="210" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InsertItemIntoIntake_di" bpmnElement="Task_InsertItemIntoIntake">
+        <dc:Bounds x="250" y="145" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_ItemIntakeRequested_di" bpmnElement="StartEvent_ItemIntakeRequested">
+        <dc:Bounds x="162" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="153" y="210" width="55" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishIntakeCompletedOutcome_di" bpmnElement="Task_PublishIntakeCompletedOutcome">
+        <dc:Bounds x="1230" y="145" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IntakeCompleted_di" bpmnElement="EndEvent_IntakeCompleted">
+        <dc:Bounds x="1382" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1358" y="210" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_11lryh0_di" bpmnElement="Gateway_11lryh0" isMarkerVisible="true">
+        <dc:Bounds x="940" y="335" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="926" y="313" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_09ko9q9_di" bpmnElement="Gateway_09ko9q9" isMarkerVisible="true">
+        <dc:Bounds x="485" y="160" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1b06ela_di" bpmnElement="Gateway_1b06ela" isMarkerVisible="true">
+        <dc:Bounds x="485" y="335" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16r3d73_di" bpmnElement="Activity_1w50q61">
+        <dc:Bounds x="915" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1s0cue0_di" bpmnElement="Activity_1s0cue0" isExpanded="true">
+        <dc:Bounds x="750" y="85" width="430" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0mku6v1_di" bpmnElement="Event_0mku6v1">
+        <dc:Bounds x="790" y="167" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ItemLeftIntake_di" bpmnElement="Event_ItemLeftIntake">
+        <dc:Bounds x="952" y="117" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="933" y="160" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ItemArrivedAtEngraver_di" bpmnElement="Event_ItemArrivedAtEngraver">
+        <dc:Bounds x="952" y="217" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="932" y="260" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1bgfqf1_di" bpmnElement="Gateway_0qielxx">
+        <dc:Bounds x="865" y="160" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_02fbefq_di" bpmnElement="Gateway_1embq03">
+        <dc:Bounds x="1015" y="160" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1etyiit_di" bpmnElement="Event_1etyiit">
+        <dc:Bounds x="1102" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1083" y="210" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ahu1ay_di" bpmnElement="Flow_0ahu1ay">
+        <di:waypoint x="826" y="185" />
+        <di:waypoint x="865" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_008z2xs_di" bpmnElement="Flow_008z2xs">
+        <di:waypoint x="890" y="160" />
+        <di:waypoint x="890" y="135" />
+        <di:waypoint x="952" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1altwdy_di" bpmnElement="Flow_1altwdy">
+        <di:waypoint x="988" y="135" />
+        <di:waypoint x="1040" y="135" />
+        <di:waypoint x="1040" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ooggvl_di" bpmnElement="Flow_1ooggvl">
+        <di:waypoint x="890" y="210" />
+        <di:waypoint x="890" y="235" />
+        <di:waypoint x="952" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03fn0aa_di" bpmnElement="Flow_03fn0aa">
+        <di:waypoint x="988" y="235" />
+        <di:waypoint x="1040" y="235" />
+        <di:waypoint x="1040" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1akbs92_di" bpmnElement="Flow_1akbs92">
+        <di:waypoint x="1065" y="185" />
+        <di:waypoint x="1102" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_03a3l2t_di" bpmnElement="Event_1nu01n6">
+        <dc:Bounds x="1102" y="267" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1140" y="293" width="40" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0icmfwn_di" bpmnElement="Flow_0icmfwn">
+        <di:waypoint x="535" y="185" />
+        <di:waypoint x="590" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1eqmqll_di" bpmnElement="Flow_1eqmqll">
+        <di:waypoint x="690" y="185" />
+        <di:waypoint x="750" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_InsertItemIntoIntake_To_ItemArrived_di" bpmnElement="Flow_InsertItemIntoIntake_To_ItemArrived">
+        <di:waypoint x="350" y="185" />
+        <di:waypoint x="402" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ItemArrived_To_MoveCommand_di" bpmnElement="Flow_ItemArrived_To_MoveCommand">
+        <di:waypoint x="438" y="185" />
+        <di:waypoint x="485" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Start_To_InsertItemIntoIntake_di" bpmnElement="Flow_Start_To_InsertItemIntoIntake">
+        <di:waypoint x="198" y="185" />
+        <di:waypoint x="250" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0b78dnt_di" bpmnElement="Flow_0b78dnt">
+        <di:waypoint x="1180" y="185" />
+        <di:waypoint x="1230" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wtfhcr_di" bpmnElement="Flow_1wtfhcr">
+        <di:waypoint x="1330" y="185" />
+        <di:waypoint x="1382" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y3vgeh_di" bpmnElement="Flow_0y3vgeh">
+        <di:waypoint x="1120" y="303" />
+        <di:waypoint x="1120" y="360" />
+        <di:waypoint x="990" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03nh228_di" bpmnElement="Flow_03nh228">
+        <di:waypoint x="940" y="360" />
+        <di:waypoint x="535" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="879" y="342" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1r2prj1_di" bpmnElement="Flow_1r2prj1">
+        <di:waypoint x="965" y="385" />
+        <di:waypoint x="965" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="899" y="386" width="61" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1y4oeoy_di" bpmnElement="Flow_1y4oeoy">
+        <di:waypoint x="510" y="335" />
+        <di:waypoint x="510" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xt9ko7_di" bpmnElement="Flow_0xt9ko7">
+        <di:waypoint x="915" y="460" />
+        <di:waypoint x="510" y="460" />
+        <di:waypoint x="510" y="385" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="507" y="463" width="26" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

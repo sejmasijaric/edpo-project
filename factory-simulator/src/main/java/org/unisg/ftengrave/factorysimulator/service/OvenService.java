@@ -8,18 +8,26 @@ import org.unisg.ftengrave.factorysimulator.domain.MachineStatus;
 
 public class OvenService {
 
+  static final String OVEN_INPUT_SINK_ID = "VGR-oven";
+  static final String OVEN_BURN_SINK_ID = "VGR-burn";
+
+  private final FactorySimulatorService factorySimulatorService;
   private final OvenMachine machine;
   private final Duration defaultBurnDuration;
   private final AtomicReference<MachineStatus> status;
+  private final AtomicReference<OvenTaskState> mqttStatus;
 
   public OvenService(
+      FactorySimulatorService factorySimulatorService,
       FactorySimulationProperties properties,
       String machineName,
       int statusCardX,
       int statusCardY) {
+    this.factorySimulatorService = factorySimulatorService;
     this.machine = new OvenMachine(machineName, statusCardX, statusCardY);
     this.defaultBurnDuration = properties.getOvenBurnDuration();
     this.status = new AtomicReference<>(this.machine.idleStatus());
+    this.mqttStatus = new AtomicReference<>(OvenTaskState.idle());
   }
 
   public OvenExecution burn(String machine, Integer timeInSeconds) {
@@ -27,12 +35,21 @@ public class OvenService {
 
     Duration burnDuration = resolveBurnDuration(timeInSeconds);
     LocalDateTime startTime = LocalDateTime.now();
+    boolean itemInOvenInput = factorySimulatorService.getSink(OVEN_INPUT_SINK_ID).item() != null;
 
     try {
+      if (itemInOvenInput) {
+        factorySimulatorService.moveItemBetweenSinks(OVEN_INPUT_SINK_ID, OVEN_BURN_SINK_ID, false);
+      }
+      mqttStatus.set(OvenTaskState.started("burn"));
       status.set(this.machine.status("burn"));
       waitForBurn(burnDuration);
     } finally {
+      if (itemInOvenInput) {
+        factorySimulatorService.moveItemBetweenSinks(OVEN_BURN_SINK_ID, OVEN_INPUT_SINK_ID, true);
+      }
       status.set(this.machine.idleStatus());
+      mqttStatus.set(OvenTaskState.idle());
     }
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -41,6 +58,10 @@ public class OvenService {
 
   public MachineStatus getStatus() {
     return status.get();
+  }
+
+  public OvenMqttStatus getMqttStatus() {
+    return mqttStatus.get().snapshot();
   }
 
   private void validateMachine(String machine) {
@@ -94,5 +115,30 @@ public class OvenService {
       String link,
       String process_time,
       String start_time) {
+  }
+
+  public record OvenMqttStatus(
+      String currentTask,
+      double currentTaskDurationSeconds) {
+  }
+
+  private record OvenTaskState(String currentTask, LocalDateTime startedAt) {
+
+    private static OvenTaskState started(String currentTask) {
+      return new OvenTaskState(currentTask, LocalDateTime.now());
+    }
+
+    private static OvenTaskState idle() {
+      return new OvenTaskState("", null);
+    }
+
+    private OvenMqttStatus snapshot() {
+      if (startedAt == null || currentTask.isBlank()) {
+        return new OvenMqttStatus("", 0.0d);
+      }
+
+      long elapsedMillis = Duration.between(startedAt, LocalDateTime.now()).toMillis();
+      return new OvenMqttStatus(currentTask, elapsedMillis / 1000.0d);
+    }
   }
 }
