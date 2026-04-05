@@ -11,8 +11,12 @@
       <bpmn:incoming>Flow_ItemArrived_To_MoveCommand</bpmn:incoming>
       <bpmn:outgoing>Flow_1eqmqll</bpmn:outgoing>
     </bpmn:sendTask>
-    <bpmn:endEvent id="EndEvent_IntakeCompleted" name="Item Transported to Oven">
+    <bpmn:sendTask id="Task_PublishIntakeCompletedOutcome" name="Send Intake Completed Outcome Event" camunda:delegateExpression="${PublishIntakeCompletedOutcomeDelegate}">
       <bpmn:incoming>Flow_0b78dnt</bpmn:incoming>
+      <bpmn:outgoing>Flow_1wtfhcr</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_IntakeCompleted" name="Item Transported to Oven">
+      <bpmn:incoming>Flow_1wtfhcr</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:subProcess id="Activity_1s0cue0" name="Observe VGR Transport">
       <bpmn:incoming>Flow_1eqmqll</bpmn:incoming>
@@ -51,7 +55,8 @@
       <bpmn:sequenceFlow id="Flow_0ahu1ay" sourceRef="Event_0mku6v1" targetRef="Gateway_0qielxx" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_1eqmqll" sourceRef="Task_SendMoveToEngraverCommand" targetRef="Activity_1s0cue0" />
-    <bpmn:sequenceFlow id="Flow_0b78dnt" sourceRef="Activity_1s0cue0" targetRef="EndEvent_IntakeCompleted" />
+    <bpmn:sequenceFlow id="Flow_0b78dnt" sourceRef="Activity_1s0cue0" targetRef="Task_PublishIntakeCompletedOutcome" />
+    <bpmn:sequenceFlow id="Flow_1wtfhcr" sourceRef="Task_PublishIntakeCompletedOutcome" targetRef="EndEvent_IntakeCompleted" />
     <bpmn:intermediateCatchEvent id="Event_ItemArrivedAtIntake" name="Item Arrived at Intake Event">
       <bpmn:incoming>Flow_Start_To_ItemArrived</bpmn:incoming>
       <bpmn:outgoing>Flow_ItemArrived_To_MoveCommand</bpmn:outgoing>
@@ -81,10 +86,14 @@
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_IntakeCompleted_di" bpmnElement="EndEvent_IntakeCompleted">
-        <dc:Bounds x="1162" y="167" width="36" height="36" />
+        <dc:Bounds x="1312" y="167" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1138" y="210" width="84" height="27" />
+          <dc:Bounds x="1288" y="210" width="84" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishIntakeCompletedOutcome_di" bpmnElement="Task_PublishIntakeCompletedOutcome">
+        <dc:Bounds x="1150" y="145" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1s0cue0_di" bpmnElement="Activity_1s0cue0" isExpanded="true">
         <dc:Bounds x="620" y="85" width="430" height="200" />
@@ -159,7 +168,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0b78dnt_di" bpmnElement="Flow_0b78dnt">
         <di:waypoint x="1050" y="185" />
-        <di:waypoint x="1162" y="185" />
+        <di:waypoint x="1150" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wtfhcr_di" bpmnElement="Flow_1wtfhcr">
+        <di:waypoint x="1250" y="185" />
+        <di:waypoint x="1312" y="185" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -126,8 +126,12 @@
     <bpmn:sequenceFlow id="Flow_1ltxpcs" name="Yes: Re-try Engraving" sourceRef="Gateway_045jrrr" targetRef="Gateway_0ylff6e">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${egrReTryPossible}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:endEvent id="Event_0gjl5k8" name="Production Failed">
+    <bpmn:sendTask id="Task_PublishManufacturingFailedOutcome" name="Send Manufacturing Failed Outcome Event" camunda:delegateExpression="${PublishManufacturingFailedOutcomeDelegate}">
       <bpmn:incoming>Flow_1byq8k7</bpmn:incoming>
+      <bpmn:outgoing>Flow_15phu24</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="Event_0gjl5k8" name="Production Failed">
+      <bpmn:incoming>Flow_15phu24</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:exclusiveGateway id="Gateway_0fpifxd">
       <bpmn:incoming>Flow_0yuzh7o</bpmn:incoming>
@@ -137,7 +141,7 @@
     <bpmn:sequenceFlow id="Flow_0yuzh7o" name="No: Discard" sourceRef="Gateway_045jrrr" targetRef="Gateway_0fpifxd">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!egrReTryPossible}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1byq8k7" sourceRef="Gateway_0fpifxd" targetRef="Event_0gjl5k8" />
+    <bpmn:sequenceFlow id="Flow_1byq8k7" sourceRef="Gateway_0fpifxd" targetRef="Task_PublishManufacturingFailedOutcome" />
     <bpmn:userTask id="Activity_0mtghze" name="Restore WT and Advance Item to PM">
       <bpmn:extensionElements>
         <camunda:formData />
@@ -205,14 +209,20 @@
     <bpmn:sequenceFlow id="Flow_1m9q38v" name="Polishing Machine Failure" sourceRef="Event_0ht1w0g" targetRef="Activity_0t1ie0a" />
     <bpmn:sequenceFlow id="Flow_1umveuz" name="Assessment Complete" sourceRef="Activity_0t1ie0a" targetRef="Gateway_1r2aplh" />
     <bpmn:sequenceFlow id="Flow_1ehnx96" sourceRef="Task_SendPolishCommand" targetRef="Activity_16qbyqv" />
-    <bpmn:endEvent id="EndEvent_ManufacturingCompleted" name="Item Produced">
+    <bpmn:sendTask id="Task_PublishManufacturingCompletedOutcome" name="Send Manufacturing Completed Outcome Event" camunda:delegateExpression="${PublishManufacturingCompletedOutcomeDelegate}">
       <bpmn:incoming>Flow_0eky1o7</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hqih11</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_ManufacturingCompleted" name="Item Produced">
+      <bpmn:incoming>Flow_0hqih11</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0eky1o7" name="Polishing Completed" sourceRef="Activity_16qbyqv" targetRef="EndEvent_ManufacturingCompleted" />
+    <bpmn:sequenceFlow id="Flow_0eky1o7" name="Polishing Completed" sourceRef="Activity_16qbyqv" targetRef="Task_PublishManufacturingCompletedOutcome" />
+    <bpmn:sequenceFlow id="Flow_0hqih11" sourceRef="Task_PublishManufacturingCompletedOutcome" targetRef="EndEvent_ManufacturingCompleted" />
     <bpmn:sequenceFlow id="Flow_14tuda4" name="Workpiece arrived at PM" sourceRef="Activity_1h8qlrt" targetRef="Gateway_0x57lhy" />
     <bpmn:sequenceFlow id="Flow_13fz90a" name="No: discard" sourceRef="Gateway_1r2aplh" targetRef="Gateway_0fpifxd">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!pmReTryPossible}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_15phu24" sourceRef="Task_PublishManufacturingFailedOutcome" targetRef="Event_0gjl5k8" />
   </bpmn:process>
   <bpmn:message id="Message_StartProduction" name="StartProductionMessage" />
   <bpmn:message id="Message_ItemLeftEngraverSink" name="ItemLeftEngraverSinkMessage" />
@@ -257,10 +267,14 @@
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0gjl5k8_di" bpmnElement="Event_0gjl5k8">
-        <dc:Bounds x="2142" y="92" width="36" height="36" />
+        <dc:Bounds x="2334" y="92" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2117" y="135" width="86" height="14" />
+          <dc:Bounds x="2309" y="135" width="86" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishManufacturingFailedOutcome_di" bpmnElement="Task_PublishManufacturingFailedOutcome">
+        <dc:Bounds x="2164" y="70" width="120" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0fpifxd_di" bpmnElement="Gateway_0fpifxd" isMarkerVisible="true">
         <dc:Bounds x="1845" y="85" width="50" height="50" />
@@ -279,10 +293,14 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_ManufacturingCompleted_di" bpmnElement="EndEvent_ManufacturingCompleted">
-        <dc:Bounds x="2762" y="387" width="36" height="36" />
+        <dc:Bounds x="2964" y="387" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2744" y="430" width="72" height="14" />
+          <dc:Bounds x="2946" y="430" width="72" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishManufacturingCompletedOutcome_di" bpmnElement="Task_PublishManufacturingCompletedOutcome">
+        <dc:Bounds x="2784" y="365" width="120" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1ui1vs9_di" bpmnElement="Activity_1ui1vs9" isExpanded="true">
         <dc:Bounds x="640" y="305" width="397" height="200" />
@@ -491,7 +509,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1byq8k7_di" bpmnElement="Flow_1byq8k7">
         <di:waypoint x="1895" y="110" />
-        <di:waypoint x="2142" y="110" />
+        <di:waypoint x="2164" y="110" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13fz90a_di" bpmnElement="Flow_13fz90a">
         <di:waypoint x="1870" y="235" />
@@ -547,10 +565,18 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0eky1o7_di" bpmnElement="Flow_0eky1o7">
         <di:waypoint x="2530" y="405" />
-        <di:waypoint x="2762" y="405" />
+        <di:waypoint x="2784" y="405" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2620" y="376" width="54" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hqih11_di" bpmnElement="Flow_0hqih11">
+        <di:waypoint x="2904" y="405" />
+        <di:waypoint x="2964" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15phu24_di" bpmnElement="Flow_15phu24">
+        <di:waypoint x="2284" y="110" />
+        <di:waypoint x="2334" y="110" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
