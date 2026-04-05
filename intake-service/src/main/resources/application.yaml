@@ -15,6 +15,7 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
+    user-task-management: ${KAFKA_TOPIC_USER_TASK_MANAGEMENT:user-task-management}
     vacuum-gripper: ${KAFKA_TOPIC_VACUUM_GRIPPER:vacuum-gripper}
     engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
 
