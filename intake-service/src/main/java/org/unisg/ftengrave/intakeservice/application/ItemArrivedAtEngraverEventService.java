@@ -38,6 +38,6 @@ public class ItemArrivedAtEngraverEventService implements HandleItemArrivedAtEng
                 itemIdentifier,
                 Map.of(
                         "itemIdentifier", itemIdentifier,
-                        "item-arrived-at-engraver", true));
+                        "itemArrivedAtEngraver", true));
     }
 }

@@ -81,6 +81,8 @@ services:
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
+      KAFKA_TOPIC_USER_TASK_MANAGEMENT: user-task-management
       KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
       KAFKA_TOPIC_ENGRAVER: engraver
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
@@ -98,6 +100,7 @@ services:
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       KAFKA_TOPIC_ENGRAVER: engraver
       KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
       KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
@@ -116,9 +119,9 @@ services:
       - "8102:8102"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
-      KAFKA_TOPIC_SUBSCRIBE: vacuum-gripper
-      KAFKA_TOPIC_PUBLISH: vacuum-gripper
-      KAFKA_TOPIC_COMMAND_PUBLISH: vacuum-gripper
+      KAFKA_TOPIC_SUBSCRIBE: user-task-management
+      KAFKA_TOPIC_PUBLISH: user-task-management
+      KAFKA_TOPIC_COMMAND_PUBLISH: user-task-management
   # --- END Debugging ---
 
   sorter-integration-service:

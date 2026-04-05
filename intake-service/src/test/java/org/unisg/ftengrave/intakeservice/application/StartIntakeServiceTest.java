@@ -23,9 +23,9 @@ class StartIntakeServiceTest {
         Map<String, Object> expectedVariables = Map.of(
                 "itemIdentifier", "item-42",
                 "targetColor", ItemColor.RED,
-                "item-arrived-at-intake", false,
-                "item-left-intake", false,
-                "item-arrived-at-engraver", false);
+                "itemArrivedAtIntake", false,
+                "itemLeftIntake", false,
+                "itemArrivedAtEngraver", false);
         when(correlateMessagePort.correlateMessage(StartIntakeService.START_INTAKE_MESSAGE, "item-42", expectedVariables))
                 .thenReturn(result);
 
@@ -40,9 +40,9 @@ class StartIntakeServiceTest {
         Map<String, Object> expectedVariables = Map.of(
                 "itemIdentifier", "item-42",
                 "targetColor", ItemColor.BLUE,
-                "item-arrived-at-intake", false,
-                "item-left-intake", false,
-                "item-arrived-at-engraver", false);
+                "itemArrivedAtIntake", false,
+                "itemLeftIntake", false,
+                "itemArrivedAtEngraver", false);
         when(correlateMessagePort.correlateMessage(StartIntakeService.START_INTAKE_MESSAGE, "item-42", expectedVariables))
                 .thenReturn(null);
 

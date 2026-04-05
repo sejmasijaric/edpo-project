@@ -22,6 +22,6 @@ class PerformQcCommandPublisherAdapterTest {
         verify(kafkaOperations).send(
                 "stage-orchestration",
                 "item-42",
-                new PerformQcCommandDto("item-42", ItemColor.RED));
+                new PerformQcCommandDto("run-item-qc-command", "item-42", ItemColor.RED));
     }
 }

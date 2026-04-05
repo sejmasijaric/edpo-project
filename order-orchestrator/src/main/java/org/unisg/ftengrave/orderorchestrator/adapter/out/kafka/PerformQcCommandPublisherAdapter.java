@@ -11,6 +11,8 @@ import org.unisg.ftengrave.sharedkafka.publisher.TransactionAwareKafkaPublisher;
 @Component
 public class PerformQcCommandPublisherAdapter extends TransactionAwareKafkaPublisher<String, PerformQcCommandDto>
         implements SendPerformQcCommandPort {
+    private static final String RUN_ITEM_QC_COMMAND = "run-item-qc-command";
+
     private final String stageOrchestrationTopic;
 
     public PerformQcCommandPublisherAdapter(
@@ -29,6 +31,6 @@ public class PerformQcCommandPublisherAdapter extends TransactionAwareKafkaPubli
         send(
                 stageOrchestrationTopic,
                 itemIdentifier,
-                new PerformQcCommandDto(itemIdentifier, targetColor));
+                new PerformQcCommandDto(RUN_ITEM_QC_COMMAND, itemIdentifier, targetColor));
     }
 }

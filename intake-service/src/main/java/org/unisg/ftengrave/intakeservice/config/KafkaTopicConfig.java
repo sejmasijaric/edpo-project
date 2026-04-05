@@ -21,6 +21,12 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.stage-orchestration}")
     private String stageOrchestrationTopic;
 
+    @Value("${kafka.topic.machine-orchestration}")
+    private String machineOrchestrationTopic;
+
+    @Value("${kafka.topic.user-task-management}")
+    private String userTaskManagementTopic;
+
     @Value("${kafka.topic.vacuum-gripper}")
     private String vacuumGripperTopic;
 
@@ -37,6 +43,16 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic stageOrchestrationTopic() {
         return new NewTopic(stageOrchestrationTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic machineOrchestrationTopic() {
+        return new NewTopic(machineOrchestrationTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic userTaskManagementTopic() {
+        return new NewTopic(userTaskManagementTopic, 1, (short) 1);
     }
 
     @Bean

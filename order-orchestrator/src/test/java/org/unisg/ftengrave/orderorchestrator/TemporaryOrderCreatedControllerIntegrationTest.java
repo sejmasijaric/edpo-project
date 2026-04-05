@@ -10,8 +10,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.unisg.ftengrave.orderorchestrator.config.CamundaBusinessKeyConstraintInitializer;
+import org.unisg.ftengrave.orderorchestrator.port.out.SendRunIntakeCommandPort;
 import org.unisg.ftengrave.orderorchestrator.domain.ItemColor;
-import org.unisg.ftengrave.orderorchestrator.port.out.SendPerformQcCommandPort;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TemporaryOrderCreatedControllerIntegrationTest {
 
     @MockitoBean
-    private SendPerformQcCommandPort sendPerformQcCommandPort;
+    private SendRunIntakeCommandPort sendRunIntakeCommandPort;
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,11 +44,11 @@ class TemporaryOrderCreatedControllerIntegrationTest {
     private RuntimeService runtimeService;
 
     @Test
-    void orderCreatedStartsProcessAndSendsPerformQcCommand() throws Exception {
+    void orderCreatedStartsProcessAndSendsRunIntakeCommand() throws Exception {
         mockMvc.perform(post("/temporary/order-created/item-42").param("targetColor", "RED"))
                 .andExpect(status().isAccepted());
 
-        verify(sendPerformQcCommandPort).publish("item-42", ItemColor.RED);
+        verify(sendRunIntakeCommandPort).publish("item-42", ItemColor.RED);
         assertThat(runtimeService.createProcessInstanceQuery()
                 .processInstanceBusinessKey("item-42")
                 .singleResult()).isNotNull();

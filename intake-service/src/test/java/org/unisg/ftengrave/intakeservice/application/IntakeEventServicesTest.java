@@ -51,7 +51,7 @@ class IntakeEventServicesTest {
         verify(correlateMessagePort).correlateMessage(
                 eq(ItemArrivedAtIntakeEventService.ITEM_ARRIVED_AT_INTAKE_MESSAGE),
                 eq("item-42"),
-                eq(Map.of("itemIdentifier", "item-42", "item-arrived-at-intake", true)));
+                eq(Map.of("itemIdentifier", "item-42", "itemArrivedAtIntake", true)));
     }
 
     @Test
@@ -64,7 +64,7 @@ class IntakeEventServicesTest {
         verify(correlateMessagePort).correlateMessage(
                 eq(ItemLeftIntakeEventService.ITEM_LEFT_INTAKE_MESSAGE),
                 eq("item-42"),
-                eq(Map.of("itemIdentifier", "item-42", "item-left-intake", true)));
+                eq(Map.of("itemIdentifier", "item-42", "itemLeftIntake", true)));
     }
 
     @Test
@@ -77,7 +77,7 @@ class IntakeEventServicesTest {
         verify(correlateMessagePort).correlateMessage(
                 eq(ItemArrivedAtEngraverEventService.ITEM_ARRIVED_AT_ENGRAVER_MESSAGE),
                 eq("item-42"),
-                eq(Map.of("itemIdentifier", "item-42", "item-arrived-at-engraver", true)));
+                eq(Map.of("itemIdentifier", "item-42", "itemArrivedAtEngraver", true)));
     }
 
     @Test

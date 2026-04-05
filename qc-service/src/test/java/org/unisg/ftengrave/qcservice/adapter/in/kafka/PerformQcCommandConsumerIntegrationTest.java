@@ -38,9 +38,11 @@ class PerformQcCommandConsumerIntegrationTest {
     @Test
     void consumeStartsQcAndRejectsDuplicateBusinessKeyForRunningProcessInstances() {
         performQcCommandConsumer.consume(new PerformQcCommandDto(
+                "run-item-qc-command",
                 "item-42",
                 ItemColor.RED));
         assertThrows(DuplicateBusinessKeyException.class, () -> performQcCommandConsumer.consume(new PerformQcCommandDto(
+                "run-item-qc-command",
                 "item-42",
                 ItemColor.RED)));
 
@@ -56,6 +58,7 @@ class PerformQcCommandConsumerIntegrationTest {
     @Test
     void consumeStoresTargetColorAsProcessVariable() {
         performQcCommandConsumer.consume(new PerformQcCommandDto(
+                "run-item-qc-command",
                 "item-77",
                 ItemColor.BLUE));
 
