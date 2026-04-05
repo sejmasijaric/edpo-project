@@ -38,6 +38,6 @@ public class ItemArrivedAtIntakeEventService implements HandleItemArrivedAtIntak
                 itemIdentifier,
                 Map.of(
                         "itemIdentifier", itemIdentifier,
-                        "item-arrived-at-intake", true));
+                        "itemArrivedAtIntake", true));
     }
 }

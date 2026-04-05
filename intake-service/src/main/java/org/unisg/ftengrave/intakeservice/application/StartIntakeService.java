@@ -24,9 +24,9 @@ public class StartIntakeService implements StartIntakeUseCase {
                 Map.of(
                         "itemIdentifier", itemIdentifier,
                         "targetColor", targetColor,
-                        "item-arrived-at-intake", false,
-                        "item-left-intake", false,
-                        "item-arrived-at-engraver", false))
+                        "itemArrivedAtIntake", false,
+                        "itemLeftIntake", false,
+                        "itemArrivedAtEngraver", false))
                 != null;
     }
 }

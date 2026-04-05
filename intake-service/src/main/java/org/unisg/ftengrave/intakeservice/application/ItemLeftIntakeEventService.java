@@ -38,6 +38,6 @@ public class ItemLeftIntakeEventService implements HandleItemLeftIntakeEventUseC
                 itemIdentifier,
                 Map.of(
                         "itemIdentifier", itemIdentifier,
-                        "item-left-intake", true));
+                        "itemLeftIntake", true));
     }
 }
