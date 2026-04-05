@@ -1,6 +1,6 @@
 package org.unisg.ftengrave.intakeservice.port.in;
 
-public interface PublishInsertItemIntoIntakeEventUseCase {
+public interface PublishInsertItemIntoIntakeCommandUseCase {
 
     void publish(String itemIdentifier, String itemColor);
 }

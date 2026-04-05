@@ -7,7 +7,7 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_Start_To_InsertItemIntoIntake" sourceRef="StartEvent_ItemIntakeRequested" targetRef="Task_InsertItemIntoIntake" />
     <bpmn:sequenceFlow id="Flow_InsertItemIntoIntake_To_ItemArrived" sourceRef="Task_InsertItemIntoIntake" targetRef="Event_ItemArrivedAtIntake" />
-    <bpmn:sendTask id="Task_InsertItemIntoIntake" name="Send Insert Item Into Intake Event" camunda:delegateExpression="${PublishInsertItemIntoIntakeEventDelegate}">
+    <bpmn:sendTask id="Task_InsertItemIntoIntake" name="Send Insert Item Into Intake Command" camunda:delegateExpression="${PublishInsertItemIntoIntakeCommandDelegate}">
       <bpmn:incoming>Flow_Start_To_InsertItemIntoIntake</bpmn:incoming>
       <bpmn:outgoing>Flow_InsertItemIntoIntake_To_ItemArrived</bpmn:outgoing>
     </bpmn:sendTask>
@@ -84,6 +84,10 @@
         <dc:Bounds x="250" y="145" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendMoveToEngraverCommand_di" bpmnElement="Task_SendMoveToEngraverCommand">
+        <dc:Bounds x="450" y="145" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_PublishIntakeCompletedOutcome_di" bpmnElement="Task_PublishIntakeCompletedOutcome">
         <dc:Bounds x="1150" y="145" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -92,16 +96,6 @@
         <dc:Bounds x="1312" y="167" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1288" y="210" width="84" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_SendMoveToEngraverCommand_di" bpmnElement="Task_SendMoveToEngraverCommand">
-        <dc:Bounds x="450" y="145" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_ItemArrivedAtIntake_di" bpmnElement="Event_ItemArrivedAtIntake">
-        <dc:Bounds x="402" y="167" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="385" y="210" width="71" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1s0cue0_di" bpmnElement="Activity_1s0cue0" isExpanded="true">
@@ -163,6 +157,12 @@
         <di:waypoint x="696" y="185" />
         <di:waypoint x="735" y="185" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_ItemArrivedAtIntake_di" bpmnElement="Event_ItemArrivedAtIntake">
+        <dc:Bounds x="402" y="167" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="385" y="210" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_InsertItemIntoIntake_di" bpmnElement="Flow_Start_To_InsertItemIntoIntake">
         <di:waypoint x="198" y="185" />
         <di:waypoint x="250" y="185" />

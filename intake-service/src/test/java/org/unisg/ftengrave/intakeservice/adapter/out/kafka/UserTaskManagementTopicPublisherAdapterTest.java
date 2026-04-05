@@ -7,7 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.unisg.ftengrave.intakeservice.adapter.out.kafka.dto.InsertItemIntoIntakeEventDto;
+import org.unisg.ftengrave.intakeservice.adapter.out.kafka.dto.InsertItemIntoIntakeCommandDto;
 import org.unisg.ftengrave.intakeservice.domain.ItemColor;
 
 import static org.mockito.ArgumentMatchers.argThat;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 class UserTaskManagementTopicPublisherAdapterTest {
 
     @Mock
-    private KafkaOperations<String, InsertItemIntoIntakeEventDto> kafkaOperations;
+    private KafkaOperations<String, InsertItemIntoIntakeCommandDto> kafkaOperations;
 
     @Test
     void publishSendsInsertItemIntoIntakeEventToUserTaskManagementTopic() {
@@ -32,7 +32,7 @@ class UserTaskManagementTopicPublisherAdapterTest {
                 eq("user-task-management"),
                 eq("item-42"),
                 argThat(event -> event != null
-                        && "insert-item-into-intake-event".equals(event.eventType())
+                        && "insert-item-into-intake-command".equals(event.commandType())
                         && "item-intake-station".equals(event.stationName())
                         && ItemColor.BLUE == event.itemColor()));
     }
@@ -59,7 +59,7 @@ class UserTaskManagementTopicPublisherAdapterTest {
                     eq("user-task-management"),
                     eq("item-42"),
                     argThat(event -> event != null
-                            && "insert-item-into-intake-event".equals(event.eventType())
+                            && "insert-item-into-intake-command".equals(event.commandType())
                             && "item-intake-station".equals(event.stationName())
                             && ItemColor.WHITE == event.itemColor()));
         } finally {
