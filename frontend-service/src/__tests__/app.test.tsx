@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event"
 import { App } from "@/App"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { fetchOrders, createOrder } from "@/services/api"
+
+const mockFetchOrders = vi.mocked(fetchOrders)
+const mockCreateOrder = vi.mocked(createOrder)
 
 function renderApp() {
   return render(
@@ -56,20 +60,28 @@ describe("App", () => {
 
   it("shares orders between customer and worker pages", async () => {
     const user = userEvent.setup()
-    vi.spyOn(console, "log").mockImplementation(() => {})
+    const createdOrder = {
+      id: "shared-test",
+      color: "red" as const,
+      status: "To Do" as const,
+      createdAt: new Date(),
+    }
+    mockCreateOrder.mockResolvedValueOnce(createdOrder)
+    // Initial mount fetch returns empty, navigation fetch returns the created order
+    mockFetchOrders.mockResolvedValueOnce([])
+    mockFetchOrders.mockResolvedValueOnce([createdOrder])
     renderApp()
 
     // Submit order on customer page
     await user.click(screen.getByLabelText("Red"))
     await user.click(screen.getByRole("button", { name: /submit order/i }))
+    await screen.findByText("Red Air Tag")
 
     // Navigate to worker page
     await user.click(screen.getByRole("button", { name: /worker/i }))
 
     // Verify order appears in production queue
-    expect(screen.getByText("Red Air Tag")).toBeInTheDocument()
+    expect(await screen.findByText("Red Air Tag")).toBeInTheDocument()
     expect(screen.getByText("To Do")).toBeInTheDocument()
-
-    vi.restoreAllMocks()
   })
 })

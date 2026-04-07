@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event"
 import { WorkerPage } from "@/components/worker-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-import type { Order } from "@/types/order"
+import type { Order, OrderStatus } from "@/types/order"
+import { updateOrderStatus } from "@/services/api"
+
+const mockUpdateOrderStatus = vi.mocked(updateOrderStatus)
 
 function makeOrder(overrides: Partial<Order> = {}): Order {
   return {
@@ -67,41 +70,49 @@ describe("WorkerPage", () => {
 
   it("Start button moves To Do to In Progress", async () => {
     const user = userEvent.setup()
-    renderWorkerPage([makeOrder({ status: "To Do" })])
+    const order = makeOrder({ id: "test-1", status: "To Do" })
+    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "In Progress" })
+    renderWorkerPage([order])
 
     await user.click(screen.getByRole("button", { name: "Start" }))
 
-    expect(screen.getByText("In Progress")).toBeInTheDocument()
+    expect(await screen.findByText("In Progress")).toBeInTheDocument()
     expect(screen.queryByText("To Do")).not.toBeInTheDocument()
   })
 
   it("Done button moves In Progress to Done", async () => {
     const user = userEvent.setup()
-    renderWorkerPage([makeOrder({ status: "In Progress" })])
+    const order = makeOrder({ id: "test-2", status: "In Progress" })
+    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "Done" })
+    renderWorkerPage([order])
 
     await user.click(screen.getByRole("button", { name: "Done" }))
 
-    expect(screen.getByText("Done")).toBeInTheDocument()
+    expect(await screen.findByText("Done")).toBeInTheDocument()
     expect(screen.queryByText("In Progress")).not.toBeInTheDocument()
   })
 
   it("Error button moves In Progress to Error", async () => {
     const user = userEvent.setup()
-    renderWorkerPage([makeOrder({ status: "In Progress" })])
+    const order = makeOrder({ id: "test-3", status: "In Progress" })
+    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "Error" })
+    renderWorkerPage([order])
 
     await user.click(screen.getByRole("button", { name: "Error" }))
 
-    expect(screen.getByText("Error")).toBeInTheDocument()
+    expect(await screen.findByText("Error")).toBeInTheDocument()
     expect(screen.queryByText("In Progress")).not.toBeInTheDocument()
   })
 
   it("Retry button moves Error to In Progress", async () => {
     const user = userEvent.setup()
-    renderWorkerPage([makeOrder({ status: "Error" })])
+    const order = makeOrder({ id: "test-4", status: "Error" })
+    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "In Progress" })
+    renderWorkerPage([order])
 
     await user.click(screen.getByRole("button", { name: "Retry" }))
 
-    const badge = screen.getByText("In Progress", {
+    const badge = await screen.findByText("In Progress", {
       selector: "[data-slot='badge']",
     })
     expect(badge).toBeInTheDocument()

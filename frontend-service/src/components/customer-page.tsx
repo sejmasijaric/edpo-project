@@ -18,6 +18,7 @@ import {
   type ColorValue,
   type Order,
 } from "@/types/order"
+import { createOrder } from "@/services/api"
 
 interface CustomerPageProps {
   orders: Order[]
@@ -27,8 +28,9 @@ interface CustomerPageProps {
 export function CustomerPage({ orders, setOrders }: CustomerPageProps) {
   const [color, setColor] = useState("")
   const [engravedText, setEngravedText] = useState("")
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!color) {
@@ -36,23 +38,24 @@ export function CustomerPage({ orders, setOrders }: CustomerPageProps) {
       return
     }
 
-    const order: Order = {
-      id: crypto.randomUUID(),
-      color: color as ColorValue,
-      status: "To Do",
-      createdAt: new Date(),
-      ...(engravedText ? { engravedText } : {}),
+    setSubmitting(true)
+    try {
+      const order = await createOrder({
+        id: crypto.randomUUID(),
+        color: color as ColorValue,
+        createdAt: new Date(),
+        ...(engravedText ? { engravedText } : {}),
+      })
+
+      toast.success("Order submitted successfully!")
+      setOrders((prev) => [order, ...prev])
+      setColor("")
+      setEngravedText("")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit order")
+    } finally {
+      setSubmitting(false)
     }
-
-    console.log("Order submitted:", {
-      color,
-      ...(engravedText ? { engravedText } : {}),
-    })
-    toast.success("Order submitted successfully!")
-
-    setOrders((prev) => [order, ...prev])
-    setColor("")
-    setEngravedText("")
   }
 
   return (
@@ -100,8 +103,8 @@ export function CustomerPage({ orders, setOrders }: CustomerPageProps) {
               </p>
             </div>
 
-            <Button type="submit" className="w-full">
-              Submit Order
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit Order"}
             </Button>
           </form>
         </CardContent>

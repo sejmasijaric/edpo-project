@@ -31,10 +31,23 @@ services:
     volumes:
       - demo-service-data:/app/data
 
+  frontend-springboot-service:
+    build:
+      context: ../frontend-springboot-service
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
   frontend-service:
     build:
       context: ../frontend-service
       dockerfile: Dockerfile
+    depends_on:
+      - frontend-springboot-service
     ports:
       - "3000:80"
 
