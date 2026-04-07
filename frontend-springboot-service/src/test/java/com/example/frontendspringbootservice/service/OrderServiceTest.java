@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class OrderServiceTest {
 
     @Mock
-    private KafkaTemplate<String, Order> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     private OrderService orderService;
 
@@ -58,7 +58,7 @@ class OrderServiceTest {
         assertThat(result.getStatus()).isEqualTo(OrderStatus.TODO);
         assertThat(result.getEngravedText()).isNull();
         assertThat(result.getCreatedAt()).isEqualTo(Instant.parse("2026-04-07T10:00:00Z"));
-        verify(kafkaTemplate).send(eq("order-events"), eq("order-1"), any(Order.class));
+        verify(kafkaTemplate).send(eq("order-events"), eq("order-1"), any(Object.class));
     }
 
     @Test
@@ -68,7 +68,7 @@ class OrderServiceTest {
         Order result = orderService.createOrder(request);
 
         assertThat(result.getEngravedText()).isEqualTo("Hello");
-        verify(kafkaTemplate).send(eq("order-events"), eq("order-2"), any(Order.class));
+        verify(kafkaTemplate).send(eq("order-events"), eq("order-2"), any(Object.class));
     }
 
     @Test
@@ -178,7 +178,7 @@ class OrderServiceTest {
         Order result = orderService.updateOrderStatus("t1", OrderStatus.IN_PROGRESS);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
-        verify(kafkaTemplate).send(eq("order-events"), eq("t1"), any(Order.class));
+        verify(kafkaTemplate).send(eq("order-events"), eq("t1"), any(Object.class));
     }
 
     @Test
@@ -190,7 +190,7 @@ class OrderServiceTest {
         Order result = orderService.updateOrderStatus("t2", OrderStatus.DONE);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.DONE);
-        verify(kafkaTemplate).send(eq("order-events"), eq("t2"), any(Order.class));
+        verify(kafkaTemplate).send(eq("order-events"), eq("t2"), any(Object.class));
     }
 
     @Test
@@ -202,7 +202,7 @@ class OrderServiceTest {
         Order result = orderService.updateOrderStatus("t3", OrderStatus.ERROR);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.ERROR);
-        verify(kafkaTemplate).send(eq("order-events"), eq("t3"), any(Order.class));
+        verify(kafkaTemplate).send(eq("order-events"), eq("t3"), any(Object.class));
     }
 
     @Test
@@ -215,7 +215,7 @@ class OrderServiceTest {
         Order result = orderService.updateOrderStatus("t4", OrderStatus.IN_PROGRESS);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
-        verify(kafkaTemplate).send(eq("order-events"), eq("t4"), any(Order.class));
+        verify(kafkaTemplate).send(eq("order-events"), eq("t4"), any(Object.class));
     }
 
     // --- updateOrderStatus: invalid transitions ---

@@ -1,34 +1,39 @@
 package com.example.frontendspringbootservice.config;
 
-import com.example.frontendspringbootservice.model.Order;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.kafka.common.serialization.Serializer;
+import org.springframework.boot.kafka.autoconfigure.DefaultKafkaProducerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.JsonSerializer;
+import tools.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Configuration
 public class KafkaProducerConfig {
 
     @Bean
-    public ProducerFactory<String, Order> producerFactory(
-            @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(props);
+    public DefaultKafkaProducerFactoryCustomizer kafkaProducerFactoryCustomizer(ObjectMapper objectMapper) {
+        return factory -> factory.setValueSerializer(new Jackson3Serializer<>(objectMapper));
     }
 
-    @Bean
-    public KafkaTemplate<String, Order> kafkaTemplate(ProducerFactory<String, Order> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
+    static class Jackson3Serializer<T> implements Serializer<T> {
+        private final ObjectMapper objectMapper;
+
+        Jackson3Serializer(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+        }
+
+        @Override
+        public void configure(Map<String, ?> configs, boolean isKey) {}
+
+        @Override
+        public byte[] serialize(String topic, T data) {
+            if (data == null) return null;
+            return objectMapper.writeValueAsBytes(data);
+        }
+
+        @Override
+        public void close() {}
     }
 }

@@ -17,11 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OrderService {
 
     private final Map<String, Order> orders = new ConcurrentHashMap<>();
-    private final KafkaTemplate<String, Order> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private static final String TOPIC = "order-events";
 
-    public OrderService(KafkaTemplate<String, Order> kafkaTemplate) {
+    public OrderService(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
