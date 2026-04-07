@@ -219,10 +219,33 @@ services:
       WORKSTATION_TRANSPORT_HOST: factory-simulator # Simulation
       WORKSTATION_TRANSPORT_PORT: 8081 # Simulation
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+  frontend-springboot-service:
+    build:
+      context: ../frontend-springboot-service
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
   frontend-service:
     build:
       context: ../frontend-service
       dockerfile: Dockerfile
+    depends_on:
+      - frontend-springboot-service
     ports:
       - "3000:80"
 

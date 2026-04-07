@@ -2,6 +2,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { OrderList } from "@/components/order-list"
 import type { Order, OrderStatus } from "@/types/order"
+import { updateOrderStatus } from "@/services/api"
 
 interface WorkerPageProps {
   orders: Order[]
@@ -9,13 +10,18 @@ interface WorkerPageProps {
 }
 
 export function WorkerPage({ orders, setOrders }: WorkerPageProps) {
-  const handleStatusUpdate = (orderId: string, newStatus: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
+  const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      const updated = await updateOrderStatus(orderId, newStatus)
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? updated : order
+        )
       )
-    )
-    toast.success(`Order status updated to "${newStatus}"`)
+      toast.success(`Order status updated to "${newStatus}"`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update status")
+    }
   }
 
   return (
