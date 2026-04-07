@@ -66,6 +66,7 @@ services:
       - "8101:8101"
     environment:
       KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      KAFKA_TOPIC_ORDER_CREATED: order-created
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
@@ -236,7 +237,7 @@ services:
     depends_on:
       - kafka
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 

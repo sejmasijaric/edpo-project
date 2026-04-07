@@ -1,6 +1,7 @@
 package com.example.frontendspringbootservice.service;
 
 import com.example.frontendspringbootservice.dto.CreateOrderRequest;
+import com.example.frontendspringbootservice.dto.OrderCreatedEvent;
 import com.example.frontendspringbootservice.model.Order;
 import com.example.frontendspringbootservice.model.OrderColor;
 import com.example.frontendspringbootservice.model.OrderStatus;
@@ -33,7 +34,7 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        orderService = new OrderService(kafkaTemplate);
+        orderService = new OrderService(kafkaTemplate, "order-events", "order-created");
     }
 
     private CreateOrderRequest buildRequest(String id, OrderColor color, String engravedText) {
@@ -58,6 +59,7 @@ class OrderServiceTest {
         assertThat(result.getStatus()).isEqualTo(OrderStatus.TODO);
         assertThat(result.getEngravedText()).isNull();
         assertThat(result.getCreatedAt()).isEqualTo(Instant.parse("2026-04-07T10:00:00Z"));
+        verify(kafkaTemplate).send("order-created", "order-1", new OrderCreatedEvent("order-1", "red"));
         verify(kafkaTemplate).send(eq("order-events"), eq("order-1"), any(Object.class));
     }
 
@@ -68,6 +70,7 @@ class OrderServiceTest {
         Order result = orderService.createOrder(request);
 
         assertThat(result.getEngravedText()).isEqualTo("Hello");
+        verify(kafkaTemplate).send("order-created", "order-2", new OrderCreatedEvent("order-2", "blue"));
         verify(kafkaTemplate).send(eq("order-events"), eq("order-2"), any(Object.class));
     }
 
