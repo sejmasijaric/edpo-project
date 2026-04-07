@@ -31,6 +31,16 @@ services:
     volumes:
       - demo-service-data:/app/data
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
   frontend-springboot-service:
     build:
       context: ../frontend-springboot-service
