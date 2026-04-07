@@ -1,8 +1,10 @@
 package com.example.frontendspringbootservice.service;
 
 import com.example.frontendspringbootservice.dto.CreateOrderRequest;
+import com.example.frontendspringbootservice.dto.OrderCreatedEvent;
 import com.example.frontendspringbootservice.model.Order;
 import com.example.frontendspringbootservice.model.OrderStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +18,21 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class OrderService {
 
+    private static final String DEFAULT_ORDER_EVENTS_TOPIC = "order-events";
+    private static final String DEFAULT_ORDER_CREATED_TOPIC = "order-created";
+
     private final Map<String, Order> orders = new ConcurrentHashMap<>();
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final String orderEventsTopic;
+    private final String orderCreatedTopic;
 
-    private static final String TOPIC = "order-events";
-
-    public OrderService(KafkaTemplate<String, Object> kafkaTemplate) {
+    public OrderService(
+            KafkaTemplate<String, Object> kafkaTemplate,
+            @Value("${app.kafka.topic.order-events:" + DEFAULT_ORDER_EVENTS_TOPIC + "}") String orderEventsTopic,
+            @Value("${app.kafka.topic.order-created:" + DEFAULT_ORDER_CREATED_TOPIC + "}") String orderCreatedTopic) {
         this.kafkaTemplate = kafkaTemplate;
+        this.orderEventsTopic = orderEventsTopic;
+        this.orderCreatedTopic = orderCreatedTopic;
     }
 
     public Order createOrder(CreateOrderRequest request) {
@@ -44,7 +54,11 @@ public class OrderService {
         order.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : Instant.now());
 
         orders.put(order.getId(), order);
-        kafkaTemplate.send(TOPIC, order.getId(), order);
+        kafkaTemplate.send(
+                orderCreatedTopic,
+                order.getId(),
+                new OrderCreatedEvent(order.getId(), order.getColor().getValue()));
+        kafkaTemplate.send(orderEventsTopic, order.getId(), order);
 
         return order;
     }
@@ -66,7 +80,7 @@ public class OrderService {
         validateStatusTransition(order.getStatus(), newStatus);
 
         order.setStatus(newStatus);
-        kafkaTemplate.send(TOPIC, order.getId(), order);
+        kafkaTemplate.send(orderEventsTopic, order.getId(), order);
 
         return order;
     }

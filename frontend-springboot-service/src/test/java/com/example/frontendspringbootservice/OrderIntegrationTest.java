@@ -203,7 +203,7 @@ class OrderIntegrationTest {
     @Test
     void createOrder_producesEventToKafka() throws Exception {
         try (var consumer = createKafkaConsumer()) {
-            consumer.subscribe(List.of("order-events"));
+            consumer.subscribe(List.of("order-created"));
 
             createOrder("kafka-1", "blue", "Kafka Tag");
 
@@ -219,9 +219,8 @@ class OrderIntegrationTest {
             }
 
             assertThat(matchingValue).isNotNull();
-            assertThat(matchingValue).contains("\"color\":\"blue\"");
-            assertThat(matchingValue).contains("\"engravedText\":\"Kafka Tag\"");
-            assertThat(matchingValue).contains("\"status\":\"To Do\"");
+            assertThat(matchingValue).contains("\"itemIdentifier\":\"kafka-1\"");
+            assertThat(matchingValue).contains("\"targetColor\":\"blue\"");
         }
     }
 

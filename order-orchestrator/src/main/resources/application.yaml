@@ -13,6 +13,7 @@ kafka:
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.orderorchestrator.adapter.out.kafka.dto,org.unisg.ftengrave.orderorchestrator.adapter.in.kafka.dto}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    order-created: ${KAFKA_TOPIC_ORDER_CREATED:order-created}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
 

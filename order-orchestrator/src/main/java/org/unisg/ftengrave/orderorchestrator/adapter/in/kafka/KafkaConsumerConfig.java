@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.unisg.ftengrave.orderorchestrator.adapter.in.kafka.dto.OrderCreatedEventDto;
 import org.unisg.ftengrave.orderorchestrator.adapter.in.kafka.dto.ServiceOutcomeEventDto;
 import org.unisg.ftengrave.sharedkafka.config.AbstractKafkaConsumerConfig;
 
@@ -18,7 +19,17 @@ public class KafkaConsumerConfig extends AbstractKafkaConsumerConfig {
     }
 
     @Bean
+    public ConsumerFactory<String, OrderCreatedEventDto> orderCreatedConsumerFactory() {
+        return consumerFactory(OrderCreatedEventDto.class);
+    }
+
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ServiceOutcomeEventDto> serviceOutcomeKafkaListenerContainerFactory() {
         return kafkaListenerContainerFactory(serviceOutcomeConsumerFactory());
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OrderCreatedEventDto> orderCreatedKafkaListenerContainerFactory() {
+        return kafkaListenerContainerFactory(orderCreatedConsumerFactory());
     }
 }
