@@ -1,0 +1,22 @@
+name: Frontend Spring Boot Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend-springboot-service/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-springboot-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew test
