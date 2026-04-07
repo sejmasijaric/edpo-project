@@ -21,14 +21,14 @@ import {
 
 interface CustomerPageProps {
   orders: Order[]
-  submitOrder: (order: Order) => Promise<void>
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>
 }
 
-export function CustomerPage({ orders, submitOrder }: CustomerPageProps) {
+export function CustomerPage({ orders, setOrders }: CustomerPageProps) {
   const [color, setColor] = useState("")
   const [engravedText, setEngravedText] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!color) {
@@ -44,14 +44,15 @@ export function CustomerPage({ orders, submitOrder }: CustomerPageProps) {
       ...(engravedText ? { engravedText } : {}),
     }
 
-    try {
-      await submitOrder(order)
-      toast.success("Order submitted successfully!")
-      setColor("")
-      setEngravedText("")
-    } catch {
-      toast.error("Failed to submit order")
-    }
+    console.log("Order submitted:", {
+      color,
+      ...(engravedText ? { engravedText } : {}),
+    })
+    toast.success("Order submitted successfully!")
+
+    setOrders((prev) => [order, ...prev])
+    setColor("")
+    setEngravedText("")
   }
 
   return (

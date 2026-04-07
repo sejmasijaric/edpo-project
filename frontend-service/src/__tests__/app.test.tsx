@@ -1,28 +1,8 @@
-import { useState } from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { App } from "@/App"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-import type { Order, OrderStatus } from "@/types/order"
-
-vi.mock("@/hooks/useKafkaOrders", () => ({
-  useKafkaOrders: () => {
-    const [orders, setOrders] = useState<Order[]>([])
-    return {
-      orders,
-      submitOrder: async (order: Order) => {
-        setOrders((prev) => [order, ...prev])
-      },
-      updateOrderStatus: async (id: string, status: OrderStatus) => {
-        setOrders((prev) =>
-          prev.map((o) => (o.id === id ? { ...o, status } : o)),
-        )
-      },
-      isConnected: true,
-    }
-  },
-}))
 
 function renderApp() {
   return render(
@@ -76,6 +56,7 @@ describe("App", () => {
 
   it("shares orders between customer and worker pages", async () => {
     const user = userEvent.setup()
+    vi.spyOn(console, "log").mockImplementation(() => {})
     renderApp()
 
     // Submit order on customer page
@@ -88,5 +69,7 @@ describe("App", () => {
     // Verify order appears in production queue
     expect(screen.getByText("Red Air Tag")).toBeInTheDocument()
     expect(screen.getByText("To Do")).toBeInTheDocument()
+
+    vi.restoreAllMocks()
   })
 })

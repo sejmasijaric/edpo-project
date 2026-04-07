@@ -7,15 +7,6 @@ import { defineConfig } from "vite"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    proxy: {
-      "/api/kafka": {
-        target: "http://localhost:8082",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/kafka/, ""),
-      },
-    },
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -26,6 +17,5 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/__tests__/setup.ts"],
     css: true,
-    exclude: ["src/__tests__/integration/**", "node_modules/**"],
   },
 })

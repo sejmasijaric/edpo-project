@@ -5,20 +5,17 @@ import type { Order, OrderStatus } from "@/types/order"
 
 interface WorkerPageProps {
   orders: Order[]
-  updateOrderStatus: (orderId: string, newStatus: OrderStatus) => Promise<void>
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>
 }
 
-export function WorkerPage({ orders, updateOrderStatus }: WorkerPageProps) {
-  const handleStatusUpdate = async (
-    orderId: string,
-    newStatus: OrderStatus,
-  ) => {
-    try {
-      await updateOrderStatus(orderId, newStatus)
-      toast.success(`Order status updated to "${newStatus}"`)
-    } catch {
-      toast.error("Failed to update order status")
-    }
+export function WorkerPage({ orders, setOrders }: WorkerPageProps) {
+  const handleStatusUpdate = (orderId: string, newStatus: OrderStatus) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    )
+    toast.success(`Order status updated to "${newStatus}"`)
   }
 
   return (

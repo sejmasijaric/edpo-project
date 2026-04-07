@@ -10,15 +10,11 @@ FROM nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# SPA fallback + Kafka REST Proxy reverse proxy
+# SPA fallback: serve index.html for all routes
 RUN printf 'server {\n\
     listen 80;\n\
     root /usr/share/nginx/html;\n\
     index index.html;\n\
-    location /api/kafka/ {\n\
-        proxy_pass http://kafka-rest:8082/;\n\
-        proxy_set_header Host $host;\n\
-    }\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
