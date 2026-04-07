@@ -4,10 +4,10 @@
 **Status:** Accepted
 
 ## Context
-Running QC (and later ordering and production) using the smart factory creates long-running workflows which interact with asynchronous sensor events and user tasks. Meanwhile, the system should remain understandable not only regarding implementation, but also explainability of workflow state and failure diagnosis. The architecture should support clear visibility into process progress, waiting states, user tasks, and error handling.
+Running Production and Quality Control using the smart factory creates long-running workflows which interact with asynchronous sensor events and user tasks. As the system should remain understandable not only regarding implementation, but also explainability of workflow state and failure diagnosis. The architecture should support clear visibility into process progress, waiting states, user tasks, and error handling.
 
 ## Decision
-We use Camunda as the central workflow orchestration engine. BPMNs will represent long-running processes and coordinate major workflow steps across services. The engine will maintain process state and await for external events. 
+We use Camunda as the central workflow orchestration engine. BPMNs will represent long-running processes and coordinate major workflow steps across services. The engine will maintain process state and await external events. 
 
 ## Consequences
 

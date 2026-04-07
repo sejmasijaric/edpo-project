@@ -1,4 +1,4 @@
-# ADR 0003-01: Event-Driven Backbone
+# ADR 0002-01: Event-Driven Backbone
 
 **Date:** 17.03.2026
 **Status:** Accepted
@@ -12,7 +12,7 @@ Kafka will be used as the central event bus for asynchronous system communicatio
 ## Consequences
 
 ### Positive:
-By using Kafka for asynchronous communication, we can keep services, integration, and orchestration loosely coupled, leading to improved fault isolation and independent service evolvability. Furthermore, Kafka provides a durable message model for this type of inter service communication which is both scaleable and resilient. Point-to-point knowledge among participating publishers and subscribers is no longer needed.
+By using Kafka for asynchronous communication, we can keep services, integration, and orchestration loosely coupled, leading to improved fault isolation and independent service evolvability. Furthermore, Kafka provides a durable message model for this type of inter service communication which is both scalable and resilient. Point-to-point knowledge among participating publishers and subscribers is no longer needed.
 
 ### Negative:
 Kafka introduces additional messaging infrastructure which introduces additional implementation and maintenance overhead. Event design becomes a key consideration in the system design, with a careful distinction between commands and events needing to be made.
