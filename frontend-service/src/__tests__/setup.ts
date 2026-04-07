@@ -42,4 +42,4 @@ class ResizeObserverMock {
   disconnect = vi.fn()
 }
 
-global.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver
+(globalThis as any).ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver

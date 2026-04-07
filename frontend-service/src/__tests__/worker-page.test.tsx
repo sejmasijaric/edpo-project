@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { WorkerPage } from "@/components/worker-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-import type { Order, OrderStatus } from "@/types/order"
+import type { Order } from "@/types/order"
 import { updateOrderStatus } from "@/services/api"
 
 const mockUpdateOrderStatus = vi.mocked(updateOrderStatus)
