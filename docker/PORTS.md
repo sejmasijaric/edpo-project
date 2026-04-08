@@ -6,7 +6,7 @@ This file documents the ports currently used or reserved by services in this rep
 
 | Service | Scope | Host port(s) | Container/Application port(s) | Notes |
 | --- | --- | --- | --- | --- |
-| `factory-simulator` | Local application | `8081` | `8081` | Configured in `factory-simulator/src/main/resources/application.yaml` |
+| `factory-simulator` | Docker Compose simulation override | `8081` | `8081` | Included only with `docker/docker-compose.simulation.yml` |
 | `qc-service` | Docker Compose | `8100` | `8100` | Embedded Camunda engine for quality-control BPMN models |
 | `order-orchestrator` | Docker Compose | `8101` | `8101` | Embedded Camunda engine for global order orchestration BPMN models |
 | `kafka-inspector-service` | Docker Compose | `8102` | `8102` | Lightweight Kafka listener and JSON publisher endpoint |
@@ -18,7 +18,7 @@ This file documents the ports currently used or reserved by services in this rep
 | `polishing-machine-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `workstation-transport-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `kafka` | Docker Compose | `9092`, `29092` | `9092`, `29092` | Broker ports exposed by the compose stack |
-| `mqtt-broker` | Docker Compose | `1883` | `1883` | Local Mosquitto broker used between the simulator and integration layer |
+| `mqtt-broker` | Docker Compose simulation override | `1883` | `1883` | Included only with `docker/docker-compose.simulation.yml` |
 
 ## Reserved contiguous block
 

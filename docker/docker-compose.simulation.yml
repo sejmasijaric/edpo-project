@@ -1,0 +1,50 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  factory-simulator:
+    build:
+      context: ../factory-simulator
+      dockerfile: Dockerfile
+    depends_on:
+      - mqtt-broker
+    ports:
+      - "8081:8081"
+    environment:
+      FACTORY_MQTT_BROKER_URL: ${MQTT_BROKER_URL}
+      FACTORY_MQTT_TOPIC: FTFactory/SM_1
+      FACTORY_MQTT_PUBLISH_INTERVAL: 2s
+
+  sorter-integration-service:
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+
+  vacuum-gripper-integration-service:
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+
+  engraver-integration-service:
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+
+  polishing-machine-integration-service:
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
+
+  workstation-transport-integration-service:
+    depends_on:
+      - kafka
+      - mqtt-broker
+      - factory-simulator
