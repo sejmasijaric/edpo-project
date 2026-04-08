@@ -125,9 +125,9 @@ services:
       - "8102:8102"
     environment:
       <<: *kafka-env
-      KAFKA_TOPIC_SUBSCRIBE: user-task-management
-      KAFKA_TOPIC_PUBLISH: user-task-management
-      KAFKA_TOPIC_COMMAND_PUBLISH: user-task-management
+      KAFKA_TOPIC_SUBSCRIBE: sorting-machine
+      KAFKA_TOPIC_PUBLISH: sorting-machine
+      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine
 
   sorter-integration-service:
     build:
