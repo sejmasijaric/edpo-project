@@ -1,5 +1,31 @@
 name: air-tag-factory
 
+x-kafka-env: &kafka-env
+  KAFKA_BOOTSTRAP_ADDRESS: ${KAFKA_BOOTSTRAP_ADDRESS}
+
+x-mqtt-env: &mqtt-env
+  MQTT_BROKER_URL: ${MQTT_BROKER_URL}
+
+x-sorter-endpoint: &sorter-endpoint
+  SORTER_HOST: ${SORTER_HOST}
+  SORTER_PORT: ${SORTER_PORT}
+
+x-vacuum-gripper-endpoint: &vacuum-gripper-endpoint
+  VACUUM_GRIPPER_HOST: ${VACUUM_GRIPPER_HOST}
+  VACUUM_GRIPPER_PORT: ${VACUUM_GRIPPER_PORT}
+
+x-engraver-endpoint: &engraver-endpoint
+  ENGRAVER_HOST: ${ENGRAVER_HOST}
+  ENGRAVER_PORT: ${ENGRAVER_PORT}
+
+x-polishing-machine-endpoint: &polishing-machine-endpoint
+  POLISHING_MACHINE_HOST: ${POLISHING_MACHINE_HOST}
+  POLISHING_MACHINE_PORT: ${POLISHING_MACHINE_PORT}
+
+x-workstation-transport-endpoint: &workstation-transport-endpoint
+  WORKSTATION_TRANSPORT_HOST: ${WORKSTATION_TRANSPORT_HOST}
+  WORKSTATION_TRANSPORT_PORT: ${WORKSTATION_TRANSPORT_PORT}
+
 services:
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -17,28 +43,6 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  # --- Used for testing Only --- (if there is extra time make these build conditionally)
-  mqtt-broker:
-    image: eclipse-mosquitto:2
-    ports:
-      - "1883:1883"
-    volumes:
-      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-
-  factory-simulator:
-    build:
-      context: ../factory-simulator
-      dockerfile: Dockerfile
-    depends_on:
-      - mqtt-broker
-    ports:
-      - "8081:8081"
-    environment:
-      FACTORY_MQTT_BROKER_URL: tcp://mqtt-broker:1883
-      FACTORY_MQTT_TOPIC: FTFactory/SM_1
-      FACTORY_MQTT_PUBLISH_INTERVAL: 2s
-  # --- END Used for testing Only ---
-
   qc-service:
     build:
       context: ..
@@ -48,7 +52,7 @@ services:
     ports:
       - "8100:8100"
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
@@ -65,7 +69,7 @@ services:
     ports:
       - "8101:8101"
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: *kafka-env
       KAFKA_TOPIC_ORDER_CREATED: order-created
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
@@ -82,7 +86,7 @@ services:
     ports:
       - "8103:8103"
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       KAFKA_TOPIC_USER_TASK_MANAGEMENT: user-task-management
@@ -101,7 +105,7 @@ services:
     ports:
       - "8104:8104"
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       KAFKA_TOPIC_ENGRAVER: engraver
@@ -111,7 +115,6 @@ services:
     volumes:
       - manufacturing-service-data:/app/data
 
-  # --- Begin Debugging ---
   kafka-inspector-service:
     build:
       context: ..
@@ -121,11 +124,10 @@ services:
     ports:
       - "8102:8102"
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
-      KAFKA_TOPIC_SUBSCRIBE: user-task-management
-      KAFKA_TOPIC_PUBLISH: user-task-management
-      KAFKA_TOPIC_COMMAND_PUBLISH: user-task-management
-  # --- END Debugging ---
+      <<: *kafka-env
+      KAFKA_TOPIC_SUBSCRIBE: sorting-machine
+      KAFKA_TOPIC_PUBLISH: sorting-machine
+      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine
 
   sorter-integration-service:
     build:
@@ -133,20 +135,12 @@ services:
       dockerfile: sorter-integration-service/Dockerfile
     depends_on:
       - kafka
-      - mqtt-broker
-      - factory-simulator
     env_file:
       - ./.env.mqtt.local
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: [*kafka-env, *mqtt-env, *sorter-endpoint]
       KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
       MQTT_TOPIC: FTFactory/SM_1
-      # MQTT_BROKER_URL: tcp://192.168.0.21:1883 # Production
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
-      # SORTER_HOST: 192.168.0.21 # Production
-      SORTER_HOST: factory-simulator # Simulation
-      # SORTER_PORT: 5000 # Production
-      SORTER_PORT: 8081 # Simulation
 
   vacuum-gripper-integration-service:
     build:
@@ -154,17 +148,12 @@ services:
       dockerfile: vacuum-gripper-integration-service/Dockerfile
     depends_on:
       - kafka
-      - mqtt-broker
-      - factory-simulator
     env_file:
       - ./.env.mqtt.local
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: [*kafka-env, *mqtt-env, *vacuum-gripper-endpoint]
       KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
       MQTT_TOPIC: FTFactory/VGR_1
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
-      VACUUM_GRIPPER_HOST: factory-simulator # Simulation
-      VACUUM_GRIPPER_PORT: 8081 # Simulation
 
   engraver-integration-service:
     build:
@@ -172,17 +161,12 @@ services:
       dockerfile: engraver-integration-service/Dockerfile
     depends_on:
       - kafka
-      - mqtt-broker
-      - factory-simulator
     env_file:
       - ./.env.mqtt.local
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: [*kafka-env, *mqtt-env, *engraver-endpoint]
       KAFKA_TOPIC_ENGRAVER: engraver
       MQTT_TOPIC: FTFactory/OV_1
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
-      ENGRAVER_HOST: factory-simulator # Simulation
-      ENGRAVER_PORT: 8081 # Simulation
 
   polishing-machine-integration-service:
     build:
@@ -190,17 +174,12 @@ services:
       dockerfile: polishing-machine-integration-service/Dockerfile
     depends_on:
       - kafka
-      - mqtt-broker
-      - factory-simulator
     env_file:
       - ./.env.mqtt.local
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: [*kafka-env, *mqtt-env, *polishing-machine-endpoint]
       KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
       MQTT_TOPIC: FTFactory/MM_1
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
-      POLISHING_MACHINE_HOST: factory-simulator # Simulation
-      POLISHING_MACHINE_PORT: 8081 # Simulation
 
   workstation-transport-integration-service:
     build:
@@ -208,17 +187,12 @@ services:
       dockerfile: workstation-transport-integration-service/Dockerfile
     depends_on:
       - kafka
-      - mqtt-broker
-      - factory-simulator
     env_file:
       - ./.env.mqtt.local
     environment:
-      KAFKA_BOOTSTRAP_ADDRESS: kafka:9092
+      <<: [*kafka-env, *mqtt-env, *workstation-transport-endpoint]
       KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
       MQTT_TOPIC: FTFactory/WT_1
-      MQTT_BROKER_URL: tcp://mqtt-broker:1883 # Simulation
-      WORKSTATION_TRANSPORT_HOST: factory-simulator # Simulation
-      WORKSTATION_TRANSPORT_PORT: 8081 # Simulation
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -228,7 +202,7 @@ services:
       - "8090:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_ADDRESS}
 
   frontend-springboot-service:
     build:
@@ -239,7 +213,7 @@ services:
     ports:
       - "8082:8081"
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_ADDRESS}
 
   frontend-service:
     build:
@@ -251,7 +225,6 @@ services:
       - "3000:80"
 
 volumes:
-  demo-service-data:
   qc-service-data:
   order-orchestrator-data:
   intake-service-data:
