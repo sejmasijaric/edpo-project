@@ -11,21 +11,24 @@ This ADR concerns the architectural boundary between machine-specific interfaces
 the internal domain-oriented services. Without an explicit integration boundary, internal services and workflows would be coupled to machine-specific features and formats. This weakens maintainability, fault isolation, and complicate testing.
 
 ## Options Considered:
-- Consume and process raw MQTT events directly in the respective services and send HTTP requests to the machines from the services directly. 
-Pros: minimal upfront translation logic; preserves all raw data.
-Cons: leaks hardware semantics into internal contracts; couples machine implementation details and message formats to services; duplicates parsing
+### Option 1: Raw Handling
+Consume and process raw MQTT events directly in the respective services and send HTTP requests to the machines from the services directly. 
+- Pros: minimal upfront translation logic; preserves all raw data.
+- Cons: leaks hardware semantics into internal contracts; couples machine implementation details and message formats to services; duplicates parsing
 and interpretation logic across services; makes testing and evolution harder.
 
-- Introduce a dedicated integration layer that translates machine protocols and raw sensor events
+### Option 2: Integration layer
+Introduce a dedicated integration layer that translates machine protocols and raw sensor events
 into domain-aligned commands and events before they enter the internal service landscape.
-Pros: isolates hardware-specific concerns; stabilizes Kafka contracts; improves maintainability,
+- Pros: isolates hardware-specific concerns; stabilizes Kafka contracts; improves maintainability,
 testability, and semantic consistency.
-Cons: adds extra components; requires schema and mapping governance; may hide useful raw
+- Cons: adds extra components; requires schema and mapping governance; may hide useful raw
 detail unless explicitly preserved.
 
-- Hybrid approach for MQTT and HTTP.
-Pros: reduces component complexity; less boilerplate code required for factory integration; unrestricted access to raw factory data
-Cons: blurs boundary between service and factory implementations; reduces maintainability due to inconsistent boundaries; 
+### Option 3: Hybrid Approach
+Hybrid approach for MQTT and HTTP.
+- Pros: reduces component complexity; less boilerplate code required for factory integration; unrestricted access to raw factory data
+- Cons: blurs boundary between service and factory implementations; reduces maintainability due to inconsistent boundaries; 
 
 ## Decision
 All Kafka topics should remain free from low-level hardware events specific to the factory’s sensors and actuators. Instead, only domain events should be published to Kafka. The system will achieve this by incorporating a lightweight integration layer which translates raw MQTT sensor events to domain-aligned Kafka events. While this layer will contain hardware-specific logic required to translate hardware-specific with domain-aligned events, it should not be responsible for domain-specific factory operations and not contain any internal states.
