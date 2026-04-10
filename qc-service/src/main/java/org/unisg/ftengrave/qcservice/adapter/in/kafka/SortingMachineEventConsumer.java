@@ -15,7 +15,7 @@ public class SortingMachineEventConsumer {
     private final HandleColorDetectedEventUseCase handleColorDetectedEventUseCase;
     private final HandleItemArrivedAtQcEventUseCase handleItemArrivedAtQcEventUseCase;
 
-    @KafkaListener(topics = "${kafka.topic.sorting-machine}")
+    @KafkaListener(topics = "${kafka.topic.sorting-machine-event}")
     public void consume(SortingMachineEventDto event) {
         SortingMachineEvent sortingMachineEvent = new SortingMachineEvent(event.getEventType(), event.getColor());
         handleItemArrivedAtQcEventUseCase.handle(sortingMachineEvent);

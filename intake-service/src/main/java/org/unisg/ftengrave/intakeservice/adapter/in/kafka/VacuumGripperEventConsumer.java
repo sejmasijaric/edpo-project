@@ -15,7 +15,7 @@ public class VacuumGripperEventConsumer {
     private final HandleItemArrivedAtIntakeEventUseCase handleItemArrivedAtIntakeEventUseCase;
     private final HandleItemLeftIntakeEventUseCase handleItemLeftIntakeEventUseCase;
 
-    @KafkaListener(topics = "${kafka.topic.vacuum-gripper}")
+    @KafkaListener(topics = "${kafka.topic.vacuum-gripper-event}")
     public void consume(VacuumGripperEventDto event) {
         VacuumGripperEvent vacuumGripperEvent = new VacuumGripperEvent(event == null ? null : event.getEventType());
         handleItemArrivedAtIntakeEventUseCase.handle(vacuumGripperEvent);

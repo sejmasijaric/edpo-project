@@ -17,7 +17,7 @@ public class MoveItemFromInputToEngraverPublisherAdapter
 
     public MoveItemFromInputToEngraverPublisherAdapter(
             KafkaOperations<String, VacuumGripperCommandDto> kafkaOperations,
-            @Value("${kafka.topic.vacuum-gripper}") String vacuumGripperTopic,
+            @Value("${kafka.topic.vacuum-gripper-command}") String vacuumGripperTopic,
             VacuumGripperIntegrationProperties vacuumGripperIntegrationProperties) {
         super(kafkaOperations);
         this.vacuumGripperTopic = vacuumGripperTopic;

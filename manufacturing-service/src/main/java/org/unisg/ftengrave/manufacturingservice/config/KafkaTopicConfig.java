@@ -24,14 +24,35 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.machine-orchestration}")
     private String machineOrchestrationTopic;
 
-    @Value("${kafka.topic.engraver}")
-    private String engraverTopic;
+    @Value("${kafka.topic.engraver-command}")
+    private String engraverCommandTopic;
 
-    @Value("${kafka.topic.workstation-transport}")
-    private String workstationTransportTopic;
+    @Value("${kafka.topic.engraver-event}")
+    private String engraverEventTopic;
 
-    @Value("${kafka.topic.polishing-machine}")
-    private String polishingMachineTopic;
+    @Value("${kafka.topic.workstation-transport-command}")
+    private String workstationTransportCommandTopic;
+
+    @Value("${kafka.topic.workstation-transport-event}")
+    private String workstationTransportEventTopic;
+
+    @Value("${kafka.topic.polishing-machine-command}")
+    private String polishingMachineCommandTopic;
+
+    @Value("${kafka.topic.polishing-machine-event}")
+    private String polishingMachineEventTopic;
+
+    @Value("${kafka.topic.replication-factor:3}")
+    private short replicationFactor;
+
+    @Value("${kafka.topic.default-partitions:1}")
+    private int defaultPartitions;
+
+    @Value("${kafka.topic.stage-orchestration-partitions:3}")
+    private int stageOrchestrationPartitions;
+
+    @Value("${kafka.topic.machine-orchestration-partitions:3}")
+    private int machineOrchestrationPartitions;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -42,26 +63,41 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic stageOrchestrationTopic() {
-        return new NewTopic(stageOrchestrationTopic, 1, (short) 1);
+        return new NewTopic(stageOrchestrationTopic, stageOrchestrationPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic machineOrchestrationTopic() {
-        return new NewTopic(machineOrchestrationTopic, 1, (short) 1);
+        return new NewTopic(machineOrchestrationTopic, machineOrchestrationPartitions, replicationFactor);
     }
 
     @Bean
-    public NewTopic engraverTopic() {
-        return new NewTopic(engraverTopic, 1, (short) 1);
+    public NewTopic engraverCommandTopic() {
+        return new NewTopic(engraverCommandTopic, defaultPartitions, replicationFactor);
     }
 
     @Bean
-    public NewTopic workstationTransportTopic() {
-        return new NewTopic(workstationTransportTopic, 1, (short) 1);
+    public NewTopic engraverEventTopic() {
+        return new NewTopic(engraverEventTopic, defaultPartitions, replicationFactor);
     }
 
     @Bean
-    public NewTopic polishingMachineTopic() {
-        return new NewTopic(polishingMachineTopic, 1, (short) 1);
+    public NewTopic workstationTransportCommandTopic() {
+        return new NewTopic(workstationTransportCommandTopic, defaultPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic workstationTransportEventTopic() {
+        return new NewTopic(workstationTransportEventTopic, defaultPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic polishingMachineCommandTopic() {
+        return new NewTopic(polishingMachineCommandTopic, defaultPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic polishingMachineEventTopic() {
+        return new NewTopic(polishingMachineEventTopic, defaultPartitions, replicationFactor);
     }
 }

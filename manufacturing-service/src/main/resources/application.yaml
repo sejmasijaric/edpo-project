@@ -8,16 +8,25 @@ spring:
     url: jdbc:h2:file:./data/camunda-h2-database
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   group-id: ${KAFKA_GROUP_ID:manufacturing-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.manufacturingservice}
+  consumer:
+    concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    stage-orchestration-partitions: ${KAFKA_TOPIC_STAGE_ORCHESTRATION_PARTITIONS:3}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
-    engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
-    workstation-transport: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT:workstation-transport}
-    polishing-machine: ${KAFKA_TOPIC_POLISHING_MACHINE:polishing-machine}
+    machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
+    engraver-command: ${KAFKA_TOPIC_ENGRAVER_COMMAND:engraver-commands}
+    engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
+    workstation-transport-command: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND:workstation-transport-commands}
+    workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
+    polishing-machine-command: ${KAFKA_TOPIC_POLISHING_MACHINE_COMMAND:polishing-machine-commands}
+    polishing-machine-event: ${KAFKA_TOPIC_POLISHING_MACHINE_EVENT:polishing-machine-events}
 
 integration:
   engraver:

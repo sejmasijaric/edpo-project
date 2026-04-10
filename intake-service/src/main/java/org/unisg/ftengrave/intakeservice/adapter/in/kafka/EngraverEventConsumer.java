@@ -14,7 +14,7 @@ public class EngraverEventConsumer {
     private final HandleItemArrivedAtEngraverEventUseCase handleItemArrivedAtEngraverEventUseCase;
 
     @KafkaListener(
-            topics = "${kafka.topic.engraver}",
+            topics = "${kafka.topic.engraver-event}",
             containerFactory = "engraverEventKafkaListenerContainerFactory")
     public void consume(EngraverEventDto event) {
         handleItemArrivedAtEngraverEventUseCase.handle(new EngraverEvent(event == null ? null : event.getEventType()));

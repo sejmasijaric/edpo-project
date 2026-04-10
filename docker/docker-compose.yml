@@ -1,7 +1,20 @@
 name: air-tag-factory
 
 x-kafka-env: &kafka-env
-  KAFKA_BOOTSTRAP_ADDRESS: ${KAFKA_BOOTSTRAP_ADDRESS}
+  KAFKA_BOOTSTRAP_ADDRESS: ${KAFKA_BOOTSTRAP_ADDRESS:-kafka:9092,kafka-2:9092,kafka-3:9092}
+
+x-kafka-common-env: &kafka-common-env
+  CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+  KAFKA_PROCESS_ROLES: broker,controller
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093,2@kafka-2:9093,3@kafka-3:9093
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+  KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+  KAFKA_MIN_INSYNC_REPLICAS: 2
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
 
 x-mqtt-env: &mqtt-env
   MQTT_BROKER_URL: ${MQTT_BROKER_URL}
@@ -30,18 +43,32 @@ services:
   kafka:
     image: confluentinc/cp-kafka:latest
     ports:
-      - "9092:9092"
       - "29092:29092"
     environment:
-      KAFKA_PROCESS_ROLES: broker,controller
+      <<: *kafka-common-env
       KAFKA_NODE_ID: 1
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "29094:29092"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2:9092,EXTERNAL://localhost:29094
+
+  kafka-3:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "29096:29092"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_NODE_ID: 3
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-3:9092,EXTERNAL://localhost:29096
 
   qc-service:
     build:
@@ -49,13 +76,16 @@ services:
       dockerfile: qc-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8100:8100"
     environment:
       <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
-      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      KAFKA_TOPIC_SORTING_MACHINE_COMMAND: sorting-machine-commands
+      KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - qc-service-data:/app/data
@@ -66,6 +96,8 @@ services:
       dockerfile: order-orchestrator/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8101:8101"
     environment:
@@ -83,6 +115,8 @@ services:
       dockerfile: intake-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8103:8103"
     environment:
@@ -90,8 +124,9 @@ services:
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       KAFKA_TOPIC_USER_TASK_MANAGEMENT: user-task-management
-      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
-      KAFKA_TOPIC_ENGRAVER: engraver
+      KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND: vacuum-gripper-commands
+      KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - intake-service-data:/app/data
@@ -102,15 +137,20 @@ services:
       dockerfile: manufacturing-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8104:8104"
     environment:
       <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
-      KAFKA_TOPIC_ENGRAVER: engraver
-      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
-      KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
+      KAFKA_TOPIC_ENGRAVER_COMMAND: engraver-commands
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND: workstation-transport-commands
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
+      KAFKA_TOPIC_POLISHING_MACHINE_COMMAND: polishing-machine-commands
+      KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - manufacturing-service-data:/app/data
@@ -121,13 +161,15 @@ services:
       dockerfile: kafka-inspector-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8102:8102"
     environment:
       <<: *kafka-env
-      KAFKA_TOPIC_SUBSCRIBE: sorting-machine
-      KAFKA_TOPIC_PUBLISH: sorting-machine
-      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine
+      KAFKA_TOPIC_SUBSCRIBE: sorting-machine-events
+      KAFKA_TOPIC_PUBLISH: sorting-machine-events
+      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine-commands
 
   sorter-integration-service:
     build:
@@ -135,11 +177,14 @@ services:
       dockerfile: sorter-integration-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     env_file:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *sorter-endpoint]
-      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      KAFKA_TOPIC_SORTING_MACHINE_COMMAND: sorting-machine-commands
+      KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
       MQTT_TOPIC: FTFactory/SM_1
 
   vacuum-gripper-integration-service:
@@ -148,11 +193,14 @@ services:
       dockerfile: vacuum-gripper-integration-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     env_file:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *vacuum-gripper-endpoint]
-      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND: vacuum-gripper-commands
+      KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
       MQTT_TOPIC: FTFactory/VGR_1
 
   engraver-integration-service:
@@ -161,11 +209,14 @@ services:
       dockerfile: engraver-integration-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     env_file:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *engraver-endpoint]
-      KAFKA_TOPIC_ENGRAVER: engraver
+      KAFKA_TOPIC_ENGRAVER_COMMAND: engraver-commands
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
       MQTT_TOPIC: FTFactory/OV_1
 
   polishing-machine-integration-service:
@@ -174,11 +225,14 @@ services:
       dockerfile: polishing-machine-integration-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     env_file:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *polishing-machine-endpoint]
-      KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
+      KAFKA_TOPIC_POLISHING_MACHINE_COMMAND: polishing-machine-commands
+      KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
       MQTT_TOPIC: FTFactory/MM_1
 
   workstation-transport-integration-service:
@@ -187,22 +241,27 @@ services:
       dockerfile: workstation-transport-integration-service/Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     env_file:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *workstation-transport-endpoint]
-      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND: workstation-transport-commands
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
       MQTT_TOPIC: FTFactory/WT_1
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8090:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_ADDRESS}
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_ADDRESS:-kafka:9092,kafka-2:9092,kafka-3:9092}
 
   frontend-springboot-service:
     build:
@@ -210,10 +269,12 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
     ports:
       - "8082:8081"
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_ADDRESS}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_ADDRESS:-kafka:9092,kafka-2:9092,kafka-3:9092}
 
   frontend-service:
     build:

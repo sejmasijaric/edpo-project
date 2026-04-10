@@ -14,7 +14,7 @@ public class EngraverConsumer {
     this.engraverService = engraverService;
   }
 
-  @KafkaListener(topics = "${kafka.topic.engraver}")
+  @KafkaListener(topics = "${kafka.topic.engraver-command}")
   public void consume(EngraverCommandDto engraverCommandDto) {
     engraverService.handle(engraverCommandDto);
   }

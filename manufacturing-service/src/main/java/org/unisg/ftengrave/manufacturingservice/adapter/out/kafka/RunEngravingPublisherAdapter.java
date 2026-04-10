@@ -16,7 +16,7 @@ public class RunEngravingPublisherAdapter extends TransactionAwareKafkaPublisher
 
     public RunEngravingPublisherAdapter(
             KafkaOperations<String, EngraverCommandDto> kafkaOperations,
-            @Value("${kafka.topic.engraver}") String engraverTopic,
+            @Value("${kafka.topic.engraver-command}") String engraverTopic,
             EngraverIntegrationProperties engraverIntegrationProperties) {
         super(kafkaOperations);
         this.engraverTopic = engraverTopic;

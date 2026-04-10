@@ -24,12 +24,12 @@ class MoveItemFromInputToEngraverPublisherAdapterTest {
     void publishSendsMoveCommandToVacuumGripperTopic() {
         VacuumGripperIntegrationProperties properties = properties();
         MoveItemFromInputToEngraverPublisherAdapter adapter =
-                new MoveItemFromInputToEngraverPublisherAdapter(kafkaOperations, "vacuum-gripper", properties);
+                new MoveItemFromInputToEngraverPublisherAdapter(kafkaOperations, "vacuum-gripper-commands", properties);
 
         adapter.publish("item-42");
 
         verify(kafkaOperations).send(
-                eq("vacuum-gripper"),
+                eq("vacuum-gripper-commands"),
                 eq("item-42"),
                 argThat(command -> command != null
                         && "move-item-from-input-to-engraver-command".equals(command.getCommandType())));
@@ -39,20 +39,20 @@ class MoveItemFromInputToEngraverPublisherAdapterTest {
     void publishDefersKafkaSendUntilAfterCommitWhenTransactionSynchronizationIsActive() {
         VacuumGripperIntegrationProperties properties = properties();
         MoveItemFromInputToEngraverPublisherAdapter adapter =
-                new MoveItemFromInputToEngraverPublisherAdapter(kafkaOperations, "vacuum-gripper", properties);
+                new MoveItemFromInputToEngraverPublisherAdapter(kafkaOperations, "vacuum-gripper-commands", properties);
 
         TransactionSynchronizationManager.initSynchronization();
         try {
             adapter.publish("item-42");
 
-            verify(kafkaOperations, never()).send(eq("vacuum-gripper"), eq("item-42"), argThat(command -> command != null));
+            verify(kafkaOperations, never()).send(eq("vacuum-gripper-commands"), eq("item-42"), argThat(command -> command != null));
 
             for (TransactionSynchronization synchronization : TransactionSynchronizationManager.getSynchronizations()) {
                 synchronization.afterCommit();
             }
 
             verify(kafkaOperations).send(
-                    eq("vacuum-gripper"),
+                    eq("vacuum-gripper-commands"),
                     eq("item-42"),
                     argThat(command -> command != null
                             && "move-item-from-input-to-engraver-command".equals(command.getCommandType())));

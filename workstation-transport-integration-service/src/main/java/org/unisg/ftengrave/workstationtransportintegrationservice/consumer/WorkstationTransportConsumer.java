@@ -14,7 +14,7 @@ public class WorkstationTransportConsumer {
     this.workstationTransportService = workstationTransportService;
   }
 
-  @KafkaListener(topics = "${kafka.topic.workstation-transport}")
+  @KafkaListener(topics = "${kafka.topic.workstation-transport-command}")
   public void consume(WorkstationTransportCommandDto workstationTransportCommandDto) {
     workstationTransportService.handle(workstationTransportCommandDto);
   }

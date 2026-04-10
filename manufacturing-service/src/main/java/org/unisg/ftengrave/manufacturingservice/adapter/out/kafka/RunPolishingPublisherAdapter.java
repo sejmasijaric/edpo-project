@@ -16,7 +16,7 @@ public class RunPolishingPublisherAdapter extends TransactionAwareKafkaPublisher
 
     public RunPolishingPublisherAdapter(
             KafkaOperations<String, PolishingMachineCommandDto> kafkaOperations,
-            @Value("${kafka.topic.polishing-machine}") String polishingMachineTopic,
+            @Value("${kafka.topic.polishing-machine-command}") String polishingMachineTopic,
             PolishingMachineIntegrationProperties polishingMachineIntegrationProperties) {
         super(kafkaOperations);
         this.polishingMachineTopic = polishingMachineTopic;

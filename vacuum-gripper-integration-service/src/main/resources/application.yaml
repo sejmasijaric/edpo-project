@@ -5,14 +5,18 @@ spring:
     web-application-type: none
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
   group-id: ${KAFKA_GROUP_ID:vacuum-gripper-integration-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.vacuumgripperintegrationservice}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.vacuum-gripper}}
-    vacuum-gripper: ${KAFKA_TOPIC_VACUUM_GRIPPER:vacuum-gripper}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
+    vacuum-gripper-command: ${KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND:vacuum-gripper-commands}
+    vacuum-gripper-event: ${KAFKA_TOPIC_VACUUM_GRIPPER_EVENT:vacuum-gripper-events}
+    vacuum-gripper: ${kafka.topic.vacuum-gripper-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.vacuum-gripper-event}}
 
 mqtt:
   bridge:

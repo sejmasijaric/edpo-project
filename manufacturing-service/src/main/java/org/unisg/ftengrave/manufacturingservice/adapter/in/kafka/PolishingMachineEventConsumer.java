@@ -14,7 +14,7 @@ public class PolishingMachineEventConsumer {
     private final HandleItemArrivedAtPolishingMachineOutputEventUseCase handleItemArrivedAtPolishingMachineOutputEventUseCase;
 
     @KafkaListener(
-            topics = "${kafka.topic.polishing-machine}",
+            topics = "${kafka.topic.polishing-machine-event}",
             containerFactory = "polishingMachineEventKafkaListenerContainerFactory")
     public void consume(PolishingMachineEventDto event) {
         handleItemArrivedAtPolishingMachineOutputEventUseCase.handle(

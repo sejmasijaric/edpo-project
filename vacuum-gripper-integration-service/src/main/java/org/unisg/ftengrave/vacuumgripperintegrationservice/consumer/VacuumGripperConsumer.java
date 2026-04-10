@@ -14,7 +14,7 @@ public class VacuumGripperConsumer {
     this.vacuumGripperService = vacuumGripperService;
   }
 
-  @KafkaListener(topics = "${kafka.topic.vacuum-gripper}")
+  @KafkaListener(topics = "${kafka.topic.vacuum-gripper-command}")
   public void consume(VacuumGripperCommandDto vacuumGripperCommandDto) {
     vacuumGripperService.handle(vacuumGripperCommandDto);
   }

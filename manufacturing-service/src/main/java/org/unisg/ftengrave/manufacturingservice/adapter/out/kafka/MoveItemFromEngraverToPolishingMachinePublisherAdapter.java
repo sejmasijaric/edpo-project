@@ -17,7 +17,7 @@ public class MoveItemFromEngraverToPolishingMachinePublisherAdapter
 
     public MoveItemFromEngraverToPolishingMachinePublisherAdapter(
             KafkaOperations<String, WorkstationTransportCommandDto> kafkaOperations,
-            @Value("${kafka.topic.workstation-transport}") String workstationTransportTopic,
+            @Value("${kafka.topic.workstation-transport-command}") String workstationTransportTopic,
             WorkstationTransportIntegrationProperties workstationTransportIntegrationProperties) {
         super(kafkaOperations);
         this.workstationTransportTopic = workstationTransportTopic;

@@ -5,7 +5,7 @@ Event-driven factory system for engraving, quality control, and automated sortin
 
 - `factory-simulator`: UI-driven simulator for local testing
 - `kafka-inspector-service`: lightweight Kafka topic listener, JSON publisher, and sorter-command emitter for diagnostics/manual testing
-- `mqtt-kafka-bridge`: reusable integration library for translating MQTT events into Kafka events
+- `mqtt-kafka-bridge`: reusable integration library for translating MQTT events into Kafka event topics
 - `sorter-integration-service`: integration layer for the sorter
 - `vacuum-gripper-integration-service`: integration layer for the vacuum gripper
 - `engraver-integration-service`: integration layer for the engraver

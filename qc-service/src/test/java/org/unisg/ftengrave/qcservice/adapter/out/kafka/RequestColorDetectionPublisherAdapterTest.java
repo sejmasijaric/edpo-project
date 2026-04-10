@@ -26,12 +26,12 @@ class RequestColorDetectionPublisherAdapterTest {
         sorterIntegrationProperties.getCommandTypes().put("color-detection", "request-color-detection");
         RequestColorDetectionPublisherAdapter adapter =
                 new RequestColorDetectionPublisherAdapter(
-                        kafkaOperations, "sorting-machine", sorterIntegrationProperties);
+                        kafkaOperations, "sorting-machine-commands", sorterIntegrationProperties);
 
         adapter.publish();
 
         verify(kafkaOperations).send(
-                eq("sorting-machine"),
+                eq("sorting-machine-commands"),
                 argThat(command -> command != null && "request-color-detection".equals(command.getCommandType())));
     }
 
@@ -41,20 +41,20 @@ class RequestColorDetectionPublisherAdapterTest {
         sorterIntegrationProperties.getCommandTypes().put("color-detection", "request-color-detection");
         RequestColorDetectionPublisherAdapter adapter =
                 new RequestColorDetectionPublisherAdapter(
-                        kafkaOperations, "sorting-machine", sorterIntegrationProperties);
+                        kafkaOperations, "sorting-machine-commands", sorterIntegrationProperties);
 
         TransactionSynchronizationManager.initSynchronization();
         try {
             adapter.publish();
 
-            verify(kafkaOperations, never()).send(eq("sorting-machine"), argThat(command -> command != null));
+            verify(kafkaOperations, never()).send(eq("sorting-machine-commands"), argThat(command -> command != null));
 
             for (TransactionSynchronization synchronization : TransactionSynchronizationManager.getSynchronizations()) {
                 synchronization.afterCommit();
             }
 
             verify(kafkaOperations).send(
-                    eq("sorting-machine"),
+                    eq("sorting-machine-commands"),
                     argThat(command -> command != null && "request-color-detection".equals(command.getCommandType())));
         } finally {
             TransactionSynchronizationManager.clearSynchronization();

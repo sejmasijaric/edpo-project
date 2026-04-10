@@ -5,14 +5,18 @@ spring:
     web-application-type: none
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
   group-id: ${KAFKA_GROUP_ID:workstation-transport-integration-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.workstationtransportintegrationservice}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.workstation-transport}}
-    workstation-transport: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT:workstation-transport}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
+    workstation-transport-command: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND:workstation-transport-commands}
+    workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
+    workstation-transport: ${kafka.topic.workstation-transport-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.workstation-transport-event}}
 
 mqtt:
   bridge:

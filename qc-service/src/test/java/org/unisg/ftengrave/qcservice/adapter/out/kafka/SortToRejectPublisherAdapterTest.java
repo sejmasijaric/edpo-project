@@ -22,12 +22,12 @@ class SortToRejectPublisherAdapterTest {
         SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
         sorterIntegrationProperties.getCommandTypes().put("rejection", "request-sort-to-reject");
         SortToRejectPublisherAdapter adapter =
-                new SortToRejectPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
+                new SortToRejectPublisherAdapter(kafkaOperations, "sorting-machine-commands", sorterIntegrationProperties);
 
         adapter.publish();
 
         verify(kafkaOperations).send(
-                eq("sorting-machine"),
+                eq("sorting-machine-commands"),
                 argThat(command -> command != null && "request-sort-to-reject".equals(command.getCommandType())));
     }
 }
