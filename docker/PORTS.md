@@ -17,7 +17,9 @@ This file documents the ports currently used or reserved by services in this rep
 | `engraver-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `polishing-machine-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `workstation-transport-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
-| `kafka` | Docker Compose | `9092`, `29092` | `9092`, `29092` | Broker ports exposed by the compose stack |
+| `kafka` | Docker Compose | `29092` | `9092`, `29092` | Broker 1 internal listener stays on the Docker network; host access uses the external listener |
+| `kafka-2` | Docker Compose | `29094` | `9092`, `29092` | Broker 2 internal listener stays on the Docker network; host access uses the external listener |
+| `kafka-3` | Docker Compose | `29096` | `9092`, `29092` | Broker 3 internal listener stays on the Docker network; host access uses the external listener |
 | `frontend-springboot-service` | Docker Compose | `8082` | `8081` | Spring Boot backend for the frontend application |
 | `frontend-service` | Docker Compose | `3000` | `80` | Static frontend served by the compose stack |
 | `mqtt-broker` | Docker Compose simulation override | `1883` | `1883` | Included only with `docker/docker-compose.simulation.yml` |

@@ -8,14 +8,18 @@ spring:
     url: jdbc:h2:file:./data/camunda-h2-database
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   group-id: ${KAFKA_GROUP_ID:qc-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.qcservice.adapter.in.kafka.dto,org.unisg.ftengrave.qcservice.adapter.out.kafka.dto}
+  consumer:
+    concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
+    machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
 
 integration:
   sorter:

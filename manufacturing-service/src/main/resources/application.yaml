@@ -8,13 +8,19 @@ spring:
     url: jdbc:h2:file:./data/camunda-h2-database
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   group-id: ${KAFKA_GROUP_ID:manufacturing-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.manufacturingservice}
+  consumer:
+    concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    stage-orchestration-partitions: ${KAFKA_TOPIC_STAGE_ORCHESTRATION_PARTITIONS:3}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
+    machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
     engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
     workstation-transport: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT:workstation-transport}
     polishing-machine: ${KAFKA_TOPIC_POLISHING_MACHINE:polishing-machine}

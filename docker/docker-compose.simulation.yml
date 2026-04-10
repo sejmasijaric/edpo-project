@@ -22,29 +22,39 @@ services:
   sorter-integration-service:
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
       - mqtt-broker
       - factory-simulator
 
   vacuum-gripper-integration-service:
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
       - mqtt-broker
       - factory-simulator
 
   engraver-integration-service:
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
       - mqtt-broker
       - factory-simulator
 
   polishing-machine-integration-service:
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
       - mqtt-broker
       - factory-simulator
 
   workstation-transport-integration-service:
     depends_on:
       - kafka
+      - kafka-2
+      - kafka-3
       - mqtt-broker
       - factory-simulator

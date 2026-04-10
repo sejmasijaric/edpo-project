@@ -14,13 +14,22 @@ public class KafkaTopicConfig {
     @Value("${app.kafka.topic.order-created:order-created}")
     private String orderCreatedTopic;
 
+    @Value("${app.kafka.topic.replication-factor:3}")
+    private short replicationFactor;
+
+    @Value("${app.kafka.topic.order-events-partitions:3}")
+    private int orderEventsPartitions;
+
+    @Value("${app.kafka.topic.order-created-partitions:3}")
+    private int orderCreatedPartitions;
+
     @Bean
     public NewTopic orderEventsTopic() {
-        return new NewTopic(orderEventsTopic, 1, (short) 1);
+        return new NewTopic(orderEventsTopic, orderEventsPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic orderCreatedTopic() {
-        return new NewTopic(orderCreatedTopic, 1, (short) 1);
+        return new NewTopic(orderCreatedTopic, orderCreatedPartitions, replicationFactor);
     }
 }

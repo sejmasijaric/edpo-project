@@ -5,12 +5,14 @@ spring:
     web-application-type: none
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
   group-id: ${KAFKA_GROUP_ID:engraver-integration-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:org.unisg.ftengrave.engraverintegrationservice}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
     bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.engraver}}
     engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
 

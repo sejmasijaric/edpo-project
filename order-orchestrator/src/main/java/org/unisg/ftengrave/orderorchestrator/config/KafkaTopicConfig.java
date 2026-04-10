@@ -26,6 +26,18 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.order-created}")
     private String orderCreatedTopic;
 
+    @Value("${kafka.topic.replication-factor:3}")
+    private short replicationFactor;
+
+    @Value("${kafka.topic.stage-orchestration-partitions:3}")
+    private int stageOrchestrationPartitions;
+
+    @Value("${kafka.topic.machine-orchestration-partitions:3}")
+    private int machineOrchestrationPartitions;
+
+    @Value("${kafka.topic.order-created-partitions:3}")
+    private int orderCreatedPartitions;
+
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -35,16 +47,16 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic stageOrchestrationTopic() {
-        return new NewTopic(stageOrchestrationTopic, 1, (short) 1);
+        return new NewTopic(stageOrchestrationTopic, stageOrchestrationPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic machineOrchestrationTopic() {
-        return new NewTopic(machineOrchestrationTopic, 1, (short) 1);
+        return new NewTopic(machineOrchestrationTopic, machineOrchestrationPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic orderCreatedTopic() {
-        return new NewTopic(orderCreatedTopic, 1, (short) 1);
+        return new NewTopic(orderCreatedTopic, orderCreatedPartitions, replicationFactor);
     }
 }

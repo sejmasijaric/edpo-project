@@ -33,6 +33,18 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.polishing-machine}")
     private String polishingMachineTopic;
 
+    @Value("${kafka.topic.replication-factor:3}")
+    private short replicationFactor;
+
+    @Value("${kafka.topic.default-partitions:1}")
+    private int defaultPartitions;
+
+    @Value("${kafka.topic.stage-orchestration-partitions:3}")
+    private int stageOrchestrationPartitions;
+
+    @Value("${kafka.topic.machine-orchestration-partitions:3}")
+    private int machineOrchestrationPartitions;
+
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -42,26 +54,26 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic stageOrchestrationTopic() {
-        return new NewTopic(stageOrchestrationTopic, 1, (short) 1);
+        return new NewTopic(stageOrchestrationTopic, stageOrchestrationPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic machineOrchestrationTopic() {
-        return new NewTopic(machineOrchestrationTopic, 1, (short) 1);
+        return new NewTopic(machineOrchestrationTopic, machineOrchestrationPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic engraverTopic() {
-        return new NewTopic(engraverTopic, 1, (short) 1);
+        return new NewTopic(engraverTopic, defaultPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic workstationTransportTopic() {
-        return new NewTopic(workstationTransportTopic, 1, (short) 1);
+        return new NewTopic(workstationTransportTopic, defaultPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic polishingMachineTopic() {
-        return new NewTopic(polishingMachineTopic, 1, (short) 1);
+        return new NewTopic(polishingMachineTopic, defaultPartitions, replicationFactor);
     }
 }

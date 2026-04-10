@@ -20,6 +20,12 @@ public class KafkaTopicConfig {
   @Value("${kafka.topic.vacuum-gripper}")
   private String vacuumGripperTopic;
 
+  @Value("${kafka.topic.replication-factor:3}")
+  private short replicationFactor;
+
+  @Value("${kafka.topic.default-partitions:1}")
+  private int defaultPartitions;
+
   @Bean
   public KafkaAdmin kafkaAdmin() {
     Map<String, Object> configs = new HashMap<>();
@@ -29,6 +35,6 @@ public class KafkaTopicConfig {
 
   @Bean
   public NewTopic vacuumGripperTopic() {
-    return new NewTopic(vacuumGripperTopic, 1, (short) 1);
+    return new NewTopic(vacuumGripperTopic, defaultPartitions, replicationFactor);
   }
 }

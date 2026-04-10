@@ -20,6 +20,12 @@ public class KafkaTopicConfig {
   @Value("${kafka.topic.sorting-machine}")
   private String sortingMachineTopic;
 
+  @Value("${kafka.topic.replication-factor:3}")
+  private short replicationFactor;
+
+  @Value("${kafka.topic.default-partitions:1}")
+  private int defaultPartitions;
+
   @Bean
   public KafkaAdmin kafkaAdmin() {
     Map<String, Object> configs = new HashMap<>();
@@ -29,6 +35,6 @@ public class KafkaTopicConfig {
 
   @Bean
   public NewTopic sortingMachineTopic() {
-    return new NewTopic(sortingMachineTopic, 1, (short) 1);
+    return new NewTopic(sortingMachineTopic, defaultPartitions, replicationFactor);
   }
 }

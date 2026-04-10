@@ -6,7 +6,7 @@ spring:
     name: kafka-inspector-service
 
 kafka:
-  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092}
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
   group-id: ${KAFKA_GROUP_ID:kafka-inspector-service}
   trusted-packages: ${KAFKA_TRUSTED_PACKAGES:*}
   topic:
