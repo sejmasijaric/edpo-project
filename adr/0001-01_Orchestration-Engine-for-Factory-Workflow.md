@@ -37,8 +37,3 @@ This decision enforces strict end-to-end workflow visibility. The orchestration 
 
 ### Negative:
 The orchestration engine becomes a centralized dependency for process management. While the system can still remain loosely coupled through asynchronous communication and service boundaries, the core workflow is dependent on the orchestration engine being available. The orchestration engine adds additional deployment, monitoring, and scaling complexity.
-
-### Stakeholder Impact
-- Developers: clearer process logic but need BPMN expertise
-- Operators: improved observability but additional system to manage
-- Business stakeholders: better transparency into production workflows
