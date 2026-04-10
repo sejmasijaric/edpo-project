@@ -22,7 +22,7 @@ The bridge is embedded into the machine integration services rather than deploye
 - Optionally authenticate with MQTT username and password.
 - Pass each raw MQTT payload through a service-local `MqttEventFilter`.
 - Publish only accepted and transformed events to Kafka.
-- Publish to the configured Kafka bridge target topic, defaulting to the service's machine topic.
+- Publish to the configured Kafka bridge target topic, defaulting to the service's machine event topic.
 
 ### Current usage
 
@@ -58,11 +58,11 @@ In the current stack, the MQTT to Kafka mapping is:
 
 | Integration service | MQTT topic | Kafka topic |
 | --- | --- | --- |
-| `sorter-integration-service` | `FTFactory/SM_1` | `sorting-machine` |
-| `vacuum-gripper-integration-service` | `FTFactory/VGR_1` | `vacuum-gripper` |
-| `engraver-integration-service` | `FTFactory/OV_1` | `engraver` |
-| `polishing-machine-integration-service` | `FTFactory/MM_1` | `polishing-machine` |
-| `workstation-transport-integration-service` | `FTFactory/WT_1` | `workstation-transport` |
+| `sorter-integration-service` | `FTFactory/SM_1` | `sorting-machine-events` |
+| `vacuum-gripper-integration-service` | `FTFactory/VGR_1` | `vacuum-gripper-events` |
+| `engraver-integration-service` | `FTFactory/OV_1` | `engraver-events` |
+| `polishing-machine-integration-service` | `FTFactory/MM_1` | `polishing-machine-events` |
+| `workstation-transport-integration-service` | `FTFactory/WT_1` | `workstation-transport-events` |
 
 ## Consequences
 

@@ -22,12 +22,12 @@ class SortToRetryPublisherAdapterTest {
         SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
         sorterIntegrationProperties.getCommandTypes().put("retry", "request-sort-to-retry");
         SortToRetryPublisherAdapter adapter =
-                new SortToRetryPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
+                new SortToRetryPublisherAdapter(kafkaOperations, "sorting-machine-commands", sorterIntegrationProperties);
 
         adapter.publish();
 
         verify(kafkaOperations).send(
-                eq("sorting-machine"),
+                eq("sorting-machine-commands"),
                 argThat(command -> command != null && "request-sort-to-retry".equals(command.getCommandType())));
     }
 }

@@ -19,7 +19,7 @@ public class KafkaEventPublisher {
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final ObjectMapper objectMapper;
 
-  @Value("${kafka.topic.bridge-target:${kafka.topic.sorting-machine}}")
+  @Value("${kafka.topic.bridge-target:${kafka.topic.sorting-machine-event}}")
   private String topic;
 
   @Value("${kafka.producer.acks:all}")

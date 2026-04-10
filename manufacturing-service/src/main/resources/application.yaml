@@ -21,9 +21,12 @@ kafka:
     stage-orchestration-partitions: ${KAFKA_TOPIC_STAGE_ORCHESTRATION_PARTITIONS:3}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
     machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
-    engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
-    workstation-transport: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT:workstation-transport}
-    polishing-machine: ${KAFKA_TOPIC_POLISHING_MACHINE:polishing-machine}
+    engraver-command: ${KAFKA_TOPIC_ENGRAVER_COMMAND:engraver-commands}
+    engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
+    workstation-transport-command: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND:workstation-transport-commands}
+    workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
+    polishing-machine-command: ${KAFKA_TOPIC_POLISHING_MACHINE_COMMAND:polishing-machine-commands}
+    polishing-machine-event: ${KAFKA_TOPIC_POLISHING_MACHINE_EVENT:polishing-machine-events}
 
 integration:
   engraver:

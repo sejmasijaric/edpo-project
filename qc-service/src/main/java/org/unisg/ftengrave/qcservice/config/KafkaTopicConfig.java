@@ -20,6 +20,12 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.machine-orchestration}")
     private String machineOrchestrationTopic;
 
+    @Value("${kafka.topic.sorting-machine-command}")
+    private String sortingMachineCommandTopic;
+
+    @Value("${kafka.topic.sorting-machine-event}")
+    private String sortingMachineEventTopic;
+
     @Value("${kafka.topic.replication-factor:3}")
     private short replicationFactor;
 
@@ -36,5 +42,15 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic machineOrchestrationTopic() {
         return new NewTopic(machineOrchestrationTopic, machineOrchestrationPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic sortingMachineCommandTopic() {
+        return new NewTopic(sortingMachineCommandTopic, 1, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic sortingMachineEventTopic() {
+        return new NewTopic(sortingMachineEventTopic, 1, replicationFactor);
     }
 }

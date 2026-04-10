@@ -84,7 +84,8 @@ services:
       <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
-      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      KAFKA_TOPIC_SORTING_MACHINE_COMMAND: sorting-machine-commands
+      KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - qc-service-data:/app/data
@@ -123,8 +124,9 @@ services:
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
       KAFKA_TOPIC_USER_TASK_MANAGEMENT: user-task-management
-      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
-      KAFKA_TOPIC_ENGRAVER: engraver
+      KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND: vacuum-gripper-commands
+      KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - intake-service-data:/app/data
@@ -143,9 +145,12 @@ services:
       <<: *kafka-env
       KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
       KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
-      KAFKA_TOPIC_ENGRAVER: engraver
-      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
-      KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
+      KAFKA_TOPIC_ENGRAVER_COMMAND: engraver-commands
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND: workstation-transport-commands
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
+      KAFKA_TOPIC_POLISHING_MACHINE_COMMAND: polishing-machine-commands
+      KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
       SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/camunda-h2-database
     volumes:
       - manufacturing-service-data:/app/data
@@ -162,9 +167,9 @@ services:
       - "8102:8102"
     environment:
       <<: *kafka-env
-      KAFKA_TOPIC_SUBSCRIBE: sorting-machine
-      KAFKA_TOPIC_PUBLISH: sorting-machine
-      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine
+      KAFKA_TOPIC_SUBSCRIBE: sorting-machine-events
+      KAFKA_TOPIC_PUBLISH: sorting-machine-events
+      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine-commands
 
   sorter-integration-service:
     build:
@@ -178,7 +183,8 @@ services:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *sorter-endpoint]
-      KAFKA_TOPIC_SORTING_MACHINE: sorting-machine
+      KAFKA_TOPIC_SORTING_MACHINE_COMMAND: sorting-machine-commands
+      KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
       MQTT_TOPIC: FTFactory/SM_1
 
   vacuum-gripper-integration-service:
@@ -193,7 +199,8 @@ services:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *vacuum-gripper-endpoint]
-      KAFKA_TOPIC_VACUUM_GRIPPER: vacuum-gripper
+      KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND: vacuum-gripper-commands
+      KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
       MQTT_TOPIC: FTFactory/VGR_1
 
   engraver-integration-service:
@@ -208,7 +215,8 @@ services:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *engraver-endpoint]
-      KAFKA_TOPIC_ENGRAVER: engraver
+      KAFKA_TOPIC_ENGRAVER_COMMAND: engraver-commands
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
       MQTT_TOPIC: FTFactory/OV_1
 
   polishing-machine-integration-service:
@@ -223,7 +231,8 @@ services:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *polishing-machine-endpoint]
-      KAFKA_TOPIC_POLISHING_MACHINE: polishing-machine
+      KAFKA_TOPIC_POLISHING_MACHINE_COMMAND: polishing-machine-commands
+      KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
       MQTT_TOPIC: FTFactory/MM_1
 
   workstation-transport-integration-service:
@@ -238,7 +247,8 @@ services:
       - ./.env.mqtt.local
     environment:
       <<: [*kafka-env, *mqtt-env, *workstation-transport-endpoint]
-      KAFKA_TOPIC_WORKSTATION_TRANSPORT: workstation-transport
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND: workstation-transport-commands
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
       MQTT_TOPIC: FTFactory/WT_1
 
   kafka-ui:

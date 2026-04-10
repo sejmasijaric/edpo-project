@@ -32,12 +32,12 @@ class ManufacturingPublisherAdaptersTest {
         commandTypes.setRunEngraving("run-engraving-command");
         properties.setCommandTypes(commandTypes);
         RunEngravingPublisherAdapter adapter = new RunEngravingPublisherAdapter(
-                engraverKafkaOperations, "engraver", properties);
+                engraverKafkaOperations, "engraver-commands", properties);
 
         adapter.publish("item-42");
 
         verify(engraverKafkaOperations).send(
-                eq("engraver"),
+                eq("engraver-commands"),
                 eq("item-42"),
                 argThat(command -> command != null && "run-engraving-command".equals(command.getCommandType())));
     }
@@ -51,12 +51,12 @@ class ManufacturingPublisherAdaptersTest {
         properties.setCommandTypes(commandTypes);
         MoveItemFromEngraverToPolishingMachinePublisherAdapter adapter =
                 new MoveItemFromEngraverToPolishingMachinePublisherAdapter(
-                        workstationTransportKafkaOperations, "workstation-transport", properties);
+                        workstationTransportKafkaOperations, "workstation-transport-commands", properties);
 
         adapter.publish("item-42");
 
         verify(workstationTransportKafkaOperations).send(
-                eq("workstation-transport"),
+                eq("workstation-transport-commands"),
                 eq("item-42"),
                 argThat(command -> command != null
                         && "move-item-from-engraver-to-polishing-machine-command".equals(command.getCommandType())));
@@ -70,12 +70,12 @@ class ManufacturingPublisherAdaptersTest {
         commandTypes.setRunPolishing("run-polishing-command");
         properties.setCommandTypes(commandTypes);
         RunPolishingPublisherAdapter adapter = new RunPolishingPublisherAdapter(
-                polishingMachineKafkaOperations, "polishing-machine", properties);
+                polishingMachineKafkaOperations, "polishing-machine-commands", properties);
 
         adapter.publish("item-42");
 
         verify(polishingMachineKafkaOperations).send(
-                eq("polishing-machine"),
+                eq("polishing-machine-commands"),
                 eq("item-42"),
                 argThat(command -> command != null && "run-polishing-command".equals(command.getCommandType())));
     }

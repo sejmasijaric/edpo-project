@@ -27,11 +27,14 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.user-task-management}")
     private String userTaskManagementTopic;
 
-    @Value("${kafka.topic.vacuum-gripper}")
-    private String vacuumGripperTopic;
+    @Value("${kafka.topic.vacuum-gripper-command}")
+    private String vacuumGripperCommandTopic;
 
-    @Value("${kafka.topic.engraver}")
-    private String engraverTopic;
+    @Value("${kafka.topic.vacuum-gripper-event}")
+    private String vacuumGripperEventTopic;
+
+    @Value("${kafka.topic.engraver-event}")
+    private String engraverEventTopic;
 
     @Value("${kafka.topic.replication-factor:3}")
     private short replicationFactor;
@@ -68,12 +71,17 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic vacuumGripperTopic() {
-        return new NewTopic(vacuumGripperTopic, defaultPartitions, replicationFactor);
+    public NewTopic vacuumGripperCommandTopic() {
+        return new NewTopic(vacuumGripperCommandTopic, defaultPartitions, replicationFactor);
     }
 
     @Bean
-    public NewTopic engraverTopic() {
-        return new NewTopic(engraverTopic, defaultPartitions, replicationFactor);
+    public NewTopic vacuumGripperEventTopic() {
+        return new NewTopic(vacuumGripperEventTopic, defaultPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic engraverEventTopic() {
+        return new NewTopic(engraverEventTopic, defaultPartitions, replicationFactor);
     }
 }

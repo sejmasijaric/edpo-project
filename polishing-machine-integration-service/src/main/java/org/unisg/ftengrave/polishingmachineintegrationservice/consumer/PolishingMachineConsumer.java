@@ -14,7 +14,7 @@ public class PolishingMachineConsumer {
     this.polishingMachineService = polishingMachineService;
   }
 
-  @KafkaListener(topics = "${kafka.topic.polishing-machine}")
+  @KafkaListener(topics = "${kafka.topic.polishing-machine-command}")
   public void consume(PolishingMachineCommandDto polishingMachineCommandDto) {
     polishingMachineService.handle(polishingMachineCommandDto);
   }

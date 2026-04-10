@@ -17,8 +17,11 @@ public class KafkaTopicConfig {
   @Value("${kafka.bootstrap-address}")
   private String bootstrapAddress;
 
-  @Value("${kafka.topic.sorting-machine}")
-  private String sortingMachineTopic;
+  @Value("${kafka.topic.sorting-machine-command}")
+  private String sortingMachineCommandTopic;
+
+  @Value("${kafka.topic.sorting-machine-event}")
+  private String sortingMachineEventTopic;
 
   @Value("${kafka.topic.replication-factor:3}")
   private short replicationFactor;
@@ -34,7 +37,12 @@ public class KafkaTopicConfig {
   }
 
   @Bean
-  public NewTopic sortingMachineTopic() {
-    return new NewTopic(sortingMachineTopic, defaultPartitions, replicationFactor);
+  public NewTopic sortingMachineCommandTopic() {
+    return new NewTopic(sortingMachineCommandTopic, defaultPartitions, replicationFactor);
+  }
+
+  @Bean
+  public NewTopic sortingMachineEventTopic() {
+    return new NewTopic(sortingMachineEventTopic, defaultPartitions, replicationFactor);
   }
 }

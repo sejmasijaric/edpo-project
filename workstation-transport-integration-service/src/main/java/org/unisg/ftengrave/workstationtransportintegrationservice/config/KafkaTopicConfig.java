@@ -17,8 +17,11 @@ public class KafkaTopicConfig {
   @Value("${kafka.bootstrap-address}")
   private String bootstrapAddress;
 
-  @Value("${kafka.topic.workstation-transport}")
-  private String workstationTransportTopic;
+  @Value("${kafka.topic.workstation-transport-command}")
+  private String workstationTransportCommandTopic;
+
+  @Value("${kafka.topic.workstation-transport-event}")
+  private String workstationTransportEventTopic;
 
   @Value("${kafka.topic.replication-factor:3}")
   private short replicationFactor;
@@ -34,7 +37,12 @@ public class KafkaTopicConfig {
   }
 
   @Bean
-  public NewTopic workstationTransportTopic() {
-    return new NewTopic(workstationTransportTopic, defaultPartitions, replicationFactor);
+  public NewTopic workstationTransportCommandTopic() {
+    return new NewTopic(workstationTransportCommandTopic, defaultPartitions, replicationFactor);
+  }
+
+  @Bean
+  public NewTopic workstationTransportEventTopic() {
+    return new NewTopic(workstationTransportEventTopic, defaultPartitions, replicationFactor);
   }
 }

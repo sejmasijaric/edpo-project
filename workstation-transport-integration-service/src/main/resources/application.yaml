@@ -13,8 +13,10 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.workstation-transport}}
-    workstation-transport: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT:workstation-transport}
+    workstation-transport-command: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND:workstation-transport-commands}
+    workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
+    workstation-transport: ${kafka.topic.workstation-transport-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.workstation-transport-event}}
 
 mqtt:
   bridge:

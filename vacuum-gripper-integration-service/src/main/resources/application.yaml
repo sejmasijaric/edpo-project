@@ -13,8 +13,10 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.vacuum-gripper}}
-    vacuum-gripper: ${KAFKA_TOPIC_VACUUM_GRIPPER:vacuum-gripper}
+    vacuum-gripper-command: ${KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND:vacuum-gripper-commands}
+    vacuum-gripper-event: ${KAFKA_TOPIC_VACUUM_GRIPPER_EVENT:vacuum-gripper-events}
+    vacuum-gripper: ${kafka.topic.vacuum-gripper-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.vacuum-gripper-event}}
 
 mqtt:
   bridge:

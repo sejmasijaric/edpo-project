@@ -22,12 +22,12 @@ class SortToShippingPublisherAdapterTest {
         SorterIntegrationProperties sorterIntegrationProperties = new SorterIntegrationProperties();
         sorterIntegrationProperties.getCommandTypes().put("shipping", "request-sort-to-shipping");
         SortToShippingPublisherAdapter adapter =
-                new SortToShippingPublisherAdapter(kafkaOperations, "sorting-machine", sorterIntegrationProperties);
+                new SortToShippingPublisherAdapter(kafkaOperations, "sorting-machine-commands", sorterIntegrationProperties);
 
         adapter.publish();
 
         verify(kafkaOperations).send(
-                eq("sorting-machine"),
+                eq("sorting-machine-commands"),
                 argThat(command -> command != null && "request-sort-to-shipping".equals(command.getCommandType())));
     }
 }

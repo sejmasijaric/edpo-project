@@ -14,7 +14,7 @@ public class SortingMachineConsumer {
     this.sortingMachineService = sortingMachineService;
   }
 
-  @KafkaListener(topics = "${kafka.topic.sorting-machine}")
+  @KafkaListener(topics = "${kafka.topic.sorting-machine-command}")
   public void consume(SortingMachineCommandDto sortingMachineCommandDto) {
     sortingMachineService.handle(sortingMachineCommandDto);
   }

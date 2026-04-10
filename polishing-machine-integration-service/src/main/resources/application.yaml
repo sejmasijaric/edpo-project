@@ -13,8 +13,10 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.polishing-machine}}
-    polishing-machine: ${KAFKA_TOPIC_POLISHING_MACHINE:polishing-machine}
+    polishing-machine-command: ${KAFKA_TOPIC_POLISHING_MACHINE_COMMAND:polishing-machine-commands}
+    polishing-machine-event: ${KAFKA_TOPIC_POLISHING_MACHINE_EVENT:polishing-machine-events}
+    polishing-machine: ${kafka.topic.polishing-machine-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.polishing-machine-event}}
 
 mqtt:
   bridge:

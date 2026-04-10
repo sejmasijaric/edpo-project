@@ -13,8 +13,10 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.engraver}}
-    engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
+    engraver-command: ${KAFKA_TOPIC_ENGRAVER_COMMAND:engraver-commands}
+    engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
+    engraver: ${kafka.topic.engraver-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.engraver-event}}
 
 mqtt:
   bridge:

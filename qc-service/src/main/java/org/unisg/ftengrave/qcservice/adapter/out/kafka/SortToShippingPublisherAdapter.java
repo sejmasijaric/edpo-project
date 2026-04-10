@@ -15,7 +15,7 @@ public class SortToShippingPublisherAdapter extends TransactionAwareKafkaPublish
 
     public SortToShippingPublisherAdapter(
             KafkaOperations<String, SortingMachineCommandDto> kafkaOperations,
-            @Value("${kafka.topic.sorting-machine}") String sortingMachineTopic,
+            @Value("${kafka.topic.sorting-machine-command}") String sortingMachineTopic,
             SorterIntegrationProperties sorterIntegrationProperties) {
         super(kafkaOperations);
         this.sortingMachineTopic = sortingMachineTopic;

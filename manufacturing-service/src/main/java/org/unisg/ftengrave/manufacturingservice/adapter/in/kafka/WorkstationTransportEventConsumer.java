@@ -14,7 +14,7 @@ public class WorkstationTransportEventConsumer {
     private final HandleWtMoveCompletedEventUseCase handleWtMoveCompletedEventUseCase;
 
     @KafkaListener(
-            topics = "${kafka.topic.workstation-transport}",
+            topics = "${kafka.topic.workstation-transport-event}",
             containerFactory = "workstationTransportEventKafkaListenerContainerFactory")
     public void consume(WorkstationTransportEventDto event) {
         handleWtMoveCompletedEventUseCase.handle(

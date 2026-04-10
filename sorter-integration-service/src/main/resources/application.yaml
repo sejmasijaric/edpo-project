@@ -13,7 +13,10 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
-    sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
+    sorting-machine-command: ${KAFKA_TOPIC_SORTING_MACHINE_COMMAND:sorting-machine-commands}
+    sorting-machine-event: ${KAFKA_TOPIC_SORTING_MACHINE_EVENT:sorting-machine-events}
+    sorting-machine: ${kafka.topic.sorting-machine-event}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.sorting-machine-event}}
 
 mqtt:
   bridge:

@@ -22,8 +22,9 @@ kafka:
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
     machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
     user-task-management: ${KAFKA_TOPIC_USER_TASK_MANAGEMENT:user-task-management}
-    vacuum-gripper: ${KAFKA_TOPIC_VACUUM_GRIPPER:vacuum-gripper}
-    engraver: ${KAFKA_TOPIC_ENGRAVER:engraver}
+    vacuum-gripper-command: ${KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND:vacuum-gripper-commands}
+    vacuum-gripper-event: ${KAFKA_TOPIC_VACUUM_GRIPPER_EVENT:vacuum-gripper-events}
+    engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
 
 integration:
   vacuum-gripper:

@@ -16,7 +16,8 @@ kafka:
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
-    sorting-machine: ${KAFKA_TOPIC_SORTING_MACHINE:sorting-machine}
+    sorting-machine-command: ${KAFKA_TOPIC_SORTING_MACHINE_COMMAND:sorting-machine-commands}
+    sorting-machine-event: ${KAFKA_TOPIC_SORTING_MACHINE_EVENT:sorting-machine-events}
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
     machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}

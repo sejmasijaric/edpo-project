@@ -12,7 +12,7 @@ kafka:
   topic:
     subscribe: ${KAFKA_TOPIC_SUBSCRIBE:stage-orchestration}
     publish: ${KAFKA_TOPIC_PUBLISH:machine-orchestration}
-    command-publish: ${KAFKA_TOPIC_COMMAND_PUBLISH:sorting-machine}
+    command-publish: ${KAFKA_TOPIC_COMMAND_PUBLISH:sorting-machine-commands}
 
 integration:
   sorter:

@@ -16,13 +16,13 @@ class SorterCommandPublisherTest {
     KafkaOperations<String, SortingMachineCommandDto> kafkaOperations = mock(KafkaOperations.class);
 
     SorterCommandPublisher publisher =
-        new SorterCommandPublisher(kafkaOperations, "sorting-machine");
+        new SorterCommandPublisher(kafkaOperations, "sorting-machine-commands");
 
     publisher.publish("request-sort-to-shipping");
 
     verify(kafkaOperations)
         .send(
-            org.mockito.ArgumentMatchers.eq("sorting-machine"),
+            org.mockito.ArgumentMatchers.eq("sorting-machine-commands"),
             argThat(payload -> "request-sort-to-shipping".equals(payload.getCommandType())));
   }
 }
