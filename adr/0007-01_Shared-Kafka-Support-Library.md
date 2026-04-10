@@ -1,4 +1,6 @@
 # 0007-01 Shared Kafka Support Library
+**Date:** 03.04.2026
+**Status:** Accepted
 
 ## Context
 
