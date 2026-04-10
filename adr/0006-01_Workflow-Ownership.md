@@ -42,38 +42,7 @@ We implement the following ownership model:
 ## Consequences
 
 ### Positive:
-Clear separation of concerns
-Global business progression is decoupled from domain-specific execution
-Improved maintainability
-Changes in domain workflows do not affect orchestration logic (and vice versa)
-Alignment with DDD
-Each service acts as a bounded context with full ownership of its process logic
-Better observability
-The orchestrator provides a clear, high-level view of order progression
-Resilience
-Failures can be handled locally where context is richest, reducing global complexity
+This decision introduces a clear separation of concerns between global business workflow management and machine-specific execution. This improves end-to-end workflow traceability. Maintainability is enhanced as domain logic remains encapsulated within bounded contexts, allowing individual services to evolve independently. Furthermore, the system benefits from localized failure handling, where domain orchestrators manage machine-specific issues in context.
 
 ### Negative:
-Increased modeling effort
-Requires designing and maintaining two layers of BPMN processes
-Potential duplication of concepts
-Some state may exist both locally and globally (at different abstraction levels)
-Coordination overhead
-Requires well-defined event contracts between orchestrator and services
-Debugging complexity
-Tracing issues may require navigating both orchestration and local processes
-
-
-
-
-
-
-# ADR 0006-01: Separation of Concerns Between Main Orchestrator and Domain Specific Orchestrators
-
-## Consequences
-
-### Positive
-This decision introduces a clear separation of concerns between global business workflow management and machine-specific execution. This significantly improves end-to-end workflow traceability. Maintainability is enhanced as domain logic remains encapsulated within bounded contexts, allowing individual services to evolve independently without impacting the global orchestration layer. Furthermore, the system benefits from localized failure handling, where domain orchestrators manage machine-specific issues in context.
-
-### Negative
 Decoupling factory-specific orchestration with from the main order orchestration leads to additional complexity to communicate factory state with the order orchestrator and limits the availability of detailed state information on the order orchestration level.

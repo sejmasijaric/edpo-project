@@ -31,8 +31,6 @@ Hybrid approach for MQTT and HTTP.
 - Cons: blurs boundary between service and factory implementations; reduces maintainability due to inconsistent boundaries; 
 
 ## Decision
-All Kafka topics should remain free from low-level hardware events specific to the factory’s sensors and actuators. Instead, only domain events should be published to Kafka. The system will achieve this by incorporating a lightweight integration layer which translates raw MQTT sensor events to domain-aligned Kafka events. While this layer will contain hardware-specific logic required to translate hardware-specific with domain-aligned events, it should not be responsible for domain-specific factory operations and not contain any internal states.
-
 We will use a dedicated, lightweight domain integration layer between the factory interfaces
 and the internal Kafka-based service implementations.
 Raw MQTT sensor events and machine-specific REST interaction details must not be exposed directly to services. Instead, the integration layer will:
@@ -63,7 +61,6 @@ and domain-service layers.
 traceability across machine interaction, Kafka messaging, and BPMN processes.
 
 ### Negative:
-Additional abstraction over sensor data may be more restrictive regarding what data is available to business services. Future requirements may require adding new domain events to the factory integration layer.
 
 - Some raw machine detail may be abstracted away from domain consumers. If future use cases require
   additional information, new domain events or enriched payloads will need to be introduced
