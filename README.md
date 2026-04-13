@@ -4,23 +4,23 @@ FT Engrave is an event-driven factory control system for engraving, polishing, a
 
 ![Figure 1: Top down view of the factory](img/Factory.jpeg)
 
-## Architecture
+## Production Flow
 
-The architecture follows the ADRs in [`adr/`](adr/).
+The production flow, workflow stages and machines are visualized in Figure 2
 
-There are three service types in this system:
+![Figure 2: Diagram of machines, workflow stages, and flow through the factory](img/ManufacturingProcess.jpg)
 
-| Service type            | Responsibility                                      | Typical structure                                                              |
-|-------------------------|-----------------------------------------------------|--------------------------------------------------------------------------------|
-| Frontend Service        | displays and records user interactions              | Spring Boot, Kafka consumers/producers                                         |
-| Workflow/Domain Service | Owns business process state and orchestration logic | Spring Boot, Camunda 7, Kafka consumers/producers                              |
-| Integration Service     | Owns one machine boundary                           | Kafka consumers/producers, HTTP machine client, MQTT consumer and event filter |
+The factory consists of five machines:
+- 1.1 Vacuum Gripper (VGR)
+- 2.1 Engraver (EGR)
+- 2.2 Workstation Transport (WT)
+- 2.3 Polishing Machine (PM)
+- 3.1 Sorting Machine (SM)
 
-![TODO: Component architecture showing workflow services, integration services, Kafka, MQTT, and factory HTTP APIs](docs/images/component-architecture.png)
-
-## Project Structure
-
-TODO: 
+The production is divided into three stages, each involving different machines:
+1. **Intake** is responsible for taking a raw colored airtag and placing it in the production machinery. This stage involves the vacuum gripper. 
+2. **Manufacturing** is responsible for fabricating the engraved AirTag. This stage involves the engraver and polishing machine to perform the manufacturing stages and the workstation transport to move the item between stations. 
+3. **Quality Control** is responsible for performing a two-stage quality control process. First, the item runs through an automated quality control. If it passes, the item is then passed to the human quality control for final inspection. Based on the result, the items are sorted. This all takes place on the sorting machine.
 
 ## Deployment
 
@@ -73,7 +73,7 @@ Useful local links:
 
 ## Usage Example
 
-The system behaves the same in production and simulation mode. For deponstration purposes, this example uses the simulated factory. For local testing, use the simulator stack and create an AirTag order through the backend API:
+The system behaves the same in production and simulation mode. For demonstration purposes, this example uses the simulated factory. For local testing, use the simulator stack and create an AirTag order through the backend API:
 
 ```bash
 curl -X POST http://localhost:8082/api/orders \
@@ -88,6 +88,20 @@ curl -X POST http://localhost:8082/api/orders \
 Open the simulator at <http://localhost:8081> to add items and interact with the factory. When the order was successfully created, the system will publish a command that an item of specified color should be added to the system. As the item is added to the intake, the production will start.
 
 During the flow, user tasks will be started. These are handled through the respective Camunda engine's task list. 
+
+## Architecture
+
+The architecture follows the ADRs in [`adr/`](adr/).
+
+There are three service types in this system:
+
+| Service type            | Responsibility                                      | Typical structure                                                              |
+|-------------------------|-----------------------------------------------------|--------------------------------------------------------------------------------|
+| Frontend Service        | displays and records user interactions              | Spring Boot, Kafka consumers/producers                                         |
+| Workflow/Domain Service | Owns business process state and orchestration logic | Spring Boot, Camunda 7, Kafka consumers/producers                              |
+| Integration Service     | Owns one machine boundary                           | Kafka consumers/producers, HTTP machine client, MQTT consumer and event filter |
+
+![TODO: Component architecture showing workflow services, integration services, Kafka, MQTT, and factory HTTP APIs](docs/images/component-architecture.png)
 
 ## Key Configuration
 
