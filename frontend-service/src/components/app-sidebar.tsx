@@ -1,9 +1,9 @@
-import { Moon, ShoppingCart, Sun, Wrench } from "lucide-react"
+import { Activity, Moon, ShoppingCart, Sun, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useTheme } from "@/components/theme-provider"
 
-export type Page = "customer" | "worker"
+export type Page = "customer" | "worker" | "tracking"
 
 interface AppSidebarProps {
   activePage: Page
@@ -39,6 +39,14 @@ export function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
         >
           <Wrench className="size-4" />
           Worker
+        </Button>
+        <Button
+          variant={activePage === "tracking" ? "secondary" : "ghost"}
+          className="justify-start gap-2"
+          onClick={() => onNavigate("tracking")}
+        >
+          <Activity className="size-4" />
+          Tracking
         </Button>
       </nav>
       <Separator />
