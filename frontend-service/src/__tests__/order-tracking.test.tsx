@@ -1,87 +1,86 @@
 import { render, screen } from "@testing-library/react"
-import { OrderTracking } from "@/components/order-tracking"
+import { OrderList } from "@/components/order-list"
 import { ThemeProvider } from "@/components/theme-provider"
+import type { Order } from "@/types/order"
 import type { MachineOrchestrationEvent } from "@/types/machine-event"
 
-function renderTracking(
+const sampleOrder: Order = {
+  id: "abc-123",
+  color: "red",
+  status: "To Do",
+  createdAt: new Date("2026-01-01T12:00:00Z"),
+}
+
+function renderOrderList(
+  orders: Order[] = [],
   events: MachineOrchestrationEvent[] = [],
-  connected = false
+  connected?: boolean
 ) {
   return render(
     <ThemeProvider>
-      <OrderTracking events={events} connected={connected} />
+      <OrderList orders={orders} events={events} connected={connected} />
     </ThemeProvider>
   )
 }
 
-describe("OrderTracking", () => {
-  it("renders the tracking card with title", () => {
-    renderTracking()
+describe("OrderList with live events", () => {
+  it("shows connected indicator when connected", () => {
+    renderOrderList([sampleOrder], [], true)
 
-    expect(screen.getByText("Order Tracking")).toBeInTheDocument()
-  })
-
-  it("shows empty state when no events", () => {
-    renderTracking()
-
-    expect(
-      screen.getByText(/no events yet/i)
-    ).toBeInTheDocument()
-  })
-
-  it("shows connected status when connected", () => {
-    renderTracking([], true)
-
-    expect(screen.getByText(/connected\./i)).toBeInTheDocument()
     const indicator = screen.getByTestId("ws-status")
     expect(indicator.className).toContain("bg-green-500")
   })
 
-  it("shows disconnected status when not connected", () => {
-    renderTracking([], false)
+  it("shows disconnected indicator when not connected", () => {
+    renderOrderList([sampleOrder], [], false)
 
-    expect(screen.getByText(/disconnected\./i)).toBeInTheDocument()
     const indicator = screen.getByTestId("ws-status")
     expect(indicator.className).toContain("bg-red-500")
   })
 
-  it("displays a single event", () => {
+  it("does not show connection indicator when connected prop is undefined", () => {
+    renderOrderList([sampleOrder])
+
+    expect(screen.queryByTestId("ws-status")).not.toBeInTheDocument()
+  })
+
+  it("shows live event badge on matching order", () => {
     const events: MachineOrchestrationEvent[] = [
       { itemIdentifier: "abc-123", outcomeType: "intake-completed" },
     ]
-    renderTracking(events)
+    renderOrderList([sampleOrder], events)
 
-    expect(screen.getByText("abc-123")).toBeInTheDocument()
     expect(screen.getByText("Intake Completed")).toBeInTheDocument()
   })
 
-  it("displays multiple events for the same order grouped", () => {
+  it("shows multiple event badges on same order", () => {
     const events: MachineOrchestrationEvent[] = [
       { itemIdentifier: "abc-123", outcomeType: "intake-completed" },
       { itemIdentifier: "abc-123", outcomeType: "manufacturing-completed" },
     ]
-    renderTracking(events)
+    renderOrderList([sampleOrder], events)
 
-    const orderLabels = screen.getAllByText("abc-123")
-    expect(orderLabels).toHaveLength(1)
     expect(screen.getByText("Intake Completed")).toBeInTheDocument()
     expect(screen.getByText("Manufacturing Completed")).toBeInTheDocument()
   })
 
-  it("displays events for different orders separately", () => {
+  it("does not show events for non-matching orders", () => {
     const events: MachineOrchestrationEvent[] = [
-      { itemIdentifier: "order-1", outcomeType: "intake-completed" },
-      { itemIdentifier: "order-2", outcomeType: "manufacturing-failed" },
+      { itemIdentifier: "other-id", outcomeType: "intake-completed" },
     ]
-    renderTracking(events)
+    renderOrderList([sampleOrder], events)
 
-    expect(screen.getByText("order-1")).toBeInTheDocument()
-    expect(screen.getByText("order-2")).toBeInTheDocument()
-    expect(screen.getByText("Intake Completed")).toBeInTheDocument()
-    expect(screen.getByText("Manufacturing Failed")).toBeInTheDocument()
+    expect(screen.queryByText("Intake Completed")).not.toBeInTheDocument()
   })
 
-  it("shows human-readable labels for all outcome types", () => {
+  it("shows all outcome types with correct labels", () => {
+    const orders: Order[] = [
+      { ...sampleOrder, id: "o1" },
+      { ...sampleOrder, id: "o2" },
+      { ...sampleOrder, id: "o3" },
+      { ...sampleOrder, id: "o4" },
+      { ...sampleOrder, id: "o5" },
+    ]
     const events: MachineOrchestrationEvent[] = [
       { itemIdentifier: "o1", outcomeType: "intake-completed" },
       { itemIdentifier: "o2", outcomeType: "manufacturing-completed" },
@@ -89,7 +88,7 @@ describe("OrderTracking", () => {
       { itemIdentifier: "o4", outcomeType: "qc-shipping" },
       { itemIdentifier: "o5", outcomeType: "qc-rejection" },
     ]
-    renderTracking(events)
+    renderOrderList(orders, events)
 
     expect(screen.getByText("Intake Completed")).toBeInTheDocument()
     expect(screen.getByText("Manufacturing Completed")).toBeInTheDocument()
@@ -100,19 +99,23 @@ describe("OrderTracking", () => {
 
   it("falls back to raw outcomeType for unknown types", () => {
     const events: MachineOrchestrationEvent[] = [
-      { itemIdentifier: "o1", outcomeType: "unknown-stage" },
+      { itemIdentifier: "abc-123", outcomeType: "unknown-stage" },
     ]
-    renderTracking(events)
+    renderOrderList([sampleOrder], events)
 
     expect(screen.getByText("unknown-stage")).toBeInTheDocument()
   })
 
-  it("does not show empty state when events exist", () => {
+  it("still shows order details alongside events", () => {
+    const order: Order = { ...sampleOrder, engravedText: "Hello" }
     const events: MachineOrchestrationEvent[] = [
-      { itemIdentifier: "abc", outcomeType: "intake-completed" },
+      { itemIdentifier: "abc-123", outcomeType: "intake-completed" },
     ]
-    renderTracking(events)
+    renderOrderList([order], events)
 
-    expect(screen.queryByText(/no events yet/i)).not.toBeInTheDocument()
+    expect(screen.getByText("Red Air Tag")).toBeInTheDocument()
+    expect(screen.getByText(/Hello/)).toBeInTheDocument()
+    expect(screen.getByText("To Do")).toBeInTheDocument()
+    expect(screen.getByText("Intake Completed")).toBeInTheDocument()
   })
 })
