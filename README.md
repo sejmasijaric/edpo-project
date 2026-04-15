@@ -101,7 +101,7 @@ There are three service types in this system:
 | Workflow/Domain Service | Owns business process state and orchestration logic | Spring Boot, Camunda 7, Kafka consumers/producers                              |
 | Integration Service     | Owns one machine boundary                           | Kafka consumers/producers, HTTP machine client, MQTT consumer and event filter |
 
-![TODO: Component architecture showing workflow services, integration services, Kafka, MQTT, and factory HTTP APIs](docs/images/component-architecture.png)
+![Figure 3: Architecture Diagram](img/ArchitectureDiagram.png)
 
 ## Key Configuration
 
