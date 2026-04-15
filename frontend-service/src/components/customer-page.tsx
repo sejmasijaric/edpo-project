@@ -18,14 +18,22 @@ import {
   type ColorValue,
   type Order,
 } from "@/types/order"
+import type { MachineOrchestrationEvent } from "@/types/machine-event"
 import { createOrder } from "@/services/api"
 
 interface CustomerPageProps {
   orders: Order[]
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>
+  events?: MachineOrchestrationEvent[]
+  connected?: boolean
 }
 
-export function CustomerPage({ orders, setOrders }: CustomerPageProps) {
+export function CustomerPage({
+  orders,
+  setOrders,
+  events = [],
+  connected,
+}: CustomerPageProps) {
   const [color, setColor] = useState("")
   const [engravedText, setEngravedText] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -110,7 +118,7 @@ export function CustomerPage({ orders, setOrders }: CustomerPageProps) {
         </CardContent>
       </Card>
 
-      <OrderList orders={orders} />
+      <OrderList orders={orders} events={events} connected={connected} />
     </div>
   )
 }
