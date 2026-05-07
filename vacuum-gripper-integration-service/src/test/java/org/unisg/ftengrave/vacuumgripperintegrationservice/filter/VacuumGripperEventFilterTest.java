@@ -21,9 +21,9 @@ class VacuumGripperEventFilterTest {
         filter.filter("FTFactory/VGR_1", payload(1, 1));
 
     assertTrue(arrivalEvent.isPresent());
-    assertEquals("item-arrived-at-input", arrivalEvent.get().getEventType());
+    assertEquals("item-arrived-at-intake", arrivalEvent.get().getEventType());
     assertTrue(releaseEvent.isPresent());
-    assertEquals("item-left-input", releaseEvent.get().getEventType());
+    assertEquals("item-left-intake", releaseEvent.get().getEventType());
   }
 
   @Test

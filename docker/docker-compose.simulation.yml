@@ -27,6 +27,13 @@ services:
       - mqtt-broker
       - factory-simulator
 
+  factory-event-streams-service:
+    depends_on:
+      - kafka
+      - kafka-2
+      - kafka-3
+      - sorter-integration-service
+
   vacuum-gripper-integration-service:
     depends_on:
       - kafka

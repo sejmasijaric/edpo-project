@@ -3,12 +3,17 @@ package org.unisg.ftengrave.vacuumgripperintegrationservice.filter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.unisg.ftengrave.vacuumgripperintegrationservice.dto.VacuumGripperEventDto;
 import org.unisg.ftengrave.vacuumgripperintegrationservice.dto.VacuumGripperEventTransformationDto;
 import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 
 @Service
+@ConditionalOnProperty(
+    name = "mqtt.bridge.raw-forwarding-enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class VacuumGripperEventFilter implements MqttEventFilter<VacuumGripperEventDto> {
 
   private static final int LIGHT_BARRIER_INTERRUPTED = 0;

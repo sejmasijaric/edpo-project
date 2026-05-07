@@ -13,14 +13,16 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
+    raw-factory-event: ${KAFKA_TOPIC_RAW_FACTORY_EVENT:factory.raw-events}
     engraver-command: ${KAFKA_TOPIC_ENGRAVER_COMMAND:engraver-commands}
     engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
     engraver: ${kafka.topic.engraver-event}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.engraver-event}}
+    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.raw-factory-event}}
 
 mqtt:
   bridge:
     enabled: ${MQTT_BRIDGE_ENABLED:true}
+    raw-forwarding-enabled: ${MQTT_BRIDGE_RAW_FORWARDING_ENABLED:true}
   broker:
     url: ${MQTT_BROKER_URL:tcp://localhost:1883}
   topic: ${MQTT_TOPIC:FTFactory/OV_1}

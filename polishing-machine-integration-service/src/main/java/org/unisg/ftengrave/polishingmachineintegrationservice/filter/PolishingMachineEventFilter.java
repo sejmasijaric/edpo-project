@@ -3,12 +3,17 @@ package org.unisg.ftengrave.polishingmachineintegrationservice.filter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.unisg.ftengrave.polishingmachineintegrationservice.dto.PolishingMachineEventDto;
 import org.unisg.ftengrave.polishingmachineintegrationservice.dto.PolishingMachineEventTransformationDto;
 import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 
 @Service
+@ConditionalOnProperty(
+    name = "mqtt.bridge.raw-forwarding-enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class PolishingMachineEventFilter implements MqttEventFilter<PolishingMachineEventDto> {
 
   private static final int LIGHT_BARRIER_INTERRUPTED = 0;

@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: factory-event-streams-service
+  main:
+    web-application-type: none
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
+  streams:
+    application-id: ${KAFKA_STREAMS_APPLICATION_ID:factory-event-streams}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
+    raw-factory-event: ${KAFKA_TOPIC_RAW_FACTORY_EVENT:factory.raw-events}
+    sorting-machine-event: ${KAFKA_TOPIC_SORTING_MACHINE_EVENT:sorting-machine-events}
+    vacuum-gripper-event: ${KAFKA_TOPIC_VACUUM_GRIPPER_EVENT:vacuum-gripper-events}
+    engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
+    polishing-machine-event: ${KAFKA_TOPIC_POLISHING_MACHINE_EVENT:polishing-machine-events}
+    workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
+
+factory-streams:
+  qc:
+    station-identifiers: ${FACTORY_STREAMS_QC_STATIONS:FTFactory/SM_1,SM_1,sm_1,sorting-machine,sorter}
+  vacuum-gripper:
+    station-identifiers: ${FACTORY_STREAMS_VACUUM_GRIPPER_STATIONS:FTFactory/VGR_1,VGR_1,vgr_1,vacuum-gripper}
+  engraver:
+    station-identifiers: ${FACTORY_STREAMS_ENGRAVER_STATIONS:FTFactory/OV_1,OV_1,oven,engraver}
+  polishing-machine:
+    station-identifiers: ${FACTORY_STREAMS_POLISHING_MACHINE_STATIONS:FTFactory/MM_1,MM_1,mm_1,polishing-machine}
+  workstation-transport:
+    station-identifiers: ${FACTORY_STREAMS_WORKSTATION_TRANSPORT_STATIONS:FTFactory/WT_1,WT_1,wt_1,workstation-transport}

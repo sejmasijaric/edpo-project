@@ -19,7 +19,7 @@ public class KafkaEventPublisher {
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final ObjectMapper objectMapper;
 
-  @Value("${kafka.topic.bridge-target:${kafka.topic.sorting-machine-event}}")
+  @Value("${kafka.topic.bridge-target:factory.raw-events}")
   private String topic;
 
   @Value("${kafka.producer.acks:all}")
@@ -88,6 +88,10 @@ public class KafkaEventPublisher {
     } catch (JsonProcessingException e) {
       throw new RuntimeException("Failed to serialize Kafka payload", e);
     }
+  }
+
+  public void publishRaw(String key, String rawPayload) {
+    kafkaTemplate.send(topic, key, rawPayload);
   }
 
   @PreDestroy

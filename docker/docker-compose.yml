@@ -171,6 +171,28 @@ services:
       KAFKA_TOPIC_PUBLISH: sorting-machine-events
       KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine-commands
 
+  factory-event-streams-service:
+    build:
+      context: ..
+      dockerfile: factory-event-streams-service/Dockerfile
+    depends_on:
+      - kafka
+      - kafka-2
+      - kafka-3
+    environment:
+      <<: *kafka-env
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
+      KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
+      KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
+      KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
+      KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
+      KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
+      FACTORY_STREAMS_QC_STATIONS: FTFactory/SM_1,SM_1,sm_1,sorting-machine,sorter
+      FACTORY_STREAMS_VACUUM_GRIPPER_STATIONS: FTFactory/VGR_1,VGR_1,vgr_1,vacuum-gripper
+      FACTORY_STREAMS_ENGRAVER_STATIONS: FTFactory/OV_1,OV_1,oven,engraver
+      FACTORY_STREAMS_POLISHING_MACHINE_STATIONS: FTFactory/MM_1,MM_1,mm_1,polishing-machine
+      FACTORY_STREAMS_WORKSTATION_TRANSPORT_STATIONS: FTFactory/WT_1,WT_1,wt_1,workstation-transport
+
   sorter-integration-service:
     build:
       context: ..
@@ -185,6 +207,7 @@ services:
       <<: [*kafka-env, *mqtt-env, *sorter-endpoint]
       KAFKA_TOPIC_SORTING_MACHINE_COMMAND: sorting-machine-commands
       KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
       MQTT_TOPIC: FTFactory/SM_1
 
   vacuum-gripper-integration-service:
@@ -201,6 +224,7 @@ services:
       <<: [*kafka-env, *mqtt-env, *vacuum-gripper-endpoint]
       KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND: vacuum-gripper-commands
       KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
       MQTT_TOPIC: FTFactory/VGR_1
 
   engraver-integration-service:
@@ -217,6 +241,7 @@ services:
       <<: [*kafka-env, *mqtt-env, *engraver-endpoint]
       KAFKA_TOPIC_ENGRAVER_COMMAND: engraver-commands
       KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
       MQTT_TOPIC: FTFactory/OV_1
 
   polishing-machine-integration-service:
@@ -233,6 +258,7 @@ services:
       <<: [*kafka-env, *mqtt-env, *polishing-machine-endpoint]
       KAFKA_TOPIC_POLISHING_MACHINE_COMMAND: polishing-machine-commands
       KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
       MQTT_TOPIC: FTFactory/MM_1
 
   workstation-transport-integration-service:
@@ -249,6 +275,7 @@ services:
       <<: [*kafka-env, *mqtt-env, *workstation-transport-endpoint]
       KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND: workstation-transport-commands
       KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
       MQTT_TOPIC: FTFactory/WT_1
 
   kafka-ui:

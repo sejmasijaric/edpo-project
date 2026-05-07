@@ -12,6 +12,7 @@ This file documents the ports currently used or reserved by services in this rep
 | `kafka-inspector-service` | Docker Compose | `8102` | `8102` | Lightweight Kafka listener and JSON publisher endpoint |
 | `intake-service` | Docker Compose | `8103` | `8103` | Embedded Camunda engine for intake BPMN models |
 | `manufacturing-service` | Docker Compose | `8104` | `8104` | Embedded Camunda engine for manufacturing BPMN models |
+| `factory-event-streams-service` | Docker Compose | None | None | Internal Kafka Streams service for raw factory telemetry routing and translation |
 | `sorter-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `vacuum-gripper-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `engraver-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |

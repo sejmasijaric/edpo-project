@@ -3,12 +3,17 @@ package org.unisg.ftengrave.workstationtransportintegrationservice.filter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.unisg.ftengrave.workstationtransportintegrationservice.dto.WorkstationTransportEventDto;
 import org.unisg.ftengrave.workstationtransportintegrationservice.dto.WorkstationTransportEventTransformationDto;
 import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 
 @Service
+@ConditionalOnProperty(
+    name = "mqtt.bridge.raw-forwarding-enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class WorkstationTransportEventFilter
     implements MqttEventFilter<WorkstationTransportEventDto> {
 
