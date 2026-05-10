@@ -1,9 +1,12 @@
 # ADR 0011-01: MQTT-Kafka Bridge for Machine Event Ingestion
 
 **Date:** 10.04.2026
-**Status:** Accepted
+**Status:** Superseded by ADR 0012 and ADR 0013
 
 ## Context
+
+This ADR describes the original MQTT bridge design. It has been superseded by ADR 0012, where the
+bridge became raw-only and business translation moved to Kafka Streams.
 
 The physical factory boundary exposes machine state and execution results over MQTT topics. The rest of the application landscape uses Kafka for domain-level coordination, workflow progress, and service-to-service messaging as defined in ADR 0002.
 

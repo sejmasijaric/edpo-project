@@ -5,10 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.kafka.annotation.EnableKafka;
 
 @EnableKafka
-@SpringBootApplication(scanBasePackages = {
-    "org.unisg.ftengrave.sorterintegrationservice",
-    "org.unisg.mqttkafkabridge"
-})
+@SpringBootApplication
 public class SorterIntegrationServiceApplication {
 
     public static void main(String[] args) {

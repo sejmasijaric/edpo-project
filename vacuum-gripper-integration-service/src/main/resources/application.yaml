@@ -16,17 +16,6 @@ kafka:
     vacuum-gripper-command: ${KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND:vacuum-gripper-commands}
     vacuum-gripper-event: ${KAFKA_TOPIC_VACUUM_GRIPPER_EVENT:vacuum-gripper-events}
     vacuum-gripper: ${kafka.topic.vacuum-gripper-event}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.vacuum-gripper-event}}
-
-mqtt:
-  bridge:
-    enabled: ${MQTT_BRIDGE_ENABLED:true}
-  broker:
-    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
-  topic: ${MQTT_TOPIC:FTFactory/VGR_1}
-  client-id: ${MQTT_CLIENT_ID:vacuum-gripper-integration-service}
-  username: ${MQTT_USERNAME:}
-  password: ${MQTT_PASSWORD:}
 
 vacuum-gripper:
   protocol: ${VACUUM_GRIPPER_PROTOCOL:http}

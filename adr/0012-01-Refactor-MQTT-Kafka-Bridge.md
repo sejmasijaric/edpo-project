@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted, revised by ADR 0013
 
 Date: 29.04.2026
 
@@ -19,28 +19,38 @@ We will refactor the MQTT-Kafka bridge so that it no longer performs business-le
 The bridge will become a raw ingestion adapter with the following responsibilities:
 
 - subscribe to configured MQTT topics,
-- perform minimal technical filtering, such as duplicate removal,
-- normalize timestamps and metadata,
-- wrap incoming MQTT messages in a common event envelope,
-- publish all normalized raw machine telemetry to a shared Kafka topic named `raw-machine-events`.
+- publish incoming MQTT payloads unchanged to a shared Kafka topic named `factory.raw-events`.
 
-Business-level processing will be moved to a Kafka Streams. This Kafka Streams application will consume from `raw-machine-events` and apply the following topology:
+Business-level processing will be moved to Kafka Streams in a dedicated
+`factory-event-streams-service`. This Kafka Streams application consumes from
+`factory.raw-events` and applies the following topology in memory:
 
-1. Content Filter  
-   Reduce raw machine telemetry to the fields required for further processing.
+1. Timestamp handling and raw event normalization  
+   Use the event timestamp from the raw payload where possible.
 
-2. Event Router  
-   Route events based on machine type, station, or MQTT topic metadata.
+2. Splitter  
+   Split raw machine telemetry into sensor-level events.
 
-3. Event Translator  
-   Convert raw machine events into domain-aligned business events.
+3. Duplicate filter  
+   Remove consecutive duplicate sensor-level events by station, sensor name, and value.
 
-The final translated events will be published to dedicated machine event topics:
+4. Event Router  
+   Route events through a shared translator registry based on machine type, station, or MQTT topic
+   metadata.
 
+5. Event Translator  
+   Convert station-specific sensor events into the existing machine business event contracts.
+
+The final translated events are published to the existing dedicated machine event topics:
+
+- `sorting-machine-events`
 - `vacuum-gripper-events`
 - `engraver-events`
-- `workstation-transport-events`
 - `polishing-machine-events`
-- `sorting-machine-events`
+- `workstation-transport-events`
 
-The domain orchestration services will continue consuming these dedicated business event topics. Therefore, the workflow layer remains decoupled from raw factory telemetry.
+Existing downstream services continue consuming their previous machine event topics. This ADR
+originally kept raw MQTT adapters embedded in the machine integration services. ADR 0013 revises
+that deployment choice: `mqtt-kafka-bridge` now runs as a standalone raw ingestion service that
+forwards factory payloads to `factory.raw-events`. Legacy service-local MQTT filters have been
+removed; station translation is handled only by `factory-event-streams-service`.

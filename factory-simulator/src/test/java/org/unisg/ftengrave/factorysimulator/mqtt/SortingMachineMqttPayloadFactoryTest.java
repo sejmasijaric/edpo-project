@@ -28,6 +28,7 @@ class SortingMachineMqttPayloadFactoryTest {
     assertEquals(0, payload.get("i3_light_barrier").asInt());
     assertTrue(payload.get("i2_color_sensor").asInt() > 1700);
     assertEquals("detect_color", payload.get("current_task").asText());
+    assertFullRawSorterEnvelope(payload);
   }
 
   @Test
@@ -37,6 +38,7 @@ class SortingMachineMqttPayloadFactoryTest {
     assertEquals(1, payload.get("i3_light_barrier").asInt());
     assertTrue(payload.get("i2_color_sensor").asInt() > 1700);
     assertEquals("idle", payload.get("current_task").asText());
+    assertFullRawSorterEnvelope(payload);
   }
 
   @Test
@@ -50,5 +52,19 @@ class SortingMachineMqttPayloadFactoryTest {
     assertEquals(1350, payload.get("i2_color_sensor").asInt());
     assertEquals(1, payload.get("i3_light_barrier").asInt());
     assertEquals("detect_color", payload.get("current_task").asText());
+    assertFullRawSorterEnvelope(payload);
+  }
+
+  private void assertFullRawSorterEnvelope(JsonNode payload) {
+    assertTrue(payload.hasNonNull("id"));
+    assertEquals("SM_1", payload.get("station").asText());
+    assertTrue(payload.hasNonNull("timestamp"));
+    assertTrue(payload.hasNonNull("m1_speed"));
+    assertTrue(payload.hasNonNull("o5_valve"));
+    assertTrue(payload.hasNonNull("o6_valve"));
+    assertTrue(payload.hasNonNull("o7_valve"));
+    assertTrue(payload.hasNonNull("o8_compressor"));
+    assertTrue(payload.hasNonNull("current_state"));
+    assertTrue(payload.hasNonNull("current_sub_task"));
   }
 }

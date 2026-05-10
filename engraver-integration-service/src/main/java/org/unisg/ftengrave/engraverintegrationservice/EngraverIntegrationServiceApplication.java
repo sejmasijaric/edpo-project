@@ -3,10 +3,7 @@ package org.unisg.ftengrave.engraverintegrationservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {
-        "org.unisg.ftengrave.engraverintegrationservice",
-        "org.unisg.mqttkafkabridge"
-})
+@SpringBootApplication
 public class EngraverIntegrationServiceApplication {
 
   public static void main(String[] args) {

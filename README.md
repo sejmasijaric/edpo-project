@@ -99,7 +99,7 @@ There are three service types in this system:
 |-------------------------|-----------------------------------------------------|--------------------------------------------------------------------------------|
 | Frontend Service        | displays and records user interactions              | Spring Boot, Kafka consumers/producers                                         |
 | Workflow/Domain Service | Owns business process state and orchestration logic | Spring Boot, Camunda 7, Kafka consumers/producers                              |
-| Integration Service     | Owns one machine boundary                           | Kafka consumers/producers, HTTP machine client, MQTT consumer and event filter |
+| Integration Service     | Owns one machine boundary                           | Kafka consumers/producers, HTTP machine client, raw MQTT forwarding            |
 
 ![Figure 3: Architecture Diagram](img/ArchitectureDiagram.png)
 

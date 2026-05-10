@@ -1,7 +1,5 @@
 package org.unisg.mqttkafkabridge.kafka;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +15,8 @@ public class KafkaEventPublisher {
 
   private final DefaultKafkaProducerFactory<String, String> producerFactory;
   private final KafkaTemplate<String, String> kafkaTemplate;
-  private final ObjectMapper objectMapper;
 
-  @Value("${kafka.topic.bridge-target:${kafka.topic.sorting-machine-event}}")
+  @Value("${kafka.topic.bridge-target:factory.raw-events}")
   private String topic;
 
   @Value("${kafka.producer.acks:all}")
@@ -52,10 +49,7 @@ public class KafkaEventPublisher {
   @Value("${kafka.producer.batch-size:32768}")
   private int batchSize;
 
-  public KafkaEventPublisher(ObjectMapper objectMapper,
-                             @Value("${kafka.bootstrap-servers}") String bootstrapServers) {
-    this.objectMapper = objectMapper;
-
+  public KafkaEventPublisher(@Value("${kafka.bootstrap-servers}") String bootstrapServers) {
     Map<String, Object> configuration = new HashMap<>();
     configuration.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     configuration.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -82,12 +76,8 @@ public class KafkaEventPublisher {
     producerFactory.updateConfigs(updates);
   }
 
-  public void publish(Object payload) {
-    try {
-      kafkaTemplate.send(topic, objectMapper.writeValueAsString(payload));
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to serialize Kafka payload", e);
-    }
+  public void publishRaw(String key, String rawPayload) {
+    kafkaTemplate.send(topic, key, rawPayload);
   }
 
   @PreDestroy

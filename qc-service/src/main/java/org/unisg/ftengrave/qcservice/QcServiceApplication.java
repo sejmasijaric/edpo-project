@@ -4,10 +4,7 @@ import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {
-        "org.unisg.ftengrave.qcservice",
-        "org.unisg.mqttkafkabridge"
-})
+@SpringBootApplication
 @EnableProcessApplication("qc-service")
 public class QcServiceApplication {
 

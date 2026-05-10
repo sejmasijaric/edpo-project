@@ -3,20 +3,21 @@ package org.unisg.mqttkafkabridge.mqtt;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.unisg.mqttkafkabridge.filter.MqttEventFilter;
 import org.unisg.mqttkafkabridge.kafka.KafkaEventPublisher;
 
 @Component
 @ConditionalOnProperty(name = "mqtt.bridge.enabled", havingValue = "true", matchIfMissing = true)
 public class MqttSubscriber implements MqttCallback {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(MqttSubscriber.class);
+
   private final KafkaEventPublisher kafkaEventPublisher;
-  private final MqttEventFilter<?> mqttEventFilter;
 
   @Value("${mqtt.broker.url}")
   private String brokerUrl;
@@ -35,9 +36,8 @@ public class MqttSubscriber implements MqttCallback {
 
   private MqttClient mqttClient;
 
-  public MqttSubscriber(KafkaEventPublisher kafkaEventPublisher, MqttEventFilter<?> mqttEventFilter) {
+  public MqttSubscriber(KafkaEventPublisher kafkaEventPublisher) {
     this.kafkaEventPublisher = kafkaEventPublisher;
-    this.mqttEventFilter = mqttEventFilter;
   }
 
   @PostConstruct
@@ -57,6 +57,7 @@ public class MqttSubscriber implements MqttCallback {
 
     mqttClient.connect(options);
     mqttClient.subscribe(topic);
+    LOGGER.info("Raw MQTT bridge subscribed to {} on {}", topic, brokerUrl);
   }
 
   @PreDestroy
@@ -71,13 +72,14 @@ public class MqttSubscriber implements MqttCallback {
 
   @Override
   public void connectionLost(Throwable cause) {
+    LOGGER.warn("MQTT bridge connection lost", cause);
   }
 
   @Override
   public void messageArrived(String topic, MqttMessage message) {
     String rawPayload = new String(message.getPayload(), StandardCharsets.UTF_8);
-    Optional<?> filteredEvent = mqttEventFilter.filter(topic, rawPayload);
-    filteredEvent.ifPresent(kafkaEventPublisher::publish);
+    LOGGER.debug("Forwarding raw MQTT message from {} to Kafka", topic);
+    kafkaEventPublisher.publishRaw(topic, rawPayload);
   }
 
   @Override
