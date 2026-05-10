@@ -23,9 +23,6 @@ public class KafkaTopicConfig {
   @Value("${kafka.topic.sorting-machine-event}")
   private String sortingMachineEventTopic;
 
-  @Value("${kafka.topic.raw-factory-event}")
-  private String rawFactoryEventTopic;
-
   @Value("${kafka.topic.replication-factor:3}")
   private short replicationFactor;
 
@@ -47,10 +44,5 @@ public class KafkaTopicConfig {
   @Bean
   public NewTopic sortingMachineEventTopic() {
     return new NewTopic(sortingMachineEventTopic, defaultPartitions, replicationFactor);
-  }
-
-  @Bean
-  public NewTopic rawFactoryEventTopic() {
-    return new NewTopic(rawFactoryEventTopic, defaultPartitions, replicationFactor);
   }
 }

@@ -1,12 +1,12 @@
-package org.unisg.ftengrave.engraverintegrationservice;
+package org.unisg.mqttkafkabridge;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class EngraverIntegrationServiceApplication {
+public class MqttKafkaBridgeApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(EngraverIntegrationServiceApplication.class, args);
+    SpringApplication.run(MqttKafkaBridgeApplication.class, args);
   }
 }

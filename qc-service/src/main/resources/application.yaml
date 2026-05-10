@@ -38,8 +38,3 @@ camunda.bpm:
   generic-properties:
     properties:
       historyTimeToLive: P1D
-
-mqtt:
-  broker:
-    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
-  topic: FTFactory/SM_1

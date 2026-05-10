@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted, revised by ADR 0013
 
 Date: 29.04.2026
 
@@ -49,10 +49,8 @@ The final translated events are published to the existing dedicated machine even
 - `polishing-machine-events`
 - `workstation-transport-events`
 
-Existing downstream services continue consuming their previous machine event topics. The machine
-integration services remain MQTT adapters, but their MQTT bridge configuration forwards raw
-factory payloads to `factory.raw-events` instead of invoking their legacy event filters.
-
-The legacy filter implementations remain available behind
-`mqtt.bridge.raw-forwarding-enabled=false` so the old path can still be used intentionally during
-local debugging or rollback, but the default Docker configuration uses the Kafka Streams topology.
+Existing downstream services continue consuming their previous machine event topics. This ADR
+originally kept raw MQTT adapters embedded in the machine integration services. ADR 0013 revises
+that deployment choice: `mqtt-kafka-bridge` now runs as a standalone raw ingestion service that
+forwards factory payloads to `factory.raw-events`. Legacy service-local MQTT filters have been
+removed; station translation is handled only by `factory-event-streams-service`.

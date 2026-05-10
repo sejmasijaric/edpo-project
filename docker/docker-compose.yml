@@ -17,27 +17,27 @@ x-kafka-common-env: &kafka-common-env
   KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
 
 x-mqtt-env: &mqtt-env
-  MQTT_BROKER_URL: ${MQTT_BROKER_URL}
+  MQTT_BROKER_URL: ${MQTT_BROKER_URL:-tcp://mqtt-broker:1883}
 
 x-sorter-endpoint: &sorter-endpoint
-  SORTER_HOST: ${SORTER_HOST}
-  SORTER_PORT: ${SORTER_PORT}
+  SORTER_HOST: ${SORTER_HOST:-factory-simulator}
+  SORTER_PORT: ${SORTER_PORT:-8081}
 
 x-vacuum-gripper-endpoint: &vacuum-gripper-endpoint
-  VACUUM_GRIPPER_HOST: ${VACUUM_GRIPPER_HOST}
-  VACUUM_GRIPPER_PORT: ${VACUUM_GRIPPER_PORT}
+  VACUUM_GRIPPER_HOST: ${VACUUM_GRIPPER_HOST:-factory-simulator}
+  VACUUM_GRIPPER_PORT: ${VACUUM_GRIPPER_PORT:-8081}
 
 x-engraver-endpoint: &engraver-endpoint
-  ENGRAVER_HOST: ${ENGRAVER_HOST}
-  ENGRAVER_PORT: ${ENGRAVER_PORT}
+  ENGRAVER_HOST: ${ENGRAVER_HOST:-factory-simulator}
+  ENGRAVER_PORT: ${ENGRAVER_PORT:-8081}
 
 x-polishing-machine-endpoint: &polishing-machine-endpoint
-  POLISHING_MACHINE_HOST: ${POLISHING_MACHINE_HOST}
-  POLISHING_MACHINE_PORT: ${POLISHING_MACHINE_PORT}
+  POLISHING_MACHINE_HOST: ${POLISHING_MACHINE_HOST:-factory-simulator}
+  POLISHING_MACHINE_PORT: ${POLISHING_MACHINE_PORT:-8081}
 
 x-workstation-transport-endpoint: &workstation-transport-endpoint
-  WORKSTATION_TRANSPORT_HOST: ${WORKSTATION_TRANSPORT_HOST}
-  WORKSTATION_TRANSPORT_PORT: ${WORKSTATION_TRANSPORT_PORT}
+  WORKSTATION_TRANSPORT_HOST: ${WORKSTATION_TRANSPORT_HOST:-factory-simulator}
+  WORKSTATION_TRANSPORT_PORT: ${WORKSTATION_TRANSPORT_PORT:-8081}
 
 services:
   kafka:
@@ -193,6 +193,22 @@ services:
       FACTORY_STREAMS_POLISHING_MACHINE_STATIONS: FTFactory/MM_1,MM_1,mm_1,polishing-machine
       FACTORY_STREAMS_WORKSTATION_TRANSPORT_STATIONS: FTFactory/WT_1,WT_1,wt_1,workstation-transport
 
+  mqtt-kafka-bridge:
+    build:
+      context: ..
+      dockerfile: mqtt-kafka-bridge/Dockerfile
+    depends_on:
+      - kafka
+      - kafka-2
+      - kafka-3
+    env_file:
+      - ./.env.mqtt.local
+    environment:
+      <<: [*kafka-env, *mqtt-env]
+      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
+      MQTT_TOPIC: ${MQTT_TOPIC:-FTFactory/#}
+      MQTT_CLIENT_ID: mqtt-kafka-bridge
+
   sorter-integration-service:
     build:
       context: ..
@@ -201,14 +217,10 @@ services:
       - kafka
       - kafka-2
       - kafka-3
-    env_file:
-      - ./.env.mqtt.local
     environment:
-      <<: [*kafka-env, *mqtt-env, *sorter-endpoint]
+      <<: [*kafka-env, *sorter-endpoint]
       KAFKA_TOPIC_SORTING_MACHINE_COMMAND: sorting-machine-commands
       KAFKA_TOPIC_SORTING_MACHINE_EVENT: sorting-machine-events
-      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
-      MQTT_TOPIC: FTFactory/SM_1
 
   vacuum-gripper-integration-service:
     build:
@@ -218,14 +230,10 @@ services:
       - kafka
       - kafka-2
       - kafka-3
-    env_file:
-      - ./.env.mqtt.local
     environment:
-      <<: [*kafka-env, *mqtt-env, *vacuum-gripper-endpoint]
+      <<: [*kafka-env, *vacuum-gripper-endpoint]
       KAFKA_TOPIC_VACUUM_GRIPPER_COMMAND: vacuum-gripper-commands
       KAFKA_TOPIC_VACUUM_GRIPPER_EVENT: vacuum-gripper-events
-      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
-      MQTT_TOPIC: FTFactory/VGR_1
 
   engraver-integration-service:
     build:
@@ -235,14 +243,10 @@ services:
       - kafka
       - kafka-2
       - kafka-3
-    env_file:
-      - ./.env.mqtt.local
     environment:
-      <<: [*kafka-env, *mqtt-env, *engraver-endpoint]
+      <<: [*kafka-env, *engraver-endpoint]
       KAFKA_TOPIC_ENGRAVER_COMMAND: engraver-commands
       KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
-      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
-      MQTT_TOPIC: FTFactory/OV_1
 
   polishing-machine-integration-service:
     build:
@@ -252,14 +256,10 @@ services:
       - kafka
       - kafka-2
       - kafka-3
-    env_file:
-      - ./.env.mqtt.local
     environment:
-      <<: [*kafka-env, *mqtt-env, *polishing-machine-endpoint]
+      <<: [*kafka-env, *polishing-machine-endpoint]
       KAFKA_TOPIC_POLISHING_MACHINE_COMMAND: polishing-machine-commands
       KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
-      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
-      MQTT_TOPIC: FTFactory/MM_1
 
   workstation-transport-integration-service:
     build:
@@ -269,14 +269,10 @@ services:
       - kafka
       - kafka-2
       - kafka-3
-    env_file:
-      - ./.env.mqtt.local
     environment:
-      <<: [*kafka-env, *mqtt-env, *workstation-transport-endpoint]
+      <<: [*kafka-env, *workstation-transport-endpoint]
       KAFKA_TOPIC_WORKSTATION_TRANSPORT_COMMAND: workstation-transport-commands
       KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
-      KAFKA_TOPIC_RAW_FACTORY_EVENT: factory.raw-events
-      MQTT_TOPIC: FTFactory/WT_1
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest

@@ -13,22 +13,9 @@ kafka:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
-    raw-factory-event: ${KAFKA_TOPIC_RAW_FACTORY_EVENT:factory.raw-events}
     sorting-machine-command: ${KAFKA_TOPIC_SORTING_MACHINE_COMMAND:sorting-machine-commands}
     sorting-machine-event: ${KAFKA_TOPIC_SORTING_MACHINE_EVENT:sorting-machine-events}
     sorting-machine: ${kafka.topic.sorting-machine-event}
-    bridge-target: ${KAFKA_TOPIC_BRIDGE_TARGET:${kafka.topic.raw-factory-event}}
-
-mqtt:
-  bridge:
-    enabled: ${MQTT_BRIDGE_ENABLED:true}
-    raw-forwarding-enabled: ${MQTT_BRIDGE_RAW_FORWARDING_ENABLED:true}
-  broker:
-    url: ${MQTT_BROKER_URL:tcp://localhost:1883}
-  topic: ${MQTT_TOPIC:FTFactory/SM_1}
-  client-id: ${MQTT_CLIENT_ID:sorter-integration-service}
-  username: ${MQTT_USERNAME:}
-  password: ${MQTT_PASSWORD:}
 
 sorter:
   protocol: ${SORTER_PROTOCOL:http}

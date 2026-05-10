@@ -15,7 +15,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      FACTORY_MQTT_BROKER_URL: ${MQTT_BROKER_URL}
+      FACTORY_MQTT_BROKER_URL: ${MQTT_BROKER_URL:-tcp://mqtt-broker:1883}
       FACTORY_MQTT_TOPIC: FTFactory/SM_1
       FACTORY_MQTT_PUBLISH_INTERVAL: 2s
 
@@ -24,44 +24,47 @@ services:
       - kafka
       - kafka-2
       - kafka-3
-      - mqtt-broker
-      - factory-simulator
+      - mqtt-kafka-bridge
 
   factory-event-streams-service:
     depends_on:
       - kafka
       - kafka-2
       - kafka-3
-      - sorter-integration-service
+      - mqtt-kafka-bridge
+
+  mqtt-kafka-bridge:
+    depends_on:
+      - kafka
+      - kafka-2
+      - kafka-3
+      - mqtt-broker
+      - factory-simulator
 
   vacuum-gripper-integration-service:
     depends_on:
       - kafka
       - kafka-2
       - kafka-3
-      - mqtt-broker
-      - factory-simulator
+      - mqtt-kafka-bridge
 
   engraver-integration-service:
     depends_on:
       - kafka
       - kafka-2
       - kafka-3
-      - mqtt-broker
-      - factory-simulator
+      - mqtt-kafka-bridge
 
   polishing-machine-integration-service:
     depends_on:
       - kafka
       - kafka-2
       - kafka-3
-      - mqtt-broker
-      - factory-simulator
+      - mqtt-kafka-bridge
 
   workstation-transport-integration-service:
     depends_on:
       - kafka
       - kafka-2
       - kafka-3
-      - mqtt-broker
-      - factory-simulator
+      - mqtt-kafka-bridge
