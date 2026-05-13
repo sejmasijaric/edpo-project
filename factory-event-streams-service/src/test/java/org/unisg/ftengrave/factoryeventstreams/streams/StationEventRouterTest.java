@@ -22,7 +22,14 @@ class StationEventRouterTest {
 
       @Override
       public List<TranslatedMachineEvent> translate(SensorLevelEvent event) {
-        return List.of(new TranslatedMachineEvent("sorting-machine-events", "event", "{}"));
+        return List.of(new TranslatedMachineEvent(
+            "sorting-machine-events",
+            "event",
+            "{}",
+            "item-42",
+            "SM_1",
+            "2026-04-02T10:15:30Z",
+            "FTFactory/SM_1"));
       }
     };
     StationEventRouter router = new StationEventRouter(List.of(translator));

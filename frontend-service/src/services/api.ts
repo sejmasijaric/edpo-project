@@ -1,4 +1,5 @@
 import type { Order, OrderStatus } from "@/types/order"
+import type { LatestItemStatus } from "@/types/machine-event"
 
 const API_BASE = "/api"
 
@@ -63,6 +64,21 @@ export async function updateOrderStatus(
   }
 
   return parseOrder(await res.json())
+}
+
+export async function fetchLatestItemStatus(
+  itemIdentifier: string
+): Promise<LatestItemStatus> {
+  const res = await fetch(
+    `${API_BASE}/orders/${encodeURIComponent(itemIdentifier)}/latest-status`
+  )
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Latest status not found" }))
+    throw new Error(err.error)
+  }
+
+  return res.json()
 }
 
 function parseOrder(data: Record<string, unknown>): Order {

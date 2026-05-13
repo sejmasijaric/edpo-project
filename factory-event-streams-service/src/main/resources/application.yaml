@@ -20,6 +20,7 @@ kafka:
     engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}
     polishing-machine-event: ${KAFKA_TOPIC_POLISHING_MACHINE_EVENT:polishing-machine-events}
     workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
+    latest-item-status: ${KAFKA_TOPIC_LATEST_ITEM_STATUS:factory.latest-status}
 
 factory-streams:
   qc:

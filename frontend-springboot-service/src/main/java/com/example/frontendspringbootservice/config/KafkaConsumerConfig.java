@@ -1,5 +1,6 @@
 package com.example.frontendspringbootservice.config;
 
+import com.example.frontendspringbootservice.dto.LatestItemStatus;
 import com.example.frontendspringbootservice.dto.MachineOrchestrationEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -47,6 +48,29 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, MachineOrchestrationEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(machineOrchestrationConsumerFactory);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, LatestItemStatus> latestItemStatusConsumerFactory(ObjectMapper objectMapper) {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId + "-latest-status-v1");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+        DefaultKafkaConsumerFactory<String, LatestItemStatus> factory =
+                new DefaultKafkaConsumerFactory<>(props);
+        factory.setValueDeserializer(new Jackson3Deserializer<>(objectMapper, LatestItemStatus.class));
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, LatestItemStatus> latestItemStatusListenerContainerFactory(
+            ConsumerFactory<String, LatestItemStatus> latestItemStatusConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, LatestItemStatus> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(latestItemStatusConsumerFactory);
         return factory;
     }
 

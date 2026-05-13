@@ -3,6 +3,14 @@ export interface MachineOrchestrationEvent {
   outcomeType: string
 }
 
+export interface LatestItemStatus {
+  itemIdentifier: string
+  station: string
+  outcomeType: string
+  timestamp: string
+  sourceTopic: string
+}
+
 export const OUTCOME_LABELS: Record<string, string> = {
   "intake-completed": "Intake Completed",
   "manufacturing-completed": "Manufacturing Completed",

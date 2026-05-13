@@ -10,6 +10,13 @@ vi.mock("@/services/api", () => ({
     createdAt: order.createdAt,
   })),
   fetchOrders: vi.fn(async () => []),
+  fetchLatestItemStatus: vi.fn(async (itemIdentifier: string) => ({
+    itemIdentifier,
+    station: "WT_1",
+    outcomeType: "in_progress",
+    timestamp: "2026-05-13T12:34:56Z",
+    sourceTopic: "factory.raw-events",
+  })),
   updateOrderStatus: vi.fn(
     async (orderId: string, status: string) =>
       // Return a minimal order with the updated status
