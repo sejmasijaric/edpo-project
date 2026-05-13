@@ -155,21 +155,21 @@ services:
     volumes:
       - manufacturing-service-data:/app/data
 
-  kafka-inspector-service:
-    build:
-      context: ..
-      dockerfile: kafka-inspector-service/Dockerfile
-    depends_on:
-      - kafka
-      - kafka-2
-      - kafka-3
-    ports:
-      - "8102:8102"
-    environment:
-      <<: *kafka-env
-      KAFKA_TOPIC_SUBSCRIBE: sorting-machine-events
-      KAFKA_TOPIC_PUBLISH: sorting-machine-events
-      KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine-commands
+  # kafka-inspector-service:
+  #   build:
+  #     context: ..
+  #     dockerfile: kafka-inspector-service/Dockerfile
+  #   depends_on:
+  #     - kafka
+  #     - kafka-2
+  #     - kafka-3
+  #   ports:
+  #     - "8102:8102"
+  #   environment:
+  #     <<: *kafka-env
+  #     KAFKA_TOPIC_SUBSCRIBE: sorting-machine-events
+  #     KAFKA_TOPIC_PUBLISH: sorting-machine-events
+  #     KAFKA_TOPIC_COMMAND_PUBLISH: sorting-machine-commands
 
   factory-event-streams-service:
     build:

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 import org.apache.kafka.common.serialization.Serdes;
@@ -29,8 +30,11 @@ class FactoryEventStreamsTopologyTest {
         new RawFactoryEventSplitter(objectMapper),
         new SensorDuplicateFilter(),
         new StationEventRouter(List.of(sortingTranslator)),
+        stationMapper(objectMapper),
+        new RawFactoryEventEnricher(objectMapper, stationMapper(objectMapper)),
         objectMapper,
-        "factory.raw-events");
+        "factory.raw-events",
+        "stage-orchestration");
     topology.factoryEventStream(streamsBuilder);
 
     Properties properties = new Properties();
@@ -42,11 +46,18 @@ class FactoryEventStreamsTopologyTest {
           "factory.raw-events",
           Serdes.String().serializer(),
           Serdes.String().serializer());
+      TestInputTopic<String, String> commandTopic = testDriver.createInputTopic(
+          "stage-orchestration",
+          Serdes.String().serializer(),
+          Serdes.String().serializer());
       TestOutputTopic<String, String> outputTopic = testDriver.createOutputTopic(
           "sorting-machine-events",
           Serdes.String().deserializer(),
           Serdes.String().deserializer());
 
+      commandTopic.pipeInput("item-42", """
+          {"commandType":"run-item-qc-command","itemIdentifier":"item-42","targetColor":"RED"}
+          """, Instant.parse("2026-04-02T10:15:00Z"));
       inputTopic.pipeInput("FTFactory/SM_1", """
           {
             "id":"evt-1",
@@ -65,7 +76,7 @@ class FactoryEventStreamsTopologyTest {
 
       KeyValue<String, String> output = outputTopic.readKeyValue();
       assertEquals("color-detected", output.key);
-      assertEquals("{\"eventType\":\"color-detected\",\"color\":\"red\"}", output.value);
+      assertEquals("{\"eventType\":\"color-detected\",\"color\":\"red\",\"itemIdentifier\":\"item-42\"}", output.value);
       assertTrue(outputTopic.isEmpty());
     }
   }
@@ -80,8 +91,11 @@ class FactoryEventStreamsTopologyTest {
         new RawFactoryEventSplitter(objectMapper),
         new SensorDuplicateFilter(),
         new StationEventRouter(List.of(vacuumTranslator)),
+        stationMapper(objectMapper),
+        new RawFactoryEventEnricher(objectMapper, stationMapper(objectMapper)),
         objectMapper,
-        "factory.raw-events");
+        "factory.raw-events",
+        "stage-orchestration");
     topology.factoryEventStream(streamsBuilder);
 
     Properties properties = new Properties();
@@ -93,11 +107,18 @@ class FactoryEventStreamsTopologyTest {
           "factory.raw-events",
           Serdes.String().serializer(),
           Serdes.String().serializer());
+      TestInputTopic<String, String> commandTopic = testDriver.createInputTopic(
+          "stage-orchestration",
+          Serdes.String().serializer(),
+          Serdes.String().serializer());
       TestOutputTopic<String, String> outputTopic = testDriver.createOutputTopic(
           "vacuum-gripper-events",
           Serdes.String().deserializer(),
           Serdes.String().deserializer());
 
+      commandTopic.pipeInput("item-42", """
+          {"commandType":"run-item-intake-command","itemIdentifier":"item-42","targetColor":"RED"}
+          """, Instant.parse("2026-04-02T10:15:00Z"));
       inputTopic.pipeInput("FTFactory/VGR_1", """
           {
             "id":"evt-2",
@@ -112,8 +133,18 @@ class FactoryEventStreamsTopologyTest {
 
       KeyValue<String, String> output = outputTopic.readKeyValue();
       assertEquals("item-arrived-at-intake", output.key);
-      assertEquals("{\"eventType\":\"item-arrived-at-intake\"}", output.value);
+      assertEquals("{\"eventType\":\"item-arrived-at-intake\",\"itemIdentifier\":\"item-42\"}", output.value);
       assertTrue(outputTopic.isEmpty());
     }
+  }
+
+  private StageCommandStationMapper stationMapper(ObjectMapper objectMapper) {
+    return new StageCommandStationMapper(
+        objectMapper,
+        "FTFactory/VGR_1,VGR_1",
+        "FTFactory/OV_1,OV_1",
+        "FTFactory/MM_1,MM_1",
+        "FTFactory/WT_1,WT_1",
+        "FTFactory/SM_1,SM_1");
   }
 }

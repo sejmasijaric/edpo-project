@@ -28,9 +28,12 @@ public class RawFactoryEventSplitter {
     try {
       JsonNode root = objectMapper.readTree(rawPayload);
       String originalEventId = text(root, "id");
-      String station = station(root, sourceTopic);
+      String originalSourceTopic = originalSourceTopic(root, sourceTopic);
+      String station = station(root, originalSourceTopic);
       String timestamp = text(root, "timestamp");
-      Map<String, String> metadata = metadata(root, sourceTopic);
+      String itemIdentifier = text(root, RawFactoryEventEnricher.ITEM_IDENTIFIER_FIELD);
+      String orchestrationStation = text(root, RawFactoryEventEnricher.ORCHESTRATION_STATION_FIELD);
+      Map<String, String> metadata = metadata(root, originalSourceTopic);
       List<KeyValue<String, SensorLevelEvent>> sensorEvents = new ArrayList<>();
 
       Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
@@ -41,11 +44,13 @@ public class RawFactoryEventSplitter {
         }
         SensorLevelEvent event = new SensorLevelEvent(
             originalEventId,
-            sourceTopic,
+            originalSourceTopic,
             station,
             timestamp,
             field.getKey(),
             sensorValue(field.getValue()),
+            itemIdentifier,
+            orchestrationStation,
             metadata);
         sensorEvents.add(KeyValue.pair(event.sensorKey(), event));
       }
@@ -69,7 +74,23 @@ public class RawFactoryEventSplitter {
     if (root.hasNonNull("current_task_duration")) {
       metadata.put("currentTaskDuration", root.get("current_task_duration").asText());
     }
+    if (root.hasNonNull(RawFactoryEventEnricher.ITEM_IDENTIFIER_FIELD)) {
+      metadata.put("itemIdentifier", root.get(RawFactoryEventEnricher.ITEM_IDENTIFIER_FIELD).asText());
+    }
+    if (root.hasNonNull(RawFactoryEventEnricher.ORCHESTRATION_STATION_FIELD)) {
+      metadata.put("orchestrationStation",
+          root.get(RawFactoryEventEnricher.ORCHESTRATION_STATION_FIELD).asText());
+    }
+    if (root.hasNonNull(RawFactoryEventEnricher.ITEM_STATION_VALID_FROM_FIELD)) {
+      metadata.put("itemStationValidFromTimestamp",
+          root.get(RawFactoryEventEnricher.ITEM_STATION_VALID_FROM_FIELD).asText());
+    }
     return metadata;
+  }
+
+  private String originalSourceTopic(JsonNode root, String sourceTopic) {
+    String originalSourceTopic = text(root, RawFactoryEventEnricher.SOURCE_TOPIC_FIELD);
+    return originalSourceTopic == null || originalSourceTopic.isBlank() ? sourceTopic : originalSourceTopic;
   }
 
   private String station(JsonNode root, String sourceTopic) {
@@ -86,7 +107,11 @@ public class RawFactoryEventSplitter {
         || "station".equals(fieldName)
         || "timestamp".equals(fieldName)
         || "current_task".equals(fieldName)
-        || "current_task_duration".equals(fieldName);
+        || "current_task_duration".equals(fieldName)
+        || RawFactoryEventEnricher.SOURCE_TOPIC_FIELD.equals(fieldName)
+        || RawFactoryEventEnricher.ITEM_IDENTIFIER_FIELD.equals(fieldName)
+        || RawFactoryEventEnricher.ORCHESTRATION_STATION_FIELD.equals(fieldName)
+        || RawFactoryEventEnricher.ITEM_STATION_VALID_FROM_FIELD.equals(fieldName);
   }
 
   private String sensorValue(JsonNode value) {

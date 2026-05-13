@@ -39,7 +39,7 @@ public class WorkstationTransportSensorTranslator extends AbstractStationSensorT
     completedByStation.put(event.getStation(), completedNow);
 
     if (completedNow && !completedBefore) {
-      return List.of(toTranslatedMachineEvent(MOVE_COMPLETED_EVENT));
+      return List.of(toTranslatedMachineEvent(MOVE_COMPLETED_EVENT, event.getItemIdentifier()));
     }
     return List.of();
   }
