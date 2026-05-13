@@ -6,7 +6,11 @@ import com.example.frontendspringbootservice.model.OrderStatus;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -250,6 +254,44 @@ class OrderIntegrationTest {
         }
     }
 
+    @Test
+    void latestStatusQuery_returnsOnlyNewestStatusForItem() throws Exception {
+        try (var producer = createKafkaProducer()) {
+            producer.send(new ProducerRecord<>(
+                    "factory.latest-status",
+                    "ITEM-2001",
+                    """
+                    {"itemIdentifier":"ITEM-2001","station":"VGR_1","outcomeType":"item-arrived-at-intake","timestamp":"2026-05-13T12:30:00Z","sourceTopic":"factory.raw-events","eventTimestampEpochMillis":1778675400000}
+                    """)).get();
+            producer.send(new ProducerRecord<>(
+                    "factory.latest-status",
+                    "ITEM-2001",
+                    """
+                    {"itemIdentifier":"ITEM-2001","station":"WT_1","outcomeType":"in_progress","timestamp":"2026-05-13T12:34:56Z","sourceTopic":"factory.raw-events","eventTimestampEpochMillis":1778675696000}
+                    """)).get();
+            producer.flush();
+        }
+
+        var deadline = Instant.now().plusSeconds(10);
+        AssertionError lastError = null;
+        while (Instant.now().isBefore(deadline)) {
+            try {
+                mockMvc.perform(get("/api/orders/ITEM-2001/latest-status"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.itemIdentifier").value("ITEM-2001"))
+                        .andExpect(jsonPath("$.station").value("WT_1"))
+                        .andExpect(jsonPath("$.outcomeType").value("in_progress"))
+                        .andExpect(jsonPath("$.timestamp").value("2026-05-13T12:34:56Z"))
+                        .andExpect(jsonPath("$.sourceTopic").value("factory.raw-events"));
+                return;
+            } catch (AssertionError error) {
+                lastError = error;
+                Thread.sleep(250);
+            }
+        }
+        throw lastError == null ? new AssertionError("Latest status was not queryable") : lastError;
+    }
+
     // --- JSON serialization ---
 
     @Test
@@ -302,5 +344,14 @@ class OrderIntegrationTest {
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class
         );
         return new KafkaConsumer<>(props);
+    }
+
+    private KafkaProducer<String, String> createKafkaProducer() {
+        var props = Map.<String, Object>of(
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers(),
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class
+        );
+        return new KafkaProducer<>(props);
     }
 }

@@ -187,6 +187,7 @@ services:
       KAFKA_TOPIC_ENGRAVER_EVENT: engraver-events
       KAFKA_TOPIC_POLISHING_MACHINE_EVENT: polishing-machine-events
       KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT: workstation-transport-events
+      KAFKA_TOPIC_LATEST_ITEM_STATUS: factory.latest-status
       FACTORY_STREAMS_QC_STATIONS: FTFactory/SM_1,SM_1,sm_1,sorting-machine,sorter
       FACTORY_STREAMS_VACUUM_GRIPPER_STATIONS: FTFactory/VGR_1,VGR_1,vgr_1,vacuum-gripper
       FACTORY_STREAMS_ENGRAVER_STATIONS: FTFactory/OV_1,OV_1,oven,engraver
@@ -298,6 +299,7 @@ services:
       - "8082:8081"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_ADDRESS:-kafka:9092,kafka-2:9092,kafka-3:9092}
+      APP_KAFKA_TOPIC_LATEST_ITEM_STATUS: factory.latest-status
 
   frontend-service:
     build:

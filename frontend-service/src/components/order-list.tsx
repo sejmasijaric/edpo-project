@@ -1,6 +1,6 @@
 import type { Order, OrderStatus } from "@/types/order"
 import { getColorConfig } from "@/types/order"
-import type { MachineOrchestrationEvent } from "@/types/machine-event"
+import type { LatestItemStatus, MachineOrchestrationEvent } from "@/types/machine-event"
 import { getOutcomeLabel, getOutcomeStatus } from "@/types/machine-event"
 import {
   Card,
@@ -36,6 +36,8 @@ interface OrderListProps {
   renderActions?: (order: Order) => React.ReactNode
   events?: MachineOrchestrationEvent[]
   connected?: boolean
+  highlightedItemIdentifier?: string
+  latestStatus?: LatestItemStatus | null
 }
 
 export function OrderList({
@@ -46,6 +48,8 @@ export function OrderList({
   renderActions,
   events = [],
   connected,
+  highlightedItemIdentifier,
+  latestStatus,
 }: OrderListProps) {
   const eventsByOrder = groupEventsByOrder(events)
 
@@ -78,10 +82,13 @@ export function OrderList({
           <div className="space-y-3">
             {orders.map((order, index) => {
               const orderEvents = eventsByOrder[order.id] ?? []
+              const isHighlighted = highlightedItemIdentifier === order.id
               return (
                 <div key={order.id}>
                   {index > 0 && <Separator className="mb-3" />}
-                  <div className="flex items-start justify-between gap-4">
+                  <div
+                    className={`flex items-start justify-between gap-4 rounded-md p-2 ${isHighlighted ? "bg-primary/5 ring-1 ring-primary/40" : ""}`}
+                  >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span
@@ -111,6 +118,11 @@ export function OrderList({
                             </Badge>
                           ))}
                         </div>
+                      )}
+                      {isHighlighted && latestStatus && (
+                        <p className="text-xs font-medium text-primary">
+                          Latest: {latestStatus.station} - {getOutcomeLabel(latestStatus.outcomeType)}
+                        </p>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1">

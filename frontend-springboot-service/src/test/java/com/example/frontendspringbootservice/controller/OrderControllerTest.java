@@ -1,8 +1,10 @@
 package com.example.frontendspringbootservice.controller;
 
+import com.example.frontendspringbootservice.dto.LatestItemStatus;
 import com.example.frontendspringbootservice.model.Order;
 import com.example.frontendspringbootservice.model.OrderColor;
 import com.example.frontendspringbootservice.model.OrderStatus;
+import com.example.frontendspringbootservice.service.LatestItemStatusQueryService;
 import com.example.frontendspringbootservice.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,6 +32,9 @@ class OrderControllerTest {
 
     @MockitoBean
     private OrderService orderService;
+
+    @MockitoBean
+    private LatestItemStatusQueryService latestItemStatusQueryService;
 
     private Order sampleOrder(String id, OrderColor color, OrderStatus status, String engravedText) {
         return new Order(id, color, engravedText, status, Instant.parse("2026-04-07T10:00:00Z"));
@@ -143,6 +149,36 @@ class OrderControllerTest {
         mockMvc.perform(get("/api/orders/ghost"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Order not found: ghost"));
+    }
+
+    @Test
+    void getLatestStatus_returnsStatus() throws Exception {
+        when(latestItemStatusQueryService.findByItemIdentifier("ITEM-2001"))
+                .thenReturn(Optional.of(new LatestItemStatus(
+                        "ITEM-2001",
+                        "WT_1",
+                        "in_progress",
+                        "2026-05-13T12:34:56Z",
+                        "factory.raw-events",
+                        Instant.parse("2026-05-13T12:34:56Z").toEpochMilli())));
+
+        mockMvc.perform(get("/api/orders/ITEM-2001/latest-status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemIdentifier").value("ITEM-2001"))
+                .andExpect(jsonPath("$.station").value("WT_1"))
+                .andExpect(jsonPath("$.outcomeType").value("in_progress"))
+                .andExpect(jsonPath("$.timestamp").value("2026-05-13T12:34:56Z"))
+                .andExpect(jsonPath("$.sourceTopic").value("factory.raw-events"));
+    }
+
+    @Test
+    void getLatestStatus_notFoundReturns404() throws Exception {
+        when(latestItemStatusQueryService.findByItemIdentifier("missing"))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/orders/missing/latest-status"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Latest status not found for item: missing"));
     }
 
     // --- PATCH /api/orders/{id}/status ---

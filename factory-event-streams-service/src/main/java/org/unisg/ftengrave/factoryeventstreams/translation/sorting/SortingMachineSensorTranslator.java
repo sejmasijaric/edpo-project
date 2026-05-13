@@ -74,17 +74,24 @@ public class SortingMachineSensorTranslator implements StationSensorTranslator {
     };
 
     return translatedEvent
-        .map(this::toTranslatedMachineEvent)
+        .map(translated -> toTranslatedMachineEvent(translated, event))
         .map(List::of)
         .orElseGet(List::of);
   }
 
-  private TranslatedMachineEvent toTranslatedMachineEvent(SortingMachineEventDto event) {
+  private TranslatedMachineEvent toTranslatedMachineEvent(
+      SortingMachineEventDto event, SensorLevelEvent sourceEvent) {
     try {
       LOGGER.info("Translated sorting-machine sensor event to business event {}",
           event.getEventType());
       return new TranslatedMachineEvent(
-          outputTopic, event.getEventType(), objectMapper.writeValueAsString(event));
+          outputTopic,
+          event.getEventType(),
+          objectMapper.writeValueAsString(event),
+          sourceEvent.getItemIdentifier(),
+          sourceEvent.getStation(),
+          sourceEvent.getTimestamp(),
+          sourceEvent.getSourceTopic());
     } catch (JsonProcessingException exception) {
       throw new IllegalStateException("Failed to serialize sorting-machine event", exception);
     }

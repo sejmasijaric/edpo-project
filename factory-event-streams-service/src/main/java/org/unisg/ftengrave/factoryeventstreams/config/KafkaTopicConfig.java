@@ -2,6 +2,7 @@ package org.unisg.ftengrave.factoryeventstreams.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,9 @@ public class KafkaTopicConfig {
 
   @Value("${kafka.topic.workstation-transport-event}")
   private String workstationTransportEventTopic;
+
+  @Value("${kafka.topic.latest-item-status}")
+  private String latestItemStatusTopic;
 
   @Value("${kafka.topic.replication-factor:3}")
   private short replicationFactor;
@@ -76,5 +80,11 @@ public class KafkaTopicConfig {
   @Bean
   public NewTopic workstationTransportEventTopic() {
     return new NewTopic(workstationTransportEventTopic, defaultPartitions, replicationFactor);
+  }
+
+  @Bean
+  public NewTopic latestItemStatusTopic() {
+    return new NewTopic(latestItemStatusTopic, defaultPartitions, replicationFactor)
+        .configs(Map.of(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT));
   }
 }

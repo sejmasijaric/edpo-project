@@ -30,6 +30,7 @@ describe("CustomerPage", () => {
     expect(screen.getByLabelText("Blue")).toBeInTheDocument()
     expect(screen.getByLabelText(/engraved text/i)).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /submit order/i })).toBeInTheDocument()
+    expect(screen.getByLabelText(/track order/i)).toBeInTheDocument()
   })
 
   it("shows character count for engraved text", async () => {
@@ -95,6 +96,18 @@ describe("CustomerPage", () => {
     await screen.findByText("Order submitted successfully!")
     expect(screen.getByLabelText(/engraved text/i)).toHaveValue("")
     expect(screen.getByText("0/20")).toBeInTheDocument()
+  })
+
+  it("tracks latest status by item identifier", async () => {
+    const user = userEvent.setup()
+    renderCustomerPage()
+
+    await user.type(screen.getByLabelText(/track order/i), "ITEM-2001")
+    await user.click(screen.getByRole("button", { name: /^track$/i }))
+
+    expect(await screen.findByText("ITEM-2001")).toBeInTheDocument()
+    expect(screen.getByText(/WT_1 - in_progress/)).toBeInTheDocument()
+    expect(screen.getByText(/factory.raw-events/)).toBeInTheDocument()
   })
 })
 
