@@ -131,6 +131,20 @@ describe("Order History", () => {
     expect(screen.queryByText(/no orders yet/i)).not.toBeInTheDocument()
   })
 
+  it("shows the last order id after submission and fills tracking input", async () => {
+    const user = userEvent.setup()
+    renderCustomerPage()
+
+    await user.click(screen.getByLabelText("Red"))
+    await user.click(screen.getByRole("button", { name: /submit order/i }))
+
+    const lastOrder = await screen.findByText("Last order ID:")
+    const orderId = lastOrder.nextElementSibling?.textContent
+
+    expect(orderId).toBeTruthy()
+    expect(screen.getByLabelText(/track order/i)).toHaveValue(orderId)
+  })
+
   it("displays engraved text in order history", async () => {
     const user = userEvent.setup()
     renderCustomerPage()

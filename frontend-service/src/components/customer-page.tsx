@@ -42,6 +42,7 @@ export function CustomerPage({
   const [trackedItemIdentifier, setTrackedItemIdentifier] = useState("")
   const [trackedStatus, setTrackedStatus] = useState<LatestItemStatus | null>(null)
   const [tracking, setTracking] = useState(false)
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,6 +63,8 @@ export function CustomerPage({
 
       toast.success("Order submitted successfully!")
       setOrders((prev) => [order, ...prev])
+      setLastOrderId(order.id)
+      setTrackedItemIdentifier(order.id)
       setColor("")
       setEngravedText("")
     } catch (err) {
@@ -140,6 +143,12 @@ export function CustomerPage({
             <Button type="submit" className="w-full" disabled={submitting}>
               {submitting ? "Submitting..." : "Submit Order"}
             </Button>
+            {lastOrderId && (
+              <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                <span className="text-muted-foreground">Last order ID: </span>
+                <span className="font-medium">{lastOrderId}</span>
+              </div>
+            )}
           </form>
 
           <Separator className="my-6" />
