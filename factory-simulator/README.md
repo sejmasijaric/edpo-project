@@ -9,7 +9,7 @@ Standalone Spring Boot application for simulating sinks and items in a smart fac
 - Supports listing, deleting, and moving items between sinks through an HTTP API
 - Supports a vacuum gripper endpoint that transports items between machine-specific sink aliases
 - Supports simulator-side controls for vacuum gripper failure injection
-- Publishes sorter, vacuum gripper, oven, milling machine, and workstation transport MQTT snapshots every 2 seconds so the integration layer can react to sensor changes
+- Publishes sorter, vacuum gripper, oven, milling machine, and workstation transport MQTT snapshots every 0.4 seconds so the integration layer can react to sensor changes
 - Renders a web UI with sinks positioned on top of a factory layout and an item-management control panel
 
 ## Run
@@ -20,7 +20,7 @@ mvn spring-boot:run
 
 The UI is available on `http://localhost:8081`.
 
-When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1`, vacuum gripper events to `FTFactory/VGR_1`, oven events to `FTFactory/OV_1`, milling machine events to `FTFactory/MM_1`, and workstation transport events to `FTFactory/WT_1` every 2 seconds. The vacuum gripper maps `i7_light_barrier` to `SINK-I1` and `i4_light_barrier` to `SINK-I2`. The oven maps `i5_light_barrier` to `VGR-oven`. The milling machine maps `i4_light_barrier` to `MM-ejection`. The workstation transport publishes only `timestamp`, `current_task`, and `current_task_duration`.
+When the local MQTT broker is reachable, the simulator publishes sorter events to `FTFactory/SM_1`, vacuum gripper events to `FTFactory/VGR_1`, oven events to `FTFactory/OV_1`, milling machine events to `FTFactory/MM_1`, and workstation transport events to `FTFactory/WT_1` every 0.4 seconds. The vacuum gripper maps `i7_light_barrier` to `SINK-I1` and `i4_light_barrier` to `SINK-I2`. The oven maps `i5_light_barrier` to `VGR-oven`. The milling machine maps `i4_light_barrier` to `MM-ejection`. The workstation transport publishes only `timestamp`, `current_task`, and `current_task_duration`.
 
 ## Vacuum Grippers
 
@@ -53,7 +53,7 @@ The simulator publishes MQTT payload shapes for the integration services:
 - Oven topic: `FTFactory/OV_1`
 - Milling machine topic: `FTFactory/MM_1`
 - Workstation transport topic: `FTFactory/WT_1`
-- Interval: `2s`
+- Interval: `400ms`
 - Sorter relevant field: `i3_light_barrier`
 - Vacuum gripper relevant fields: `i7_light_barrier`, `i4_light_barrier`, `current_task`, `current_task_duration`
 - Oven relevant fields: `i5_light_barrier`, `current_task`, `current_task_duration`

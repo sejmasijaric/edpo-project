@@ -18,7 +18,7 @@ public class FactoryMqttProperties {
   private String millingMachineClientId = "factory-simulator-mm";
   private String workstationTransportTopic = "FTFactory/WT_1";
   private String workstationTransportClientId = "factory-simulator-wt";
-  private Duration publishInterval = Duration.ofSeconds(2);
+  private Duration publishInterval = Duration.ofMillis(400);
 
   public boolean isEnabled() {
     return enabled;
