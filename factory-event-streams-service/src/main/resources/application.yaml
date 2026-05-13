@@ -14,6 +14,7 @@ kafka:
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
     default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
     raw-factory-event: ${KAFKA_TOPIC_RAW_FACTORY_EVENT:factory.raw-events}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
     sorting-machine-event: ${KAFKA_TOPIC_SORTING_MACHINE_EVENT:sorting-machine-events}
     vacuum-gripper-event: ${KAFKA_TOPIC_VACUUM_GRIPPER_EVENT:vacuum-gripper-events}
     engraver-event: ${KAFKA_TOPIC_ENGRAVER_EVENT:engraver-events}

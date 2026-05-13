@@ -27,7 +27,9 @@ class SortingMachineSensorTranslatorTest {
     assertEquals(1, events.size());
     assertEquals("sorting-machine-events", events.getFirst().topic());
     assertEquals("color-detected", events.getFirst().key());
-    assertEquals("{\"eventType\":\"color-detected\",\"color\":\"red\"}", events.getFirst().payloadJson());
+    assertEquals(
+        "{\"eventType\":\"color-detected\",\"color\":\"red\",\"itemIdentifier\":\"item-42\"}",
+        events.getFirst().payloadJson());
   }
 
   @Test
@@ -38,7 +40,9 @@ class SortingMachineSensorTranslatorTest {
     translator.translate(event("i2_color_sensor", "1800"));
     List<TranslatedMachineEvent> events = translator.translate(event("i2_color_sensor", "950"));
 
-    assertEquals("{\"eventType\":\"color-detected\",\"color\":\"white\"}", events.getFirst().payloadJson());
+    assertEquals(
+        "{\"eventType\":\"color-detected\",\"color\":\"white\",\"itemIdentifier\":\"item-42\"}",
+        events.getFirst().payloadJson());
   }
 
   @Test
@@ -48,13 +52,17 @@ class SortingMachineSensorTranslatorTest {
     List<TranslatedMachineEvent> release = translator.translate(event("i3_light_barrier", "1"));
 
     assertTrue(firstIdleObservation.isEmpty());
-    assertEquals("{\"eventType\":\"item-arrived-at-qc\",\"color\":null}", arrival.getFirst().payloadJson());
-    assertEquals("{\"eventType\":\"item-left-qc\",\"color\":null}", release.getFirst().payloadJson());
+    assertEquals(
+        "{\"eventType\":\"item-arrived-at-qc\",\"color\":null,\"itemIdentifier\":\"item-42\"}",
+        arrival.getFirst().payloadJson());
+    assertEquals(
+        "{\"eventType\":\"item-left-qc\",\"color\":null,\"itemIdentifier\":\"item-42\"}",
+        release.getFirst().payloadJson());
   }
 
   private SensorLevelEvent event(String sensorName, String sensorValue) {
     return new SensorLevelEvent(
         "evt-1", "FTFactory/SM_1", "SM_1", "2026-04-02T10:15:30Z",
-        sensorName, sensorValue, Map.of());
+        sensorName, sensorValue, "item-42", "OC", Map.of());
   }
 }

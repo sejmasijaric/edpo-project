@@ -11,6 +11,8 @@ public class SensorLevelEvent {
   private String timestamp;
   private String sensorName;
   private String sensorValue;
+  private String itemIdentifier;
+  private String orchestrationStation;
   private Map<String, String> metadata = new LinkedHashMap<>();
 
   public SensorLevelEvent() {
@@ -23,6 +25,8 @@ public class SensorLevelEvent {
       String timestamp,
       String sensorName,
       String sensorValue,
+      String itemIdentifier,
+      String orchestrationStation,
       Map<String, String> metadata) {
     this.originalEventId = originalEventId;
     this.sourceTopic = sourceTopic;
@@ -30,7 +34,29 @@ public class SensorLevelEvent {
     this.timestamp = timestamp;
     this.sensorName = sensorName;
     this.sensorValue = sensorValue;
+    this.itemIdentifier = itemIdentifier;
+    this.orchestrationStation = orchestrationStation;
     this.metadata = metadata;
+  }
+
+  public SensorLevelEvent(
+      String originalEventId,
+      String sourceTopic,
+      String station,
+      String timestamp,
+      String sensorName,
+      String sensorValue,
+      Map<String, String> metadata) {
+    this(
+        originalEventId,
+        sourceTopic,
+        station,
+        timestamp,
+        sensorName,
+        sensorValue,
+        null,
+        null,
+        metadata);
   }
 
   public String getOriginalEventId() {
@@ -79,6 +105,22 @@ public class SensorLevelEvent {
 
   public void setSensorValue(String sensorValue) {
     this.sensorValue = sensorValue;
+  }
+
+  public String getItemIdentifier() {
+    return itemIdentifier;
+  }
+
+  public void setItemIdentifier(String itemIdentifier) {
+    this.itemIdentifier = itemIdentifier;
+  }
+
+  public String getOrchestrationStation() {
+    return orchestrationStation;
+  }
+
+  public void setOrchestrationStation(String orchestrationStation) {
+    this.orchestrationStation = orchestrationStation;
   }
 
   public Map<String, String> getMetadata() {

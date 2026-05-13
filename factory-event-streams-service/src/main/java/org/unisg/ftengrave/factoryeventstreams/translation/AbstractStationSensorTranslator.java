@@ -57,21 +57,21 @@ public abstract class AbstractStationSensorTranslator implements StationSensorTr
     String sensorKey = event.sensorKey();
     boolean alreadyInitialized = initializedSensors.put(sensorKey, true) != null;
     if (currentState.get() == LIGHT_BARRIER_INTERRUPTED) {
-      return Optional.of(toTranslatedMachineEvent(interruptedEvent));
+      return Optional.of(toTranslatedMachineEvent(interruptedEvent, event.getItemIdentifier()));
     }
     if (alreadyInitialized) {
-      return Optional.of(toTranslatedMachineEvent(releasedEvent));
+      return Optional.of(toTranslatedMachineEvent(releasedEvent, event.getItemIdentifier()));
     }
     return Optional.empty();
   }
 
-  protected TranslatedMachineEvent toTranslatedMachineEvent(String eventType) {
+  protected TranslatedMachineEvent toTranslatedMachineEvent(String eventType, String itemIdentifier) {
     try {
       LOGGER.info("Translated factory sensor event to {} on {}", eventType, outputTopic);
       return new TranslatedMachineEvent(
           outputTopic,
           eventType,
-          objectMapper.writeValueAsString(new MachineEventDto(eventType)));
+          objectMapper.writeValueAsString(new MachineEventDto(eventType, itemIdentifier)));
     } catch (JsonProcessingException exception) {
       throw new IllegalStateException("Failed to serialize machine event", exception);
     }

@@ -104,7 +104,8 @@ public class SortingMachineSensorTranslator implements StationSensorTranslator {
       return Optional.empty();
     }
 
-    return Optional.of(new SortingMachineEventDto(COLOR_DETECTED_EVENT, determineColor(currentValue.get())));
+    return Optional.of(new SortingMachineEventDto(
+        COLOR_DETECTED_EVENT, determineColor(currentValue.get()), event.getItemIdentifier()));
   }
 
   private Optional<SortingMachineEventDto> mapLightBarrierEvent(
@@ -117,10 +118,10 @@ public class SortingMachineSensorTranslator implements StationSensorTranslator {
     String sensorKey = event.sensorKey();
     boolean alreadyInitialized = initializedSensors.put(sensorKey, true) != null;
     if (currentState.get() == LIGHT_BARRIER_INTERRUPTED) {
-      return Optional.of(new SortingMachineEventDto(interruptedEvent));
+      return Optional.of(new SortingMachineEventDto(interruptedEvent, null, event.getItemIdentifier()));
     }
     if (alreadyInitialized) {
-      return Optional.of(new SortingMachineEventDto(releasedEvent));
+      return Optional.of(new SortingMachineEventDto(releasedEvent, null, event.getItemIdentifier()));
     }
     return Optional.empty();
   }
