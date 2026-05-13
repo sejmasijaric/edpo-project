@@ -17,7 +17,7 @@ services:
     environment:
       FACTORY_MQTT_BROKER_URL: ${MQTT_BROKER_URL:-tcp://mqtt-broker:1883}
       FACTORY_MQTT_TOPIC: FTFactory/SM_1
-      FACTORY_MQTT_PUBLISH_INTERVAL: 2s
+      FACTORY_MQTT_PUBLISH_INTERVAL: 400ms
 
   sorter-integration-service:
     depends_on:

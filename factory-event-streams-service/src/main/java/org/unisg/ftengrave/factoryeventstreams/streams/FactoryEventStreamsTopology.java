@@ -61,6 +61,14 @@ public class FactoryEventStreamsTopology {
         Stores.persistentKeyValueStore(SensorDuplicateFilterTransformer.STORE_NAME),
         Serdes.String(),
         Serdes.String()));
+    streamsBuilder.addStateStore(Stores.windowStoreBuilder(
+        Stores.persistentWindowStore(
+            RawEventSlidingWindowDeduplicatorTransformer.STORE_NAME,
+            RawEventSlidingWindowDeduplicatorTransformer.WINDOW,
+            RawEventSlidingWindowDeduplicatorTransformer.WINDOW,
+            false),
+        Serdes.String(),
+        Serdes.Long()));
 
     KTable<String, String> itemStationTable = streamsBuilder
         .stream(stageOrchestrationTopic, Consumed.with(Serdes.String(), Serdes.String()))
@@ -76,6 +84,9 @@ public class FactoryEventStreamsTopology {
             LOGGER.debug("Received raw factory event from MQTT topic {}", sourceTopic));
 
     KStream<String, TranslatedMachineEvent> translatedEvents = rawEvents
+        .transform(
+            RawEventSlidingWindowDeduplicatorTransformer::new,
+            RawEventSlidingWindowDeduplicatorTransformer.STORE_NAME)
         .mapValues(eventEnricher::attachSourceTopic)
         .selectKey(eventEnricher::stationKey)
         .leftJoin(

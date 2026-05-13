@@ -22,4 +22,4 @@ factory:
     milling-machine-client-id: ${FACTORY_MQTT_MM_CLIENT_ID:factory-simulator-mm}
     workstation-transport-topic: ${FACTORY_MQTT_WT_TOPIC:FTFactory/WT_1}
     workstation-transport-client-id: ${FACTORY_MQTT_WT_CLIENT_ID:factory-simulator-wt}
-    publish-interval: ${FACTORY_MQTT_PUBLISH_INTERVAL:2s}
+    publish-interval: ${FACTORY_MQTT_PUBLISH_INTERVAL:400ms}

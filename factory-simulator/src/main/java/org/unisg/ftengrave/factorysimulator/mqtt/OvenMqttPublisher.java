@@ -18,7 +18,7 @@ public class OvenMqttPublisher extends AbstractMqttPublisher implements Movement
     this.payloadFactory = payloadFactory;
   }
 
-  @Scheduled(fixedDelayString = "${factory.mqtt.publish-interval:2s}")
+  @Scheduled(fixedDelayString = "${factory.mqtt.publish-interval:400ms}")
   void publish() throws MqttException {
     publishPayload(payloadFactory.createPayload());
   }
