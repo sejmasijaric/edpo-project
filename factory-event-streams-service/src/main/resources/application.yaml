@@ -9,6 +9,8 @@ kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
   streams:
     application-id: ${KAFKA_STREAMS_APPLICATION_ID:factory-event-streams}
+    topic-availability-retry-interval: ${KAFKA_STREAMS_TOPIC_AVAILABILITY_RETRY_INTERVAL:5s}
+    topic-availability-check-timeout: ${KAFKA_STREAMS_TOPIC_AVAILABILITY_CHECK_TIMEOUT:3s}
   topic:
     auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
     replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
