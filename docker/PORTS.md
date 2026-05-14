@@ -14,6 +14,7 @@ This file documents the ports currently used or reserved by services in this rep
 | `manufacturing-service` | Docker Compose | `8104` | `8104` | Embedded Camunda engine for manufacturing BPMN models |
 | `mqtt-kafka-bridge` | Docker Compose | None | None | Internal raw MQTT ingestion service publishing to `factory.raw-events` |
 | `factory-event-streams-service` | Docker Compose | None | None | Internal Kafka Streams service for raw factory telemetry routing and translation |
+| `dashboard-service` | Docker Compose | `8105` | `8105` | Kafka Streams dashboard read model and metrics API |
 | `sorter-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `vacuum-gripper-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
 | `engraver-integration-service` | Docker Compose | None | None | Internal Kafka/HTTP integration service with no exposed API port |
@@ -37,7 +38,7 @@ The host port range `8100-8109` is intentionally reserved for service applicatio
 | `8102` | `kafka-inspector-service` |
 | `8103` | `intake-service` |
 | `8104` | `manufacturing-service` |
-| `8105` | Reserved for future service |
+| `8105` | `dashboard-service` |
 | `8106` | Reserved for future service |
 | `8107` | Reserved for future service |
 | `8108` | Reserved for future service |
