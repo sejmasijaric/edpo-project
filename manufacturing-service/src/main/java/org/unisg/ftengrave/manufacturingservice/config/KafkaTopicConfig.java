@@ -42,6 +42,9 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.polishing-machine-event}")
     private String polishingMachineEventTopic;
 
+    @Value("${kafka.topic.user-task-management}")
+    private String userTaskManagementTopic;
+
     @Value("${kafka.topic.replication-factor:3}")
     private short replicationFactor;
 
@@ -99,5 +102,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic polishingMachineEventTopic() {
         return new NewTopic(polishingMachineEventTopic, defaultPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic userTaskManagementTopic() {
+        return new NewTopic(userTaskManagementTopic, defaultPartitions, replicationFactor);
     }
 }

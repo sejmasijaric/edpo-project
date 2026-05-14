@@ -61,6 +61,7 @@
 - If re-try possible, restore position
 - If re-try not possible, discard item.</bpmn:documentation>
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData>
           <camunda:formField id="egrReTryPossible" label="Workpiece still good for re-try." type="boolean">
             <camunda:properties />
@@ -128,6 +129,7 @@
 - If re-try possible, restore position
 - If re-try not possible, remove item from machine.</bpmn:documentation>
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData>
           <camunda:formField id="pmReTryPossible" label="Workpiece still good for re-try." type="boolean">
             <camunda:properties />

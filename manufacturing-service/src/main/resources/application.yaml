@@ -27,6 +27,7 @@ kafka:
     workstation-transport-event: ${KAFKA_TOPIC_WORKSTATION_TRANSPORT_EVENT:workstation-transport-events}
     polishing-machine-command: ${KAFKA_TOPIC_POLISHING_MACHINE_COMMAND:polishing-machine-commands}
     polishing-machine-event: ${KAFKA_TOPIC_POLISHING_MACHINE_EVENT:polishing-machine-events}
+    user-task-management: ${KAFKA_TOPIC_USER_TASK_MANAGEMENT:user-task-management}
 
 integration:
   engraver:

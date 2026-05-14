@@ -7,6 +7,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.unisg.ftengrave.orderorchestrator.adapter.out.kafka.dto.PerformQcCommandDto;
 import org.unisg.ftengrave.orderorchestrator.adapter.out.kafka.dto.RunItemIntakeCommandDto;
 import org.unisg.ftengrave.orderorchestrator.adapter.out.kafka.dto.RunProductionCommandDto;
+import org.unisg.ftengrave.orderorchestrator.adapter.out.kafka.dto.UserTaskIssuedEventDto;
 import org.unisg.ftengrave.sharedkafka.config.AbstractKafkaProducerConfig;
 
 @Configuration
@@ -40,5 +41,15 @@ public class KafkaProducerConfig extends AbstractKafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, RunProductionCommandDto> runProductionCommandKafkaTemplate() {
         return kafkaTemplate(runProductionCommandProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, UserTaskIssuedEventDto> userTaskManagementProducerFactory() {
+        return super.producerFactory();
+    }
+
+    @Bean
+    public KafkaTemplate<String, UserTaskIssuedEventDto> userTaskManagementKafkaTemplate() {
+        return kafkaTemplate(userTaskManagementProducerFactory());
     }
 }

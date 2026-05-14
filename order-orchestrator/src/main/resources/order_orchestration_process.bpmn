@@ -81,6 +81,7 @@
     <bpmn:sequenceFlow id="Flow_17f81j5" sourceRef="Gateway_1dkrekk" targetRef="Activity_SendRunIntakeCommand" />
     <bpmn:userTask id="Activity_0s7hwfg" name="Remove Item From Factory">
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1n24u8p</bpmn:incoming>

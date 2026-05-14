@@ -8,6 +8,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.unisg.ftengrave.manufacturingservice.adapter.out.kafka.dto.EngraverCommandDto;
 import org.unisg.ftengrave.manufacturingservice.adapter.out.kafka.dto.ManufacturingOutcomeEventDto;
 import org.unisg.ftengrave.manufacturingservice.adapter.out.kafka.dto.PolishingMachineCommandDto;
+import org.unisg.ftengrave.manufacturingservice.adapter.out.kafka.dto.UserTaskIssuedEventDto;
 import org.unisg.ftengrave.manufacturingservice.adapter.out.kafka.dto.WorkstationTransportCommandDto;
 import org.unisg.ftengrave.sharedkafka.config.AbstractKafkaProducerConfig;
 
@@ -57,5 +58,15 @@ public class KafkaProducerConfig extends AbstractKafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, ManufacturingOutcomeEventDto> manufacturingOutcomeKafkaTemplate() {
         return kafkaTemplate(manufacturingOutcomeProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, UserTaskIssuedEventDto> userTaskManagementProducerFactory() {
+        return super.producerFactory();
+    }
+
+    @Bean
+    public KafkaTemplate<String, UserTaskIssuedEventDto> userTaskManagementKafkaTemplate() {
+        return kafkaTemplate(userTaskManagementProducerFactory());
     }
 }

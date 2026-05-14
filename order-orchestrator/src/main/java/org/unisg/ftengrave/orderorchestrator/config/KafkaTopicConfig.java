@@ -26,6 +26,9 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.order-created}")
     private String orderCreatedTopic;
 
+    @Value("${kafka.topic.user-task-management}")
+    private String userTaskManagementTopic;
+
     @Value("${kafka.topic.replication-factor:3}")
     private short replicationFactor;
 
@@ -37,6 +40,9 @@ public class KafkaTopicConfig {
 
     @Value("${kafka.topic.order-created-partitions:3}")
     private int orderCreatedPartitions;
+
+    @Value("${kafka.topic.default-partitions:1}")
+    private int defaultPartitions;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -58,5 +64,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic orderCreatedTopic() {
         return new NewTopic(orderCreatedTopic, orderCreatedPartitions, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic userTaskManagementTopic() {
+        return new NewTopic(userTaskManagementTopic, defaultPartitions, replicationFactor);
     }
 }
