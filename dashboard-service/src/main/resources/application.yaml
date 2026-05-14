@@ -1,0 +1,25 @@
+server:
+  port: ${SERVER_PORT:8105}
+
+spring:
+  application:
+    name: dashboard-service
+
+kafka:
+  bootstrap-address: ${KAFKA_BOOTSTRAP_ADDRESS:localhost:29092,localhost:29094,localhost:29096}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${kafka.bootstrap-address}}
+  streams:
+    application-id: ${KAFKA_STREAMS_APPLICATION_ID:dashboard-service}
+    manufacturing-join-window: ${DASHBOARD_MANUFACTURING_JOIN_WINDOW:12h}
+  topic:
+    auto-create: ${KAFKA_TOPIC_AUTO_CREATE:true}
+    replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
+    stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
+    stage-orchestration-partitions: ${KAFKA_TOPIC_STAGE_ORCHESTRATION_PARTITIONS:3}
+    machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
+    machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
+    user-task-management: ${KAFKA_TOPIC_USER_TASK_MANAGEMENT:user-task-management}
+    order-created: ${KAFKA_TOPIC_ORDER_CREATED:order-created}
+    order-created-partitions: ${KAFKA_TOPIC_ORDER_CREATED_PARTITIONS:3}
+    dashboard-metrics: ${KAFKA_TOPIC_DASHBOARD_METRICS:dashboard.metrics}

@@ -194,6 +194,24 @@ services:
       FACTORY_STREAMS_POLISHING_MACHINE_STATIONS: FTFactory/MM_1,MM_1,mm_1,polishing-machine
       FACTORY_STREAMS_WORKSTATION_TRANSPORT_STATIONS: FTFactory/WT_1,WT_1,wt_1,workstation-transport
 
+  dashboard-service:
+    build:
+      context: ..
+      dockerfile: dashboard-service/Dockerfile
+    depends_on:
+      - kafka
+      - kafka-2
+      - kafka-3
+    ports:
+      - "8105:8105"
+    environment:
+      <<: *kafka-env
+      KAFKA_TOPIC_STAGE_ORCHESTRATION: stage-orchestration
+      KAFKA_TOPIC_MACHINE_ORCHESTRATION: machine-orchestration
+      KAFKA_TOPIC_USER_TASK_MANAGEMENT: user-task-management
+      KAFKA_TOPIC_ORDER_CREATED: order-created
+      KAFKA_TOPIC_DASHBOARD_METRICS: dashboard.metrics
+
   mqtt-kafka-bridge:
     build:
       context: ..
