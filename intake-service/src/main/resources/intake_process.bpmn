@@ -111,6 +111,7 @@
     <bpmn:userTask id="Activity_1w50q61" name="Resolve Issue and Replace Item">
       <bpmn:documentation>Resolve VGR issue and replace item in intake sink.</bpmn:documentation>
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData />
         <camunda:inputOutput>
           <camunda:outputParameter name="pickUpAttemptsLeft">${3}</camunda:outputParameter>

@@ -26,11 +26,17 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.sorting-machine-event}")
     private String sortingMachineEventTopic;
 
+    @Value("${kafka.topic.user-task-management}")
+    private String userTaskManagementTopic;
+
     @Value("${kafka.topic.replication-factor:3}")
     private short replicationFactor;
 
     @Value("${kafka.topic.machine-orchestration-partitions:3}")
     private int machineOrchestrationPartitions;
+
+    @Value("${kafka.topic.default-partitions:1}")
+    private int defaultPartitions;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -52,5 +58,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic sortingMachineEventTopic() {
         return new NewTopic(sortingMachineEventTopic, 1, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic userTaskManagementTopic() {
+        return new NewTopic(userTaskManagementTopic, defaultPartitions, replicationFactor);
     }
 }

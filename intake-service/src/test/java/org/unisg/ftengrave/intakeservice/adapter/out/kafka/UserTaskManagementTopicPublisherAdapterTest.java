@@ -33,6 +33,8 @@ class UserTaskManagementTopicPublisherAdapterTest {
                 eq("item-42"),
                 argThat(event -> event != null
                         && "insert-item-into-intake-command".equals(event.commandType())
+                        && "Insert Item".equals(event.taskName())
+                        && "normal".equals(event.taskCategory())
                         && "item-intake-station".equals(event.stationName())
                         && ItemColor.BLUE == event.itemColor()));
     }
@@ -60,6 +62,8 @@ class UserTaskManagementTopicPublisherAdapterTest {
                     eq("item-42"),
                     argThat(event -> event != null
                             && "insert-item-into-intake-command".equals(event.commandType())
+                            && "Insert Item".equals(event.taskName())
+                            && "normal".equals(event.taskCategory())
                             && "item-intake-station".equals(event.stationName())
                             && ItemColor.WHITE == event.itemColor()));
         } finally {

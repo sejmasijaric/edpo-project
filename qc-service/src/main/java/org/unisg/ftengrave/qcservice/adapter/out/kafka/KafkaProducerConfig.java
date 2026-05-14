@@ -7,6 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.QcOutcomeEventDto;
 import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.SortingMachineCommandDto;
+import org.unisg.ftengrave.qcservice.adapter.out.kafka.dto.UserTaskIssuedEventDto;
 import org.unisg.ftengrave.sharedkafka.config.AbstractKafkaProducerConfig;
 
 @Configuration
@@ -31,5 +32,15 @@ public class KafkaProducerConfig extends AbstractKafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, QcOutcomeEventDto> qcOutcomeKafkaTemplate() {
         return kafkaTemplate(qcOutcomeProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, UserTaskIssuedEventDto> userTaskManagementProducerFactory() {
+        return super.producerFactory();
+    }
+
+    @Bean
+    public KafkaTemplate<String, UserTaskIssuedEventDto> userTaskManagementKafkaTemplate() {
+        return kafkaTemplate(userTaskManagementProducerFactory());
     }
 }

@@ -40,6 +40,7 @@
 2. Identify why the item did not arrive on time
 3. Restore the position of the item to before the color sensor</bpmn:documentation>
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0wwlqry</bpmn:incoming>
@@ -48,6 +49,7 @@
     <bpmn:sequenceFlow id="Flow_1pcwhbc" sourceRef="Activity_0s7hwfg" targetRef="Gateway_1i7gin2" />
     <bpmn:userTask id="Activity_1mrwlyg" name="Check Quality">
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData>
           <camunda:formField id="qcPassed" label="Passes QC" type="boolean" defaultValue="false">
             <camunda:properties />
@@ -79,6 +81,7 @@
     <bpmn:sequenceFlow id="Flow_0haitj1" sourceRef="Gateway_1i7gin2" targetRef="Activity_1wtp2k8" />
     <bpmn:userTask id="Activity_1drtw7z" name="Restore Item Position">
       <bpmn:extensionElements>
+        <camunda:taskListener event="create" delegateExpression="${PublishUserTaskIssuedEventDelegate}" />
         <camunda:formData />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0f506hl</bpmn:incoming>

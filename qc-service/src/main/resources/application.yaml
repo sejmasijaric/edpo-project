@@ -21,6 +21,8 @@ kafka:
     stage-orchestration: ${KAFKA_TOPIC_STAGE_ORCHESTRATION:stage-orchestration}
     machine-orchestration: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION:machine-orchestration}
     machine-orchestration-partitions: ${KAFKA_TOPIC_MACHINE_ORCHESTRATION_PARTITIONS:3}
+    user-task-management: ${KAFKA_TOPIC_USER_TASK_MANAGEMENT:user-task-management}
+    default-partitions: ${KAFKA_TOPIC_DEFAULT_PARTITIONS:1}
 
 integration:
   sorter:
