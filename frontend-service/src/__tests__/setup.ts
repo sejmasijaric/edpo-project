@@ -29,6 +29,8 @@ vi.mock("@/services/api", () => ({
   ),
   fetchOpenUserTasks: vi.fn(async () => []),
   fetchRecentUserTasks: vi.fn(async () => []),
+  insertItemIntoSimulator: vi.fn(async () => undefined),
+  completeCheckQualityTask: vi.fn(async () => undefined),
   fetchDashboardMetrics: vi.fn(async () => ({
     from: "2026-05-13T11:34:56Z",
     to: "2026-05-13T12:34:56Z",

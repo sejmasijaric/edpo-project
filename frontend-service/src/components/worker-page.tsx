@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
-import { AlertTriangle, Box, CheckCircle2, Wrench } from "lucide-react"
+import { toast } from "sonner"
+import {
+  AlertTriangle,
+  Box,
+  Check,
+  CheckCircle2,
+  PackagePlus,
+  Wrench,
+  X,
+} from "lucide-react"
 import {
   Card,
   CardContent,
@@ -16,7 +25,13 @@ import {
   isErrorTask,
   type UserTaskEvent,
 } from "@/types/user-task"
-import { fetchOpenUserTasks, fetchRecentUserTasks } from "@/services/api"
+import {
+  completeCheckQualityTask,
+  fetchOpenUserTasks,
+  fetchRecentUserTasks,
+  insertItemIntoSimulator,
+} from "@/services/api"
+import { usePersistedSet } from "@/lib/persistedSet"
 
 interface WorkerPageProps {
   liveTasks?: UserTaskEvent[]
@@ -24,6 +39,11 @@ interface WorkerPageProps {
 }
 
 const INTAKE_COMMAND = "insert-item-into-intake-command"
+const CHECK_QUALITY_TASK = "Check Quality"
+
+function qcResolutionKey(itemId: string | null | undefined, taskName: string | null | undefined) {
+  return `${itemId ?? "?"}::${taskName ?? "?"}`
+}
 
 function taskColorLabel(color?: string | null): string {
   if (!color) return ""
@@ -63,6 +83,14 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
   const [initialRecent, setInitialRecent] = useState<UserTaskEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [insertedItemIds, addInsertedItemId] = usePersistedSet(
+    "worker.insertedItemIds"
+  )
+  const [insertingItemId, setInsertingItemId] = useState<string | null>(null)
+  const [resolvedQcKeys, addResolvedQcKey] = usePersistedSet(
+    "worker.resolvedQcKeys"
+  )
+  const [qcBusyKey, setQcBusyKey] = useState<string | null>(null)
 
   const refresh = async () => {
     setLoading(true)
@@ -90,8 +118,50 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
     [initialOpen, liveTasks]
   )
 
-  const intakeTasks = openTasks.filter((t) => t.commandType === INTAKE_COMMAND)
-  const otherTasks = openTasks.filter((t) => t.commandType !== INTAKE_COMMAND)
+  const intakeTasks = openTasks
+    .filter((t) => t.commandType === INTAKE_COMMAND)
+    .filter((t) => !insertedItemIds.has(t.itemIdentifier ?? ""))
+  const otherTasks = openTasks
+    .filter((t) => t.commandType !== INTAKE_COMMAND)
+    .filter((t) => !resolvedQcKeys.has(qcResolutionKey(t.itemIdentifier, t.taskName)))
+
+  const handleCompleteQc = async (task: UserTaskEvent, passed: boolean) => {
+    if (!task.itemIdentifier) {
+      toast.error("Task is missing item id")
+      return
+    }
+    const key = qcResolutionKey(task.itemIdentifier, task.taskName)
+    setQcBusyKey(key)
+    try {
+      await completeCheckQualityTask({ itemId: task.itemIdentifier, passed })
+      addResolvedQcKey(key)
+      toast.success(passed ? "QC approved — item shipping" : "QC rejected — item routed to rejection")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to complete QC task")
+    } finally {
+      setQcBusyKey(null)
+    }
+  }
+
+  const handleInsert = async (task: UserTaskEvent) => {
+    if (!task.itemIdentifier || !task.targetColor) {
+      toast.error("Task is missing item id or color")
+      return
+    }
+    setInsertingItemId(task.itemIdentifier)
+    try {
+      await insertItemIntoSimulator({
+        itemId: task.itemIdentifier,
+        color: task.targetColor,
+      })
+      addInsertedItemId(task.itemIdentifier)
+      toast.success(`Inserted ${taskColorLabel(task.targetColor)} airtag into intake`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to insert item")
+    } finally {
+      setInsertingItemId(null)
+    }
+  }
 
   const errorEvents = useMemo(() => {
     const seen = new Set<string>()
@@ -144,6 +214,8 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
                 <IntakeTaskCard
                   key={`${task.itemIdentifier}-${task.eventTimestampEpochMillis}`}
                   task={task}
+                  onInsert={() => handleInsert(task)}
+                  inserting={insertingItemId === task.itemIdentifier}
                 />
               ))}
             </div>
@@ -168,12 +240,23 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
               </p>
             ) : (
               <div className="space-y-3">
-                {otherTasks.map((task, idx) => (
-                  <div key={`${task.itemIdentifier}-${task.taskName}-${idx}`}>
-                    {idx > 0 && <Separator className="mb-3" />}
-                    <UserTaskRow task={task} />
-                  </div>
-                ))}
+                {otherTasks.map((task, idx) => {
+                  const key = qcResolutionKey(task.itemIdentifier, task.taskName)
+                  return (
+                    <div key={`${task.itemIdentifier}-${task.taskName}-${idx}`}>
+                      {idx > 0 && <Separator className="mb-3" />}
+                      <UserTaskRow
+                        task={task}
+                        onQcDecision={
+                          task.taskName === CHECK_QUALITY_TASK
+                            ? (passed) => handleCompleteQc(task, passed)
+                            : undefined
+                        }
+                        qcBusy={qcBusyKey === key}
+                      />
+                    </div>
+                  )
+                })}
               </div>
             )}
           </CardContent>
@@ -212,15 +295,24 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
   )
 }
 
-function IntakeTaskCard({ task }: { task: UserTaskEvent }) {
+function IntakeTaskCard({
+  task,
+  onInsert,
+  inserting,
+}: {
+  task: UserTaskEvent
+  onInsert: () => void
+  inserting: boolean
+}) {
   const color = task.targetColor ?? null
+  const canInsert = Boolean(task.itemIdentifier && task.targetColor)
   return (
     <div className="bg-card flex items-start gap-3 rounded-md border p-4">
       <span
         className={`mt-1 inline-block size-8 rounded-full ${colorClassName(color)}`}
         aria-label={`${taskColorLabel(color)} airtag`}
       />
-      <div className="flex-1 space-y-1">
+      <div className="flex-1 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold">
             Insert {taskColorLabel(color) || "an"} AirTag
@@ -235,6 +327,17 @@ function IntakeTaskCard({ task }: { task: UserTaskEvent }) {
             Issued at {formatTimestamp(task.eventTimestampEpochMillis)}
           </p>
         )}
+        <div className="pt-1">
+          <Button
+            size="sm"
+            onClick={onInsert}
+            disabled={!canInsert || inserting}
+            className="gap-1"
+          >
+            <PackagePlus className="size-3" />
+            {inserting ? "Inserting..." : "Insert into intake"}
+          </Button>
+        </div>
       </div>
     </div>
   )
@@ -243,16 +346,20 @@ function IntakeTaskCard({ task }: { task: UserTaskEvent }) {
 function UserTaskRow({
   task,
   highlightError = false,
+  onQcDecision,
+  qcBusy = false,
 }: {
   task: UserTaskEvent
   highlightError?: boolean
+  onQcDecision?: (passed: boolean) => void
+  qcBusy?: boolean
 }) {
   const error = highlightError || isErrorTask(task)
   return (
     <div
       className={`flex items-start justify-between gap-3 rounded-md p-2 ${error ? "bg-destructive/10" : ""}`}
     >
-      <div className="space-y-1">
+      <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{task.taskName ?? "Task"}</span>
           {task.stationName && (
@@ -283,6 +390,29 @@ function UserTaskRow({
           <p className="text-muted-foreground text-xs">
             {formatTimestamp(task.eventTimestampEpochMillis)}
           </p>
+        )}
+        {onQcDecision && (
+          <div className="flex gap-2 pt-1">
+            <Button
+              size="sm"
+              onClick={() => onQcDecision(true)}
+              disabled={qcBusy}
+              className="gap-1"
+            >
+              <Check className="size-3" />
+              Pass
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => onQcDecision(false)}
+              disabled={qcBusy}
+              className="gap-1"
+            >
+              <X className="size-3" />
+              Reject
+            </Button>
+          </div>
         )}
       </div>
     </div>

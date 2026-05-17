@@ -115,6 +115,42 @@ export async function fetchDashboardMetrics(params?: {
   return res.json()
 }
 
+export async function completeCheckQualityTask(params: {
+  itemId: string
+  passed: boolean
+}): Promise<void> {
+  const query = new URLSearchParams({
+    itemId: params.itemId,
+    passed: String(params.passed),
+  })
+  const res = await fetch(`${API_BASE}/qc/check-quality/complete?${query.toString()}`, {
+    method: "POST",
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Failed to complete QC task" }))
+    throw new Error(err.error ?? "Failed to complete QC task")
+  }
+}
+
+export async function insertItemIntoSimulator(params: {
+  itemId: string
+  color: string
+  sinkId?: string
+}): Promise<void> {
+  const query = new URLSearchParams({
+    itemId: params.itemId,
+    color: params.color,
+    ...(params.sinkId ? { sinkId: params.sinkId } : {}),
+  })
+  const res = await fetch(`${API_BASE}/simulator/items?${query.toString()}`, {
+    method: "POST",
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Failed to insert item" }))
+    throw new Error(err.error ?? "Failed to insert item")
+  }
+}
+
 function parseOrder(data: Record<string, unknown>): Order {
   return {
     ...data,

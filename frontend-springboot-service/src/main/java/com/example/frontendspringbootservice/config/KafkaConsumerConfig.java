@@ -55,7 +55,8 @@ public class KafkaConsumerConfig {
     public ConsumerFactory<String, LatestItemStatus> latestItemStatusConsumerFactory(ObjectMapper objectMapper) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId + "-latest-status-v1");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,
+                groupId + "-latest-status-" + java.util.UUID.randomUUID());
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
@@ -78,7 +79,11 @@ public class KafkaConsumerConfig {
     public ConsumerFactory<String, String> userTaskEventConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId + "-user-tasks-v1");
+        // Per-instance group id forces a from-the-beginning replay on every boot so
+        // the in-memory open-tasks state is always rebuilt from the full topic
+        // history. Cheap because the topic is low-volume.
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,
+                groupId + "-user-tasks-" + java.util.UUID.randomUUID());
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);

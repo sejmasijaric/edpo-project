@@ -4,10 +4,17 @@ import { WorkerPage } from "@/components/worker-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import type { UserTaskEvent } from "@/types/user-task"
-import { fetchOpenUserTasks, fetchRecentUserTasks } from "@/services/api"
+import {
+  completeCheckQualityTask,
+  fetchOpenUserTasks,
+  fetchRecentUserTasks,
+  insertItemIntoSimulator,
+} from "@/services/api"
 
 const mockFetchOpen = vi.mocked(fetchOpenUserTasks)
 const mockFetchRecent = vi.mocked(fetchRecentUserTasks)
+const mockInsert = vi.mocked(insertItemIntoSimulator)
+const mockCompleteQc = vi.mocked(completeCheckQualityTask)
 
 function renderPage(liveTasks: UserTaskEvent[] = [], connected = true) {
   return render(
@@ -19,10 +26,15 @@ function renderPage(liveTasks: UserTaskEvent[] = [], connected = true) {
 }
 
 beforeEach(() => {
+  window.localStorage.clear()
   mockFetchOpen.mockReset()
   mockFetchRecent.mockReset()
+  mockInsert.mockReset()
+  mockCompleteQc.mockReset()
   mockFetchOpen.mockResolvedValue([])
   mockFetchRecent.mockResolvedValue([])
+  mockInsert.mockResolvedValue(undefined)
+  mockCompleteQc.mockResolvedValue(undefined)
 })
 
 describe("WorkerPage", () => {
@@ -137,6 +149,136 @@ describe("WorkerPage", () => {
     )
 
     expect(screen.queryByText("Check Quality")).not.toBeInTheDocument()
+  })
+
+  it("insert button calls the simulator and hides the task", async () => {
+    const user = userEvent.setup()
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-INS-1",
+        commandType: "insert-item-into-intake-command",
+        taskName: "Insert Item",
+        taskCategory: "normal",
+        stationName: "item-intake-station",
+        targetColor: "BLUE",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+
+    const button = await screen.findByRole("button", { name: /insert into intake/i })
+    await user.click(button)
+
+    expect(mockInsert).toHaveBeenCalledWith({
+      itemId: "ITEM-INS-1",
+      color: "BLUE",
+    })
+    expect(await screen.findByText(/Inserted Blue airtag/i)).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /insert into intake/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it("shows an error toast when the insert call fails", async () => {
+    const user = userEvent.setup()
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-INS-2",
+        commandType: "insert-item-into-intake-command",
+        taskName: "Insert Item",
+        targetColor: "RED",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    mockInsert.mockRejectedValueOnce(new Error("Simulator down"))
+    renderPage()
+
+    await user.click(await screen.findByRole("button", { name: /insert into intake/i }))
+
+    expect(await screen.findByText("Simulator down")).toBeInTheDocument()
+  })
+
+  it("Pass button completes the Check Quality task and hides it", async () => {
+    const user = userEvent.setup()
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-QC-1",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        taskCategory: "normal",
+        stationName: "quality-control-station",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+
+    const pass = await screen.findByRole("button", { name: /pass/i })
+    await user.click(pass)
+
+    expect(mockCompleteQc).toHaveBeenCalledWith({ itemId: "ITEM-QC-1", passed: true })
+    expect(await screen.findByText(/QC approved/i)).toBeInTheDocument()
+    expect(screen.queryByText("Check Quality")).not.toBeInTheDocument()
+  })
+
+  it("Reject button completes the Check Quality task with qcPassed=false", async () => {
+    const user = userEvent.setup()
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-QC-2",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        taskCategory: "normal",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+
+    await user.click(await screen.findByRole("button", { name: /reject/i }))
+
+    expect(mockCompleteQc).toHaveBeenCalledWith({ itemId: "ITEM-QC-2", passed: false })
+    expect(await screen.findByText(/QC rejected/i)).toBeInTheDocument()
+  })
+
+  it("does not show Pass/Reject on non-Check-Quality manual tasks", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-X-1",
+        commandType: "resolve-issue-and-restore-item-position-user-task-issued",
+        taskName: "Resolve Issue and Restore Item Position",
+        taskCategory: "error",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    await screen.findByText("Resolve Issue and Restore Item Position")
+    expect(screen.queryByRole("button", { name: /^pass$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /^reject$/i })).not.toBeInTheDocument()
+  })
+
+  it("intake card stays hidden after a remount once it has been inserted", async () => {
+    const user = userEvent.setup()
+    const stickyTask = {
+      itemIdentifier: "ITEM-PERSIST-1",
+      commandType: "insert-item-into-intake-command",
+      taskName: "Insert Item",
+      taskCategory: "normal",
+      targetColor: "BLUE",
+      eventTimestampEpochMillis: 1_700_000_000_000,
+    }
+    mockFetchOpen.mockResolvedValue([stickyTask])
+    const { unmount } = renderPage()
+
+    await user.click(await screen.findByRole("button", { name: /insert into intake/i }))
+    expect(
+      screen.queryByRole("button", { name: /insert into intake/i })
+    ).not.toBeInTheDocument()
+
+    unmount()
+    renderPage()
+    await screen.findByText("Items to Insert")
+    expect(
+      screen.queryByRole("button", { name: /insert into intake/i })
+    ).not.toBeInTheDocument()
   })
 
   it("refresh button reloads tasks from the API", async () => {
