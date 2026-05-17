@@ -10,8 +10,7 @@ import { fetchOrders } from "@/services/api"
 export function App() {
   const [activePage, setActivePage] = useState<Page>("customer")
   const [orders, setOrders] = useState<Order[]>([])
-  const { orderEvents, userTasks, latestStatusByItem, connected } =
-    useFactoryStream()
+  const { orderEvents, userTasks, connected } = useFactoryStream()
 
   useEffect(() => {
     fetchOrders()
@@ -29,7 +28,6 @@ export function App() {
             setOrders={setOrders}
             events={orderEvents}
             connected={connected}
-            latestStatusByItem={latestStatusByItem}
           />
         )}
         {activePage === "worker" && (

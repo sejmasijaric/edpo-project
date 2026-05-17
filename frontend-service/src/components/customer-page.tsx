@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,23 +12,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { OrderList } from "@/components/order-list"
-import { Separator } from "@/components/ui/separator"
 import {
   COLORS,
   MAX_TEXT_LENGTH,
   type ColorValue,
   type Order,
 } from "@/types/order"
-import type { LatestItemStatus, MachineOrchestrationEvent } from "@/types/machine-event"
-import { getOutcomeLabel } from "@/types/machine-event"
-import { createOrder, fetchLatestItemStatus } from "@/services/api"
+import type { MachineOrchestrationEvent } from "@/types/machine-event"
+import { createOrder } from "@/services/api"
 
 interface CustomerPageProps {
   orders: Order[]
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>
   events?: MachineOrchestrationEvent[]
   connected?: boolean
-  latestStatusByItem?: Record<string, LatestItemStatus>
 }
 
 export function CustomerPage({
@@ -36,14 +33,10 @@ export function CustomerPage({
   setOrders,
   events = [],
   connected,
-  latestStatusByItem = {},
 }: CustomerPageProps) {
   const [color, setColor] = useState("")
   const [engravedText, setEngravedText] = useState("")
   const [submitting, setSubmitting] = useState(false)
-  const [trackedItemIdentifier, setTrackedItemIdentifier] = useState("")
-  const [trackedStatus, setTrackedStatus] = useState<LatestItemStatus | null>(null)
-  const [tracking, setTracking] = useState(false)
   const [lastOrderId, setLastOrderId] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,45 +59,12 @@ export function CustomerPage({
       toast.success("Order submitted successfully!")
       setOrders((prev) => [order, ...prev])
       setLastOrderId(order.id)
-      setTrackedItemIdentifier(order.id)
       setColor("")
       setEngravedText("")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to submit order")
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  useEffect(() => {
-    if (!trackedStatus) return
-    const live = latestStatusByItem[trackedStatus.itemIdentifier]
-    if (!live) return
-    const liveTs = live.eventTimestampEpochMillis ?? 0
-    const currentTs = trackedStatus.eventTimestampEpochMillis ?? 0
-    if (liveTs >= currentTs) {
-      setTrackedStatus(live)
-    }
-  }, [latestStatusByItem, trackedStatus])
-
-  const handleTrackOrder = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const itemIdentifier = trackedItemIdentifier.trim()
-    if (!itemIdentifier) {
-      toast.error("Enter an item identifier")
-      return
-    }
-
-    setTracking(true)
-    try {
-      const latestStatus = await fetchLatestItemStatus(itemIdentifier)
-      setTrackedStatus(latestStatus)
-    } catch (err) {
-      setTrackedStatus(null)
-      toast.error(err instanceof Error ? err.message : "Latest status not found")
-    } finally {
-      setTracking(false)
     }
   }
 
@@ -157,50 +117,16 @@ export function CustomerPage({
               {submitting ? "Submitting..." : "Submit Order"}
             </Button>
             {lastOrderId && (
-              <div className="rounded-md border bg-muted/40 p-3 text-sm">
+              <div className="bg-muted/40 rounded-md border p-3 text-sm">
                 <span className="text-muted-foreground">Last order ID: </span>
                 <span className="font-medium">{lastOrderId}</span>
-              </div>
-            )}
-          </form>
-
-          <Separator className="my-6" />
-
-          <form onSubmit={handleTrackOrder} className="space-y-3">
-            <Label htmlFor="track-order">Track order</Label>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                id="track-order"
-                value={trackedItemIdentifier}
-                onChange={(e) => setTrackedItemIdentifier(e.target.value)}
-                placeholder="ITEM-2001"
-              />
-              <Button type="submit" disabled={tracking} className="sm:w-32">
-                {tracking ? "Tracking..." : "Track"}
-              </Button>
-            </div>
-            {trackedStatus && (
-              <div className="rounded-md border border-primary/40 bg-primary/5 p-3 text-sm">
-                <div className="font-medium">{trackedStatus.itemIdentifier}</div>
-                <div className="text-muted-foreground">
-                  {trackedStatus.station} - {getOutcomeLabel(trackedStatus.outcomeType)}
-                </div>
-                <div className="text-muted-foreground">
-                  {new Date(trackedStatus.timestamp).toLocaleString()} - {trackedStatus.sourceTopic}
-                </div>
               </div>
             )}
           </form>
         </CardContent>
       </Card>
 
-      <OrderList
-        orders={orders}
-        events={events}
-        connected={connected}
-        highlightedItemIdentifier={trackedStatus?.itemIdentifier}
-        latestStatus={trackedStatus}
-      />
+      <OrderList orders={orders} events={events} connected={connected} />
     </div>
   )
 }

@@ -119,23 +119,4 @@ describe("OrderList with live events", () => {
     expect(screen.getByText("Intake Completed")).toBeInTheDocument()
   })
 
-  it("highlights an order with the queried latest status", () => {
-    render(
-      <ThemeProvider>
-        <OrderList
-          orders={[sampleOrder]}
-          highlightedItemIdentifier="abc-123"
-          latestStatus={{
-            itemIdentifier: "abc-123",
-            station: "WT_1",
-            outcomeType: "in_progress",
-            timestamp: "2026-05-13T12:34:56Z",
-            sourceTopic: "factory.raw-events",
-          }}
-        />
-      </ThemeProvider>
-    )
-
-    expect(screen.getByText("Latest: WT_1 - in_progress")).toBeInTheDocument()
-  })
 })
