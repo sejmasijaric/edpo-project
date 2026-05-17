@@ -5,6 +5,7 @@ import {
   Box,
   Check,
   CheckCircle2,
+  PackageMinus,
   PackagePlus,
   Wrench,
   X,
@@ -27,9 +28,11 @@ import {
 } from "@/types/user-task"
 import {
   completeCheckQualityTask,
+  completeManualTask,
   fetchOpenUserTasks,
   fetchRecentUserTasks,
   insertItemIntoSimulator,
+  removeItemFromSimulator,
 } from "@/services/api"
 import { usePersistedSet } from "@/lib/persistedSet"
 
@@ -40,9 +43,15 @@ interface WorkerPageProps {
 
 const INTAKE_COMMAND = "insert-item-into-intake-command"
 const CHECK_QUALITY_TASK = "Check Quality"
+const REMOVE_ITEM_TASK = "Remove Item From Factory"
 
 function qcResolutionKey(itemId: string | null | undefined, taskName: string | null | undefined) {
   return `${itemId ?? "?"}::${taskName ?? "?"}`
+}
+
+function isRemovalTask(task: UserTaskEvent): boolean {
+  const name = task.taskName?.toLowerCase() ?? ""
+  return name.includes("remove") && name.includes("factory")
 }
 
 function taskColorLabel(color?: string | null): string {
@@ -124,6 +133,28 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
   const otherTasks = openTasks
     .filter((t) => t.commandType !== INTAKE_COMMAND)
     .filter((t) => !resolvedQcKeys.has(qcResolutionKey(t.itemIdentifier, t.taskName)))
+
+  const handleRemoveFromFactory = async (task: UserTaskEvent) => {
+    if (!task.itemIdentifier) {
+      toast.error("Task is missing item id")
+      return
+    }
+    const key = qcResolutionKey(task.itemIdentifier, task.taskName)
+    setQcBusyKey(key)
+    try {
+      await removeItemFromSimulator(task.itemIdentifier)
+      await completeManualTask({
+        itemId: task.itemIdentifier,
+        taskName: task.taskName ?? undefined,
+      })
+      addResolvedQcKey(key)
+      toast.success("Item removed from factory")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove item")
+    } finally {
+      setQcBusyKey(null)
+    }
+  }
 
   const handleCompleteQc = async (task: UserTaskEvent, passed: boolean) => {
     if (!task.itemIdentifier) {
@@ -252,7 +283,12 @@ export function WorkerPage({ liveTasks = [], connected }: WorkerPageProps) {
                             ? (passed) => handleCompleteQc(task, passed)
                             : undefined
                         }
-                        qcBusy={qcBusyKey === key}
+                        onRemoveFromFactory={
+                          isRemovalTask(task)
+                            ? () => handleRemoveFromFactory(task)
+                            : undefined
+                        }
+                        busy={qcBusyKey === key}
                       />
                     </div>
                   )
@@ -347,12 +383,14 @@ function UserTaskRow({
   task,
   highlightError = false,
   onQcDecision,
-  qcBusy = false,
+  onRemoveFromFactory,
+  busy = false,
 }: {
   task: UserTaskEvent
   highlightError?: boolean
   onQcDecision?: (passed: boolean) => void
-  qcBusy?: boolean
+  onRemoveFromFactory?: () => void
+  busy?: boolean
 }) {
   const error = highlightError || isErrorTask(task)
   return (
@@ -396,7 +434,7 @@ function UserTaskRow({
             <Button
               size="sm"
               onClick={() => onQcDecision(true)}
-              disabled={qcBusy}
+              disabled={busy}
               className="gap-1"
             >
               <Check className="size-3" />
@@ -406,11 +444,25 @@ function UserTaskRow({
               size="sm"
               variant="destructive"
               onClick={() => onQcDecision(false)}
-              disabled={qcBusy}
+              disabled={busy}
               className="gap-1"
             >
               <X className="size-3" />
               Reject
+            </Button>
+          </div>
+        )}
+        {onRemoveFromFactory && (
+          <div className="flex gap-2 pt-1">
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={onRemoveFromFactory}
+              disabled={busy}
+              className="gap-1"
+            >
+              <PackageMinus className="size-3" />
+              {busy ? "Removing..." : "Mark as removed"}
             </Button>
           </div>
         )}

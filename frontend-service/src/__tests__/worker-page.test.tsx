@@ -6,15 +6,19 @@ import { Toaster } from "@/components/ui/sonner"
 import type { UserTaskEvent } from "@/types/user-task"
 import {
   completeCheckQualityTask,
+  completeManualTask,
   fetchOpenUserTasks,
   fetchRecentUserTasks,
   insertItemIntoSimulator,
+  removeItemFromSimulator,
 } from "@/services/api"
 
 const mockFetchOpen = vi.mocked(fetchOpenUserTasks)
 const mockFetchRecent = vi.mocked(fetchRecentUserTasks)
 const mockInsert = vi.mocked(insertItemIntoSimulator)
 const mockCompleteQc = vi.mocked(completeCheckQualityTask)
+const mockRemove = vi.mocked(removeItemFromSimulator)
+const mockCompleteManual = vi.mocked(completeManualTask)
 
 function renderPage(liveTasks: UserTaskEvent[] = [], connected = true) {
   return render(
@@ -31,10 +35,14 @@ beforeEach(() => {
   mockFetchRecent.mockReset()
   mockInsert.mockReset()
   mockCompleteQc.mockReset()
+  mockRemove.mockReset()
+  mockCompleteManual.mockReset()
   mockFetchOpen.mockResolvedValue([])
   mockFetchRecent.mockResolvedValue([])
   mockInsert.mockResolvedValue(undefined)
   mockCompleteQc.mockResolvedValue(undefined)
+  mockRemove.mockResolvedValue(undefined)
+  mockCompleteManual.mockResolvedValue(undefined)
 })
 
 describe("WorkerPage", () => {
@@ -253,6 +261,50 @@ describe("WorkerPage", () => {
     await screen.findByText("Resolve Issue and Restore Item Position")
     expect(screen.queryByRole("button", { name: /^pass$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /^reject$/i })).not.toBeInTheDocument()
+  })
+
+  it("Mark as removed deletes the item and completes the Camunda task", async () => {
+    const user = userEvent.setup()
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-RM-1",
+        commandType: "remove-item-from-factory-user-task-issued",
+        taskName: "Remove Item From Factory",
+        taskCategory: "error",
+        stationName: "quality-control-station",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+
+    const btn = await screen.findByRole("button", { name: /mark as removed/i })
+    await user.click(btn)
+
+    expect(mockRemove).toHaveBeenCalledWith("ITEM-RM-1")
+    expect(mockCompleteManual).toHaveBeenCalledWith({
+      itemId: "ITEM-RM-1",
+      taskName: "Remove Item From Factory",
+    })
+    expect(await screen.findByText(/Item removed from factory/i)).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /mark as removed/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it("Mark as removed does not appear on non-removal tasks", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-Q-3",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    await screen.findByText("Check Quality")
+    expect(
+      screen.queryByRole("button", { name: /mark as removed/i })
+    ).not.toBeInTheDocument()
   })
 
   it("intake card stays hidden after a remount once it has been inserted", async () => {

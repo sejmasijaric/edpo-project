@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,6 +55,34 @@ public class SimulatorProxyController {
             return ResponseEntity.status(HttpStatusCode.valueOf(ex.getStatusCode().value()))
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(toJsonError(body));
+        } catch (Exception ex) {
+            return ResponseEntity.status(503)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(toJsonError("Simulator unavailable: " + ex.getMessage()));
+        }
+    }
+
+    @DeleteMapping(value = "/items/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteItem(@PathVariable String itemId) {
+        URI uri = UriComponentsBuilder.fromUriString(simulatorBaseUrl)
+                .path("/api/items/{id}")
+                .buildAndExpand(itemId)
+                .toUri();
+        try {
+            restClient.delete().uri(uri).retrieve().toBodilessEntity();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("{\"ok\":true,\"itemId\":\"" + itemId + "\",\"action\":\"deleted\"}");
+        } catch (RestClientResponseException ex) {
+            // 404 / item-not-present is idempotent success — the worker already pulled it out.
+            if (ex.getStatusCode().is4xxClientError()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"ok\":true,\"itemId\":\"" + itemId + "\",\"action\":\"absent\"}");
+            }
+            return ResponseEntity.status(HttpStatusCode.valueOf(ex.getStatusCode().value()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(toJsonError(safeBody(ex)));
         } catch (Exception ex) {
             return ResponseEntity.status(503)
                     .contentType(MediaType.APPLICATION_JSON)
