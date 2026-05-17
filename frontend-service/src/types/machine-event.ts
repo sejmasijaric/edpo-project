@@ -9,6 +9,7 @@ export interface LatestItemStatus {
   outcomeType: string
   timestamp: string
   sourceTopic: string
+  eventTimestampEpochMillis?: number
 }
 
 export const OUTCOME_LABELS: Record<string, string> = {

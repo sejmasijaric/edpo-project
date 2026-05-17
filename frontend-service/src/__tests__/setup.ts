@@ -27,6 +27,55 @@ vi.mock("@/services/api", () => ({
         createdAt: new Date(),
       })
   ),
+  fetchOpenUserTasks: vi.fn(async () => []),
+  fetchRecentUserTasks: vi.fn(async () => []),
+  insertItemIntoSimulator: vi.fn(async () => undefined),
+  removeItemFromSimulator: vi.fn(async () => undefined),
+  completeCheckQualityTask: vi.fn(async () => undefined),
+  completeManualTask: vi.fn(async () => undefined),
+  fetchDashboardMetrics: vi.fn(async () => ({
+    from: "2026-05-13T11:34:56Z",
+    to: "2026-05-13T12:34:56Z",
+    qcRejectedRate: {
+      rejectedCount: 0,
+      passedCount: 0,
+      totalCount: 0,
+      rejectedPercentage: 0,
+    },
+    averageManufacturingTime: { completedAttemptCount: 0, averageDurationMillis: 0 },
+    manualInterventions: { openCount: 0, completedCount: 0, openInterventions: [] },
+    manufacturingFailureRate: {
+      failedCount: 0,
+      completedCount: 0,
+      totalCount: 0,
+      failurePercentage: 0,
+      failedItemCount: 0,
+    },
+    averageEndToEndProductionTime: {
+      completedCount: 0,
+      averageDurationMillis: 0,
+      minimumDurationMillis: 0,
+      maximumDurationMillis: 0,
+    },
+    workInProgressByStage: {},
+    retryRate: {
+      completedItemCount: 0,
+      totalRetries: 0,
+      averageRetriesPerCompletedItem: 0,
+      retriesPerItem: {},
+    },
+  })),
+}))
+
+// Stub the WebSocket-based stream hook used by App.
+vi.mock("@/hooks/useFactoryStream", () => ({
+  useFactoryStream: () => ({
+    orderEvents: [],
+    userTasks: [],
+    itemStatuses: [],
+    latestStatusByItem: {},
+    connected: false,
+  }),
 }))
 
 Object.defineProperty(window, "matchMedia", {

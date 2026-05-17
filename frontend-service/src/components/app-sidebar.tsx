@@ -1,9 +1,9 @@
-import { Moon, ShoppingCart, Sun, Wrench } from "lucide-react"
+import { Gauge, Moon, ShoppingCart, Sun, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useTheme } from "@/components/theme-provider"
 
-export type Page = "customer" | "worker"
+export type Page = "customer" | "worker" | "diagnostics"
 
 interface AppSidebarProps {
   activePage: Page
@@ -18,9 +18,10 @@ export function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+    <aside className="bg-sidebar text-sidebar-foreground flex h-screen w-64 flex-col border-r">
       <div className="p-4">
-        <h2 className="text-lg font-semibold">Air Tag Orders</h2>
+        <h2 className="text-lg font-semibold">FT-Engrave</h2>
+        <p className="text-muted-foreground text-xs">AirTag factory console</p>
       </div>
       <Separator />
       <nav className="flex flex-1 flex-col gap-1 p-2">
@@ -39,6 +40,14 @@ export function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
         >
           <Wrench className="size-4" />
           Worker
+        </Button>
+        <Button
+          variant={activePage === "diagnostics" ? "secondary" : "ghost"}
+          className="justify-start gap-2"
+          onClick={() => onNavigate("diagnostics")}
+        >
+          <Gauge className="size-4" />
+          Diagnostics
         </Button>
       </nav>
       <Separator />

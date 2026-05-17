@@ -37,7 +37,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: /worker/i }))
 
-    expect(screen.getByText("Production Queue")).toBeInTheDocument()
+    expect(await screen.findByText("Items to Insert")).toBeInTheDocument()
     expect(screen.queryByText("Order Laser Engraved Air Tag")).not.toBeInTheDocument()
   })
 
@@ -49,7 +49,16 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: /customer/i }))
 
     expect(screen.getByText("Order Laser Engraved Air Tag")).toBeInTheDocument()
-    expect(screen.queryByText("Production Queue")).not.toBeInTheDocument()
+    expect(screen.queryByText("Items to Insert")).not.toBeInTheDocument()
+  })
+
+  it("navigates to Diagnostics page", async () => {
+    const user = userEvent.setup()
+    renderApp()
+
+    await user.click(screen.getByRole("button", { name: /diagnostics/i }))
+
+    expect(await screen.findByText(/Production Diagnostics/i)).toBeInTheDocument()
   })
 
   it("renders theme toggle button", () => {
@@ -58,7 +67,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: /toggle theme/i })).toBeInTheDocument()
   })
 
-  it("shares orders between customer and worker pages", async () => {
+  it("refetches orders when returning to the Customer page", async () => {
     const user = userEvent.setup()
     const createdOrder = {
       id: "shared-test",
@@ -67,21 +76,18 @@ describe("App", () => {
       createdAt: new Date(),
     }
     mockCreateOrder.mockResolvedValueOnce(createdOrder)
-    // Initial mount fetch returns empty, navigation fetch returns the created order
+    mockFetchOrders.mockResolvedValueOnce([])
     mockFetchOrders.mockResolvedValueOnce([])
     mockFetchOrders.mockResolvedValueOnce([createdOrder])
     renderApp()
 
-    // Submit order on customer page
     await user.click(screen.getByLabelText("Red"))
     await user.click(screen.getByRole("button", { name: /submit order/i }))
     await screen.findByText("Red Air Tag")
 
-    // Navigate to worker page
     await user.click(screen.getByRole("button", { name: /worker/i }))
+    await user.click(screen.getByRole("button", { name: /customer/i }))
 
-    // Verify order appears in production queue
     expect(await screen.findByText("Red Air Tag")).toBeInTheDocument()
-    expect(screen.getByText("To Do")).toBeInTheDocument()
   })
 })

@@ -1,130 +1,346 @@
-import { useState } from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { WorkerPage } from "@/components/worker-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-import type { Order } from "@/types/order"
-import { updateOrderStatus } from "@/services/api"
+import type { UserTaskEvent } from "@/types/user-task"
+import {
+  completeCheckQualityTask,
+  completeManualTask,
+  fetchOpenUserTasks,
+  fetchRecentUserTasks,
+  insertItemIntoSimulator,
+  removeItemFromSimulator,
+} from "@/services/api"
 
-const mockUpdateOrderStatus = vi.mocked(updateOrderStatus)
+const mockFetchOpen = vi.mocked(fetchOpenUserTasks)
+const mockFetchRecent = vi.mocked(fetchRecentUserTasks)
+const mockInsert = vi.mocked(insertItemIntoSimulator)
+const mockCompleteQc = vi.mocked(completeCheckQualityTask)
+const mockRemove = vi.mocked(removeItemFromSimulator)
+const mockCompleteManual = vi.mocked(completeManualTask)
 
-function makeOrder(overrides: Partial<Order> = {}): Order {
-  return {
-    id: crypto.randomUUID(),
-    color: "red",
-    status: "To Do",
-    createdAt: new Date(),
-    ...overrides,
-  }
-}
-
-function WorkerWrapper({ initialOrders = [] }: { initialOrders?: Order[] }) {
-  const [orders, setOrders] = useState<Order[]>(initialOrders)
-  return (
+function renderPage(liveTasks: UserTaskEvent[] = [], connected = true) {
+  return render(
     <ThemeProvider>
-      <WorkerPage orders={orders} setOrders={setOrders} />
+      <WorkerPage liveTasks={liveTasks} connected={connected} />
       <Toaster />
     </ThemeProvider>
   )
 }
 
-function renderWorkerPage(initialOrders: Order[] = []) {
-  return render(<WorkerWrapper initialOrders={initialOrders} />)
-}
+beforeEach(() => {
+  window.localStorage.clear()
+  mockFetchOpen.mockReset()
+  mockFetchRecent.mockReset()
+  mockInsert.mockReset()
+  mockCompleteQc.mockReset()
+  mockRemove.mockReset()
+  mockCompleteManual.mockReset()
+  mockFetchOpen.mockResolvedValue([])
+  mockFetchRecent.mockResolvedValue([])
+  mockInsert.mockResolvedValue(undefined)
+  mockCompleteQc.mockResolvedValue(undefined)
+  mockRemove.mockResolvedValue(undefined)
+  mockCompleteManual.mockResolvedValue(undefined)
+})
 
 describe("WorkerPage", () => {
-  it("shows empty production queue message", () => {
-    renderWorkerPage()
-
-    expect(screen.getByText("Production Queue")).toBeInTheDocument()
-    expect(screen.getByText("No orders in the queue.")).toBeInTheDocument()
+  it("shows empty state when no tasks are open", async () => {
+    renderPage()
+    expect(await screen.findByText("Items to Insert")).toBeInTheDocument()
+    expect(screen.getByText(/No items waiting for intake/i)).toBeInTheDocument()
+    expect(screen.getByText(/No open manual tasks/i)).toBeInTheDocument()
+    expect(screen.getByText(/No recent errors/i)).toBeInTheDocument()
   })
 
-  it("displays orders with correct info", () => {
-    const orders = [makeOrder({ color: "blue", engravedText: "Test" })]
-    renderWorkerPage(orders)
-
-    expect(screen.getByText("Blue Air Tag")).toBeInTheDocument()
-    expect(screen.getByText(/Test/)).toBeInTheDocument()
+  it("shows a connection indicator", async () => {
+    renderPage([], false)
+    const dot = await screen.findByTestId("ws-status")
+    expect(dot.className).toContain("bg-red-500")
   })
 
-  it("shows correct status badges", () => {
-    const orders = [
-      makeOrder({ status: "To Do" }),
-      makeOrder({ status: "In Progress" }),
-      makeOrder({ status: "Done" }),
-      makeOrder({ status: "Error" }),
-    ]
-    renderWorkerPage(orders)
+  it("renders an intake call-to-action with the requested color", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-RED-1",
+        commandType: "insert-item-into-intake-command",
+        taskName: "Insert Item",
+        taskCategory: "normal",
+        stationName: "item-intake-station",
+        targetColor: "RED",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    expect(await screen.findByText(/Insert Red AirTag/i)).toBeInTheDocument()
+    expect(screen.getByText("ITEM-RED-1")).toBeInTheDocument()
+  })
 
-    const badges = screen.getAllByText(/To Do|In Progress|Done|Error/, {
-      selector: "[data-slot='badge']",
+  it("uses live task events sent over WebSocket", async () => {
+    const liveTask: UserTaskEvent = {
+      itemIdentifier: "ITEM-BLUE-1",
+      commandType: "insert-item-into-intake-command",
+      taskName: "Insert Item",
+      stationName: "item-intake-station",
+      targetColor: "BLUE",
+      eventTimestampEpochMillis: 1_700_000_000_000,
+    }
+    renderPage([liveTask])
+    expect(await screen.findByText(/Insert Blue AirTag/i)).toBeInTheDocument()
+  })
+
+  it("groups non-intake tasks under Open Manual Tasks", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-Q-1",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        taskCategory: "normal",
+        stationName: "quality-control-station",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    expect(await screen.findByText("Check Quality")).toBeInTheDocument()
+    expect(screen.getByText("quality-control-station")).toBeInTheDocument()
+  })
+
+  it("shows errors in the recent errors panel", async () => {
+    mockFetchRecent.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-E-1",
+        commandType: "resolve-issue-and-restore-item-position-user-task-issued",
+        taskName: "Resolve Issue and Restore Item Position",
+        taskCategory: "error",
+        stationName: "quality-control-station",
+        errorMessage: "Item dropped on the floor",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    expect(
+      await screen.findByText("Resolve Issue and Restore Item Position")
+    ).toBeInTheDocument()
+    expect(screen.getByText("Item dropped on the floor")).toBeInTheDocument()
+  })
+
+  it("removes a task when a completed status comes in", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-Q-2",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        taskCategory: "normal",
+        stationName: "quality-control-station",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    const { rerender } = renderPage()
+    expect(await screen.findByText("Check Quality")).toBeInTheDocument()
+
+    rerender(
+      <ThemeProvider>
+        <WorkerPage
+          liveTasks={[
+            {
+              itemIdentifier: "ITEM-Q-2",
+              commandType: "check-quality-user-task-issued",
+              taskName: "Check Quality",
+              taskStatus: "completed",
+              eventTimestampEpochMillis: 1_700_000_000_001,
+            },
+          ]}
+        />
+        <Toaster />
+      </ThemeProvider>
+    )
+
+    expect(screen.queryByText("Check Quality")).not.toBeInTheDocument()
+  })
+
+  it("insert button calls the simulator and hides the task", async () => {
+    const user = userEvent.setup()
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-INS-1",
+        commandType: "insert-item-into-intake-command",
+        taskName: "Insert Item",
+        taskCategory: "normal",
+        stationName: "item-intake-station",
+        targetColor: "BLUE",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+
+    const button = await screen.findByRole("button", { name: /insert into intake/i })
+    await user.click(button)
+
+    expect(mockInsert).toHaveBeenCalledWith({
+      itemId: "ITEM-INS-1",
+      color: "BLUE",
     })
-    expect(badges).toHaveLength(4)
-    expect(badges[0]).toHaveTextContent("To Do")
-    expect(badges[1]).toHaveTextContent("In Progress")
-    expect(badges[2]).toHaveTextContent("Done")
-    expect(badges[3]).toHaveTextContent("Error")
+    expect(await screen.findByText(/Inserted Blue airtag/i)).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /insert into intake/i })
+    ).not.toBeInTheDocument()
   })
 
-  it("Start button moves To Do to In Progress", async () => {
+  it("shows an error toast when the insert call fails", async () => {
     const user = userEvent.setup()
-    const order = makeOrder({ id: "test-1", status: "To Do" })
-    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "In Progress" })
-    renderWorkerPage([order])
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-INS-2",
+        commandType: "insert-item-into-intake-command",
+        taskName: "Insert Item",
+        targetColor: "RED",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    mockInsert.mockRejectedValueOnce(new Error("Simulator down"))
+    renderPage()
 
-    await user.click(screen.getByRole("button", { name: "Start" }))
+    await user.click(await screen.findByRole("button", { name: /insert into intake/i }))
 
-    expect(await screen.findByText("In Progress")).toBeInTheDocument()
-    expect(screen.queryByText("To Do")).not.toBeInTheDocument()
+    expect(await screen.findByText("Simulator down")).toBeInTheDocument()
   })
 
-  it("Done button moves In Progress to Done", async () => {
+  it("Pass button completes the Check Quality task and hides it", async () => {
     const user = userEvent.setup()
-    const order = makeOrder({ id: "test-2", status: "In Progress" })
-    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "Done" })
-    renderWorkerPage([order])
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-QC-1",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        taskCategory: "normal",
+        stationName: "quality-control-station",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
 
-    await user.click(screen.getByRole("button", { name: "Done" }))
+    const pass = await screen.findByRole("button", { name: /pass/i })
+    await user.click(pass)
 
-    expect(await screen.findByText("Done")).toBeInTheDocument()
-    expect(screen.queryByText("In Progress")).not.toBeInTheDocument()
+    expect(mockCompleteQc).toHaveBeenCalledWith({ itemId: "ITEM-QC-1", passed: true })
+    expect(await screen.findByText(/QC approved/i)).toBeInTheDocument()
+    expect(screen.queryByText("Check Quality")).not.toBeInTheDocument()
   })
 
-  it("Error button moves In Progress to Error", async () => {
+  it("Reject button completes the Check Quality task with qcPassed=false", async () => {
     const user = userEvent.setup()
-    const order = makeOrder({ id: "test-3", status: "In Progress" })
-    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "Error" })
-    renderWorkerPage([order])
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-QC-2",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        taskCategory: "normal",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
 
-    await user.click(screen.getByRole("button", { name: "Error" }))
+    await user.click(await screen.findByRole("button", { name: /reject/i }))
 
-    expect(await screen.findByText("Error")).toBeInTheDocument()
-    expect(screen.queryByText("In Progress")).not.toBeInTheDocument()
+    expect(mockCompleteQc).toHaveBeenCalledWith({ itemId: "ITEM-QC-2", passed: false })
+    expect(await screen.findByText(/QC rejected/i)).toBeInTheDocument()
   })
 
-  it("Retry button moves Error to In Progress", async () => {
+  it("does not show Pass/Reject on non-Check-Quality manual tasks", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-X-1",
+        commandType: "resolve-issue-and-restore-item-position-user-task-issued",
+        taskName: "Resolve Issue and Restore Item Position",
+        taskCategory: "error",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    await screen.findByText("Resolve Issue and Restore Item Position")
+    expect(screen.queryByRole("button", { name: /^pass$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /^reject$/i })).not.toBeInTheDocument()
+  })
+
+  it("Mark as removed deletes the item and completes the Camunda task", async () => {
     const user = userEvent.setup()
-    const order = makeOrder({ id: "test-4", status: "Error" })
-    mockUpdateOrderStatus.mockResolvedValueOnce({ ...order, status: "In Progress" })
-    renderWorkerPage([order])
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-RM-1",
+        commandType: "remove-item-from-factory-user-task-issued",
+        taskName: "Remove Item From Factory",
+        taskCategory: "error",
+        stationName: "quality-control-station",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
 
-    await user.click(screen.getByRole("button", { name: "Retry" }))
+    const btn = await screen.findByRole("button", { name: /mark as removed/i })
+    await user.click(btn)
 
-    const badge = await screen.findByText("In Progress", {
-      selector: "[data-slot='badge']",
+    expect(mockRemove).toHaveBeenCalledWith("ITEM-RM-1")
+    expect(mockCompleteManual).toHaveBeenCalledWith({
+      itemId: "ITEM-RM-1",
+      taskName: "Remove Item From Factory",
     })
-    expect(badge).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument()
+    expect(await screen.findByText(/Item removed from factory/i)).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /mark as removed/i })
+    ).not.toBeInTheDocument()
   })
 
-  it("shows no action buttons for Done orders", () => {
-    renderWorkerPage([makeOrder({ status: "Done" })])
+  it("Mark as removed does not appear on non-removal tasks", async () => {
+    mockFetchOpen.mockResolvedValueOnce([
+      {
+        itemIdentifier: "ITEM-Q-3",
+        commandType: "check-quality-user-task-issued",
+        taskName: "Check Quality",
+        eventTimestampEpochMillis: 1_700_000_000_000,
+      },
+    ])
+    renderPage()
+    await screen.findByText("Check Quality")
+    expect(
+      screen.queryByRole("button", { name: /mark as removed/i })
+    ).not.toBeInTheDocument()
+  })
 
-    expect(screen.queryByRole("button", { name: "Start" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Done" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Error" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument()
+  it("intake card stays hidden after a remount once it has been inserted", async () => {
+    const user = userEvent.setup()
+    const stickyTask = {
+      itemIdentifier: "ITEM-PERSIST-1",
+      commandType: "insert-item-into-intake-command",
+      taskName: "Insert Item",
+      taskCategory: "normal",
+      targetColor: "BLUE",
+      eventTimestampEpochMillis: 1_700_000_000_000,
+    }
+    mockFetchOpen.mockResolvedValue([stickyTask])
+    const { unmount } = renderPage()
+
+    await user.click(await screen.findByRole("button", { name: /insert into intake/i }))
+    expect(
+      screen.queryByRole("button", { name: /insert into intake/i })
+    ).not.toBeInTheDocument()
+
+    unmount()
+    renderPage()
+    await screen.findByText("Items to Insert")
+    expect(
+      screen.queryByRole("button", { name: /insert into intake/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it("refresh button reloads tasks from the API", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText("Items to Insert")
+    expect(mockFetchOpen).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole("button", { name: /refresh/i }))
+    expect(mockFetchOpen).toHaveBeenCalledTimes(2)
+    expect(mockFetchRecent).toHaveBeenCalledTimes(2)
   })
 })
