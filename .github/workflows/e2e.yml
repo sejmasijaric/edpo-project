@@ -31,6 +31,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Stage MQTT secrets file (gitignored — simulation uses the local broker)
+        run: cp docker/.env.mqtt.local.example docker/.env.mqtt.local
+
       - name: Build images
         run: docker compose $ENV_FILE $COMPOSE_FILES build --parallel
 
