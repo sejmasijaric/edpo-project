@@ -1,5 +1,7 @@
 import type { Order, OrderStatus } from "@/types/order"
 import type { LatestItemStatus } from "@/types/machine-event"
+import type { UserTaskEvent } from "@/types/user-task"
+import type { DashboardMetricsResponse } from "@/types/dashboard"
 
 const API_BASE = "/api"
 
@@ -78,6 +80,38 @@ export async function fetchLatestItemStatus(
     throw new Error(err.error)
   }
 
+  return res.json()
+}
+
+export async function fetchOpenUserTasks(): Promise<UserTaskEvent[]> {
+  const res = await fetch(`${API_BASE}/user-tasks`)
+  if (!res.ok) {
+    throw new Error("Failed to fetch open user tasks")
+  }
+  return res.json()
+}
+
+export async function fetchRecentUserTasks(): Promise<UserTaskEvent[]> {
+  const res = await fetch(`${API_BASE}/user-tasks/recent`)
+  if (!res.ok) {
+    throw new Error("Failed to fetch recent user tasks")
+  }
+  return res.json()
+}
+
+export async function fetchDashboardMetrics(params?: {
+  from?: string
+  to?: string
+}): Promise<DashboardMetricsResponse> {
+  const query = new URLSearchParams()
+  if (params?.from) query.set("from", params.from)
+  if (params?.to) query.set("to", params.to)
+  const suffix = query.toString() ? `?${query.toString()}` : ""
+  const res = await fetch(`${API_BASE}/dashboard/metrics${suffix}`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Failed to fetch dashboard metrics" }))
+    throw new Error(err.error ?? "Failed to fetch dashboard metrics")
+  }
   return res.json()
 }
 

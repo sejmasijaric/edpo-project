@@ -2,14 +2,16 @@ import { useEffect, useState } from "react"
 import { AppSidebar, type Page } from "@/components/app-sidebar"
 import { CustomerPage } from "@/components/customer-page"
 import { WorkerPage } from "@/components/worker-page"
-import { useOrderUpdates } from "@/hooks/useOrderUpdates"
+import { DiagnosticsPage } from "@/components/diagnostics-page"
+import { useFactoryStream } from "@/hooks/useFactoryStream"
 import type { Order } from "@/types/order"
 import { fetchOrders } from "@/services/api"
 
 export function App() {
   const [activePage, setActivePage] = useState<Page>("customer")
   const [orders, setOrders] = useState<Order[]>([])
-  const { events, connected } = useOrderUpdates()
+  const { orderEvents, userTasks, latestStatusByItem, connected } =
+    useFactoryStream()
 
   useEffect(() => {
     fetchOrders()
@@ -25,13 +27,15 @@ export function App() {
           <CustomerPage
             orders={orders}
             setOrders={setOrders}
-            events={events}
+            events={orderEvents}
             connected={connected}
+            latestStatusByItem={latestStatusByItem}
           />
         )}
         {activePage === "worker" && (
-          <WorkerPage orders={orders} setOrders={setOrders} />
+          <WorkerPage liveTasks={userTasks} connected={connected} />
         )}
+        {activePage === "diagnostics" && <DiagnosticsPage />}
       </main>
     </div>
   )

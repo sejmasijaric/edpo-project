@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,6 +28,7 @@ interface CustomerPageProps {
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>
   events?: MachineOrchestrationEvent[]
   connected?: boolean
+  latestStatusByItem?: Record<string, LatestItemStatus>
 }
 
 export function CustomerPage({
@@ -35,6 +36,7 @@ export function CustomerPage({
   setOrders,
   events = [],
   connected,
+  latestStatusByItem = {},
 }: CustomerPageProps) {
   const [color, setColor] = useState("")
   const [engravedText, setEngravedText] = useState("")
@@ -73,6 +75,17 @@ export function CustomerPage({
       setSubmitting(false)
     }
   }
+
+  useEffect(() => {
+    if (!trackedStatus) return
+    const live = latestStatusByItem[trackedStatus.itemIdentifier]
+    if (!live) return
+    const liveTs = live.eventTimestampEpochMillis ?? 0
+    const currentTs = trackedStatus.eventTimestampEpochMillis ?? 0
+    if (liveTs >= currentTs) {
+      setTrackedStatus(live)
+    }
+  }, [latestStatusByItem, trackedStatus])
 
   const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault()
