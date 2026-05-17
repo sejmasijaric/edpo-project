@@ -272,7 +272,10 @@ class OrderIntegrationTest {
             producer.flush();
         }
 
-        var deadline = Instant.now().plusSeconds(10);
+        // The consumer joins its group lazily; on cold CI runners this can take
+        // 20-30s including initial topic auto-creation and group rebalance. The
+        // 10s previously used here was racy and flaked on CI.
+        var deadline = Instant.now().plusSeconds(60);
         AssertionError lastError = null;
         while (Instant.now().isBefore(deadline)) {
             try {
@@ -286,7 +289,7 @@ class OrderIntegrationTest {
                 return;
             } catch (AssertionError error) {
                 lastError = error;
-                Thread.sleep(250);
+                Thread.sleep(500);
             }
         }
         throw lastError == null ? new AssertionError("Latest status was not queryable") : lastError;
